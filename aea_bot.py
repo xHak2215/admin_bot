@@ -17,7 +17,7 @@ logse="nan"
 is_bot_active = False
 i=0
 
-admin_grops="-1002284704738"
+admin_grops=" id "
 admin_groups=admin_grops
 
 bot = telebot.TeleBot(TOKEN)
@@ -190,7 +190,7 @@ def handle_report(message):
 
 # Периодическое напоминание
 def send_reminder():
-    chat_id = '-1002170027967'# Укажите ID чата для отправки напоминаний
+    chat_id = ' id '# Укажите ID чата для отправки напоминаний
     bot.send_message(chat_id, message_reminder)
 
 # Планирование напоминаний
@@ -248,7 +248,7 @@ def handle_message(message):
         is_bot_active = True
         if "[help]" in str(user_text[user_id]) or "[Help]" in str(user_text[user_id]):
             id_help_hat=str(message.chat.id).replace("-100", "")
-            bot.send_message(admin_groups,  f"@HITHELL , @mggxst есть вопрос от @{message.from_user.username} \n вот он: https://t.me/c/{id_help_hat}/{message.message_id}")
+            bot.send_message(admin_groups,  f" есть вопрос от @{message.from_user.username} \n вот он: https://t.me/c/{id_help_hat}/{message.message_id}")
         logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >> {message.text if message.content_type == 'text' else message.content_type}"
         print("————")
         logger.debug(logs)
