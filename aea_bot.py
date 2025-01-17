@@ -9,7 +9,7 @@ from datetime import datetime
 import requests
 import os
 from loguru import logger
-TOKEN = "7887540092:AAFXBkw0qvFJKc-PjRxPdrBc6iJSlNnmLhw"  
+TOKEN = " token "  
 
 help_user = '/report - забань дебила в чате (временно не работает)\nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
