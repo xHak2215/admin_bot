@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 python aea_bot.py
 ```
-бот сделан для группы<a href="">AEA+</a>
+бот сделан для группы<a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a>
 
 <p align="right">(<a href="#readme-top">↑верх↑</a>)</p>
 
