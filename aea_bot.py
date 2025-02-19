@@ -27,7 +27,6 @@ admin_groups=admin_grops
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
-os.chdir('/home/pc/Рабочий стол/aea_bot')
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
