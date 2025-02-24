@@ -27,6 +27,7 @@ admin_groups=admin_grops
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
+#os.chdir('/home/pc/Рабочий стол/aea_bot')
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
@@ -35,7 +36,7 @@ else:
 if os.path.exists('Users_base.db'):
     print('data base ok')
 else:
-    print("error not bata base ")
+    print("warning not bata base ")
 
 #print(__name__)
 now = datetime.now()
@@ -147,6 +148,7 @@ def send_help(message):
             logger.debug(f"экран очищен очистил:  @{message.from_user.username}")
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
+
 
 # Команда /monitor    
 @bot.message_handler(commands=['monitor'])
@@ -355,23 +357,21 @@ def data_base(chat_id, warn_user_id, message,nfkaz)->int:
         # Проверяем, существует ли пользователь с данным warn_user_id
         cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))
         result = cursor.fetchone()
-        print('result>>', result)
-
+        print('result>>', result) 
         if result is not None:
             # Извлекаем репутацию из результата
             current_reputation = result[2]  # Предполагаем, что репутация находится в третьем столбце
             new_reputation = current_reputation - nfkaz
             
             # Обновляем репутацию пользователя
-            if nfkaz != 0:
-                resperens=5
-                update_user(warn_user_id, new_reputation)  # Передаем id пользователя для обновления
+            update_user(warn_user_id, new_reputation)  # Передаем id пользователя для обновления
 #            bot.reply_to(message, f'Рейтинг понижен до {new_reputation}')
             connection.commit()
             connection.close()
             return new_reputation
         else:
             # Если пользователь не найден, добавляем его
+            resperens=5-nfkaz
             cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id) VALUES (?, ?, ?)', (chat_id, resperens, warn_user_id))
             connection.commit()
             connection.close()
@@ -409,12 +409,13 @@ def handle_warn(message):
             message_to_warp=str(warn_chat).replace("-100", "")
 
             reputation=data_base(chat_id,ban_ded,message,1)
+            bot.reply_to(message,f'репутация снижена \nтекущяя репутация пользевателя:{reputation}')
             bot.send_message(admin_grops,f"репутация снижена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.debug(f"репутация снижена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} понизил репутацию ") 
         
         # Проверяем, достаточно ли ответов для бана
-            if reputation <= 1:
+            if reputation <= 0:
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
                 bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
         #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
@@ -442,7 +443,7 @@ def handle_warn(message):
             message_to_warp=str(warn_chat).replace("-100", "")
 
             reputation=data_base(chat_id,ban_ded,message,-1)#партия довольна вами +1 к репутации
-            bot.reply_to(message,f'репутация повышена \nтекущяя репунация пользевателя:{reputation}')
+            bot.reply_to(message,f'репутация повышена \nтекущяя репутация пользевателя:{reputation}')
             bot.send_message(admin_grops,f"репутация повышена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.debug(f"репутация повышена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} повысил репутацию ") 
@@ -586,56 +587,50 @@ def other_message_handler(message):
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info('new member in chat')
-        username = new_member.username if new_member.username else "пользователь"
-        welcome_message = [f"Привет, @{username}! Добро пожаловать в наш чат! \n/help для справки",f"новенький скинь ножки \nой не тот текст \nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
-        #bot.reply_to(message , welcome_message)
         # Открываем исходный GIF
-        input_gif_path = 'hello.gif'
-        output_gif_path = 'output.gif'
-        # Открываем изображение
-        gif = Image.open(input_gif_path)
-        # Создаем список для хранения кадров с текстом
-        frames_with_text = []
-        # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
         try:
-            font = ImageFont.truetype("arial.ttf", 40)  # Замените "arial.ttf" на путь к вашему шрифту
-        except IOError:
-            font = ImageFont.load_default(size=40)
+            input_gif_path = '/home/pc/Рабочий стол/aea_bot/hello.gif'
+            output_gif_path = 'output.gif'
+            # Открываем изображение
+            gif = Image.open(input_gif_path)
+            # Создаем список для хранения кадров с текстом
+            frames_with_text = []
+            # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+            try:
+                font = ImageFont.truetype("/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf", 40)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
+            except IOError:
+                font = ImageFont.load_default(size=40)
 
-        # Добавляем текст на каждый кадр
-        for frame in range(gif.n_frames):
-            gif.seek(frame)
-            # Копируем текущий кадр
-            new_frame = gif.copy()
-            # Преобразуем в rgba 
-            new_frame = new_frame.convert('RGBA')
-            draw = ImageDraw.Draw(new_frame)
-            # Определяем текст и его позицию
-            usernameh=message.from_user.first_name
-            if len(username)>15:
-                n = 15
-                for char in username:
-                    if n < 1:
-                        break
-                    n -= 1
-                    usernameh += char
-            text = f"привет! {usernameh} добро пожаловать в чат :3 "
-            text_position =(160, 345) # Позиция (x, y) для текста
-
-            # Добавляем текст на кадр
-            draw.text(text_position, text, font=font, fill=(0, 0, 0))  # Цвет текста задан в формате RGB
-
-            # Добавляем новый кадр в список
-            frames_with_text.append(new_frame)
-    # Сохраняем новый GIF с текстом
-    frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
-    try:
-        with open('output.gif', 'rb') as gif_file:
-            bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
-        os.remove('output.gif')
-    except Exception as e:
-        bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
-
+            # Добавляем текст на каждый кадр
+            for frame in range(gif.n_frames):
+                gif.seek(frame)
+                # Копируем текущий кадр
+                new_frame = gif.copy()
+                # Преобразуем в rgba 
+                new_frame = new_frame.convert('RGBA')
+                draw = ImageDraw.Draw(new_frame)
+                # Определяем текст и его позицию
+                usernameh=message.from_user.first_name
+                text = f"{usernameh} добро пожаловать в чат" 
+                text_position =(75, 345) # Позиция (x, y) для текста
+                
+                # Добавляем текст на кадр
+                draw.text(text_position, text, font=font, fill=(65, 105, 225))  # Цвет текста задан в формате RGB
+                # Добавляем новый кадр в список
+                frames_with_text.append(new_frame)
+            # Сохраняем новый GIF с текстом
+            frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
+            try:
+                with open('output.gif', 'rb') as gif_file:
+                    bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
+                os.remove('output.gif') 
+            except Exception as e:
+                bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
+        except Exception as e:
+            logger.error(f'error hello >>{e}')
+            username = new_member.username if new_member.username else "пользователь"
+            welcome_message = [f"Привет, @{username}! Добро пожаловать в наш чат! \n/help для справки",f"новенький скинь ножки \nой не тот текст \nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
+            bot.reply_to(message , welcome_message)
 
 # Основной цикл
 def main():
@@ -646,7 +641,7 @@ def main():
             schedule.run_pending()
             time.sleep(1)
         except Exception as e:
-  #          bot.send_message(message.from_user.id, 'Увы, случилась ошибка>>\n' + str(e))
+  #          bot.send_message(message.chat.id, 'Увы, случилась ошибка>>\n' + str(e))
             logger.error(f"Ошибка: {e}")
             time.sleep(4)
 
