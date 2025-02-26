@@ -27,7 +27,7 @@ admin_groups=admin_grops
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
-#os.chdir('/home/pc/Рабочий стол/aea_bot')
+#os.chdir(' дерикторий с ботом ') #иногда нужно 
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
@@ -36,7 +36,7 @@ else:
 if os.path.exists('Users_base.db'):
     print('data base ok')
 else:
-    print("warning not bata base ")
+    print("error not bata base ")
 
 #print(__name__)
 now = datetime.now()
@@ -589,7 +589,7 @@ def welcome_new_member(message):
         logger.info('new member in chat')
         # Открываем исходный GIF
         try:
-            input_gif_path = '/home/pc/Рабочий стол/aea_bot/hello.gif'
+            input_gif_path = 'hello.gif'# если выдает ошибку о оцуцтвии то вписываем полный путь
             output_gif_path = 'output.gif'
             # Открываем изображение
             gif = Image.open(input_gif_path)
@@ -597,28 +597,28 @@ def welcome_new_member(message):
             frames_with_text = []
             # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
             try:
-                font = ImageFont.truetype("/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf", 40)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
+                font = ImageFont.truetype("/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf", 35)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
             except IOError:
-                font = ImageFont.load_default(size=40)
-
+                font = ImageFont.load_default(size=35)
             # Добавляем текст на каждый кадр
             for frame in range(gif.n_frames):
                 gif.seek(frame)
                 # Копируем текущий кадр
                 new_frame = gif.copy()
-                # Преобразуем в rgba 
+            #    Преобразуем в rgba 
                 new_frame = new_frame.convert('RGBA')
                 draw = ImageDraw.Draw(new_frame)
                 # Определяем текст и его позицию
-                usernameh=message.from_user.first_name
-                text = f"{usernameh} добро пожаловать в чат" 
-                text_position =(75, 345) # Позиция (x, y) для текста
-                
+                usernameh='testfghsdfghfrdh'
+                ot=26-len(usernameh)
+                otstup=' '*ot
+                text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
+                text_position =(60, 300) # Позиция (x, y) для текста        
                 # Добавляем текст на кадр
                 draw.text(text_position, text, font=font, fill=(65, 105, 225))  # Цвет текста задан в формате RGB
                 # Добавляем новый кадр в список
                 frames_with_text.append(new_frame)
-            # Сохраняем новый GIF с текстом
+                # Сохраняем новый GIF с текстом
             frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
             try:
                 with open('output.gif', 'rb') as gif_file:
