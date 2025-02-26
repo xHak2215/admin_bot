@@ -609,7 +609,7 @@ def welcome_new_member(message):
                 new_frame = new_frame.convert('RGBA')
                 draw = ImageDraw.Draw(new_frame)
                 # Определяем текст и его позицию
-                usernameh='testfghsdfghfrdh'
+                usernameh=message.from_user.first_name
                 ot=26-len(usernameh)
                 otstup=' '*ot
                 text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
