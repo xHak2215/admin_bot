@@ -13,13 +13,44 @@ import sqlite3
 import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
-TOKEN = " tokin "  
+TOKEN = "7887540092:AAFXBkw0qvFJKc-PjRxPdrBc6iJSlNnmLhw" 
 
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
+PRAVILO='''
+Правила:\n
+
+1. Запрещен расизм, нацизм, ЛГБТ, выдвежение полит взглядов и прочие распространения подобных движений (бан - мут)  \n
+
+2. 18+ контент в любом виде, или же приближенный (мут) \n
+
+2.2 Эротика разрешена только если:\nне видно нижнего белья, выпирающих сосков и не обнажены части тела такие как ( скажу не очень красиво: жопа, сиськи, половые органы,  ноги выши половины ляжки, торс ниже пупа, спина ниже копчика,), так же отсутствуют прикосновения в половы органам (любые) и груди.
+Подобные критерии оносятся и к неодушевлённым предметам (любым). Так же запрещены непристойные позы, так же позы с акцентом на выше перечисленное.
+3. Оскорбления/Ссоры (мут) \n
+
+4. Любой прямой или косвенный вред группе (бан) \n
+
+5. Реклама в любом виде(мут) \n
+
+6. Попытки обойти правила в связи с отсутствием некоторых косвенно запрещённых пунктов (бан) \n
+
+Так же:\n
+
+1. Администрация/Модерация имеет право выдавать пользователям warn/mute/ban операясь на свое усмотрение и ориентируясь на правила. \n
+
+2. Минимальная мера наказания - снижение репутации посредством выдачи команды "/warn"\n
+
+3. Пункт 1 правил включает абсолютно любые взгляды, во избежании поиска лазеек в своде правил.\n
+4. Наказание выданное администрацией может быть оспорено только глав.админом.\n\n
+
+(Правила в дальнейшем будут пересмотренны и дополненны)
+
+'''
+
 logse="nan"
 is_bot_active = False
 i=0
+
 
 admin_grops="-1002284704738"
 admin_groups=admin_grops
@@ -27,7 +58,7 @@ admin_groups=admin_grops
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
-#os.chdir(' дерикторий с ботом ') #иногда нужно 
+os.chdir('/home/pc/Рабочий стол/aea_bot')
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
@@ -156,6 +187,31 @@ def monitor_command(message):
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
     bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time:.2f}s")
 
+# Команда /test 
+@bot.message_handler(commands=['test'])
+def monitor_command(message):
+    test='none'
+    test+=os.getcwd()+'\n'
+    if os.path.exists('hello.gif'):
+        test=test+'gif OK\n'
+    else:
+        test=test+'error not gif\n'
+    if os.path.exists('Users_base.db'):
+        test=test+'data base OK\n'
+    else:
+        test=test+"error not bata base \n"
+    if os.path.exists('cats_message.log'):
+        test=test+'messege log OK\n'
+    else:
+        test=test+'warning not messege log \n'
+    if os.path.exists('Bounded-Black.ttf'):
+        test=test+'Bounded-Black шрифт OK\n'
+    else:
+        test=test+'error not Bounded-Black \n'
+    cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time:.2f}s\n{test} \nadmin {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+
+
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
 def time_server_command(message):
@@ -165,8 +221,7 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','Правила','закон'])
 def time_server_command(message):
-    bot.send_message(message.chat.id, f"Правила группы\nЗапрещается:\n\nРасизм,нацизм,продвижение экстремизма в любой форме(например ЛГБТ),выведение своих полит. взглядов,зоофилия, 18+ контент, жестокие сцены (любые), оскорбление администрации (с учетом что она вас не провоцировала), оскорбление и ущемление пола нации и т.д, оскорбления, многочисленные упоминания и восхваления полит и просто преступников, спам (особенно командами), вред группе(любой), любое уклонение от правил и поиск лазеек в них. \nЭто карается снижением репутации, после мутом, после вечной блокировкой блокировкой в группе")
-
+    bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
 report_data =  {}
 # Обработка ответа на сообщение с /report
@@ -254,11 +309,11 @@ def send_help(message):
         
 def status(rec):
     if rec >= 1000:
-        status=["читы вырубай ! ",'как то многовато ,читы ? '][random.randint(0,1)]
+        status=["читы вырубай ! ",'как то многовато ,читы ?'][random.randint(0,1)]
     elif rec <=1:
-        status=["ты плохой исправляйся 😡",'ай ай ай нарушаем'][random.randint(0,1)]
+        status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть'][random.randint(0,2)]
     elif rec>=5:
-        status=['ты хороший 😊','ты молодец 👍','законопослушый так держать! '][random.randint(0,2)]
+        status=['ты хороший 😊','ты умница 👍','законопослушый так держать! '][random.randint(0,2)]
         
     else:
         status=["😐",'ну норм','нейтральный','не без гриха'][random.randint(0,3)]
@@ -414,18 +469,13 @@ def handle_warn(message):
             logger.debug(f"репутация снижена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} понизил репутацию ") 
         
-        # Проверяем, достаточно ли ответов для бана
+        # Проверяем, достаточно ли ответов для мута
             if reputation <= 0:
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
                 bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
-        #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
-            #logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
-
+        #      bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
+            #  logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
         else:
-        #print(f'{report_data=}')
-        #chat_id = message.chat.id
-        #report_data[chat_id]['message_id'] = message.message_id
-        #report_data[chat_id]['responses']  =report_data[chat_id]['responses'] + 1   
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы снизить репутацию") 
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
@@ -563,17 +613,23 @@ def anti_spam(message):
         if "[help]" in str(user_text[user_id]) or "[Help]" in str(user_text[user_id]):
             id_help_hat=str(message.chat.id).replace("-100", "")
             bot.send_message(admin_groups,  f"@HITHELL , @mggxst есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")
-        logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >> {message.text if message.content_type == 'text' else message.content_type}"
+        logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n {message.text if message.content_type == 'text' else message.content_type}"
         print("————")
         logger.debug(logs)
 
 
-@bot.message_handler(content_types=['text', 'sticker', 'photo', 'video'])
+@bot.message_handler(content_types=['text', 'sticker','video'])
 def message_handler(message):
     if time.time() - message.date > 1.5:
         return
     anti_spam(message)
-
+@bot.message_handler(content_types=['photo'])
+def message_handler(message):
+    if time.time() - message.date >= 1.5:
+        return
+    else:
+        if time.time() - message.date <= 0.2:
+            anti_spam(message)
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
@@ -589,7 +645,7 @@ def welcome_new_member(message):
         logger.info('new member in chat')
         # Открываем исходный GIF
         try:
-            input_gif_path = 'hello.gif'# если выдает ошибку о оцуцтвии то вписываем полный путь
+            input_gif_path = '/home/pc/Рабочий стол/aea_bot/hello.gif'
             output_gif_path = 'output.gif'
             # Открываем изображение
             gif = Image.open(input_gif_path)
@@ -600,6 +656,7 @@ def welcome_new_member(message):
                 font = ImageFont.truetype("/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf", 35)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
             except IOError:
                 font = ImageFont.load_default(size=35)
+
             # Добавляем текст на каждый кадр
             for frame in range(gif.n_frames):
                 gif.seek(frame)
