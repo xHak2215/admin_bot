@@ -13,7 +13,7 @@ import sqlite3
 import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
-TOKEN = "7887540092:AAFXBkw0qvFJKc-PjRxPdrBc6iJSlNnmLhw" 
+TOKEN = "tokin" 
 
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
