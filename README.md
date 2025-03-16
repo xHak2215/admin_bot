@@ -19,10 +19,12 @@
       <ul>
       <li><a href="https://github.com/xHak2215/consol">основной проект</a></li>
       </ul>
+     </li>
+     <li>
       <ul>
       <li><a href="https://t.me/HITHELL">telegram</a></li>
-     </ul>
-    </li>
+      </ul>
+     </li>
   </ol>
 </details>
 
