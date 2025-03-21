@@ -14,6 +14,13 @@ import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
 TOKEN = "tokin" 
+try:
+    import config
+except:
+    logger.error('error import config')
+    bambam=False
+    delet_messadge=False
+    admin_grops="-1002284704738"
 
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
@@ -51,14 +58,14 @@ logse="nan"
 is_bot_active = False
 i=0
 
+bambam,delet_messadge,admin_grops=config.setings()
 
-admin_grops="-1002284704738"
 admin_groups=admin_grops
 
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
-os.chdir('/home/pc/Рабочий стол/aea_bot')
+#os.chdir(os.getcwd())
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
@@ -165,12 +172,12 @@ def send_help(message):
             bot.send_message(message.chat.id,f"report data: {report_data}")
             logger.debug(f"report data: {report_data}")
         else:
-            bot.reply_to(message.chat.id,f"ты не достоин \nты не админ")
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','такие данные не для тебя'][random.randint(0,4)])
     except Exception as e:
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
 # очистка консоли /cler 
-@bot.message_handler(commands=['cler'])
+@bot.message_handler(commands=['cler','clear'])
 def send_help(message):
     #проверка на админа
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
@@ -192,22 +199,28 @@ def monitor_command(message):
 def monitor_command(message):
     test='none'
     test+=os.getcwd()+'\n'
-    if os.path.exists('hello.gif'):
+    if os.path.exists(f'{os.getcwd()}/hello.gif'):
         test=test+'gif OK\n'
     else:
         test=test+'error not gif\n'
-    if os.path.exists('Users_base.db'):
+    if os.path.exists(f'{os.getcwd()}/Users_base.db'):
         test=test+'data base OK\n'
     else:
         test=test+"error not bata base \n"
-    if os.path.exists('cats_message.log'):
+    if os.path.exists(f'{os.getcwd()}/cats_message.log'):
         test=test+'messege log OK\n'
     else:
         test=test+'warning not messege log \n'
-    if os.path.exists('Bounded-Black.ttf'):
+    if os.path.exists(f'{os.getcwd()}/Bounded-Black.ttf'):
         test=test+'Bounded-Black шрифт OK\n'
     else:
         test=test+'error not Bounded-Black \n'
+    if os.path.exists(f'{os.getcwd()}/config.py'):
+        test=test+'cofig file OK\n'
+    else:
+        test=test+'error not config file \n'
+    test=test+f"ID: {message.from_user.id}\n"
+    test=test+f"ID admin grup: {admin_grops}\n"
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
     bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time:.2f}s\n{test} \nadmin {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
@@ -219,7 +232,7 @@ def time_server_command(message):
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
 #команда /правило 
-@bot.message_handler(commands=['правило','Правила','закон'])
+@bot.message_handler(commands=['правило','правила','закон'])
 def time_server_command(message):
     bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
@@ -250,11 +263,10 @@ def handle_report(message):
         if len(report['responses']) >= 5:
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
             bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
- 
-
+            if delet_messadge==True:
+                bot.delete_message(message.chat.id,message.message_id)
             #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
             #logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
-
         # Удаляем данные о репорте
         del report_data[chat_id]
     else:
@@ -275,7 +287,6 @@ def fetch_data_by_column_and_row(column_name, row_index):
         query = f'SELECT {column_name} FROM Users LIMIT 1 OFFSET ?'
         cursor.execute(query, (row_index,))  # Передаем индекс как кортеж
         result = cursor.fetchone()  # Получаем первую строку результата
-        
         if result:
             return result[0]  # Возвращаем значение или None, если не найдено
         else:
@@ -283,6 +294,23 @@ def fetch_data_by_column_and_row(column_name, row_index):
     except sqlite3.Error as e:
         logger.error(f'get data base error >> {e}')
         return 'get data base error >>',{e}
+    
+@bot.message_handler(commands=['config'])
+def configfile(message):
+    try:
+        f=open(f'{os.getcwd()}/config.py', 'r',encoding='utf-8', errors='replace')
+        out=f.read()
+        print(out)
+        if out=='' or out==None:
+            out='none'
+        bot.reply_to(message,out)
+        f.close()
+    except Exception as e:
+        try:
+            f.close()
+        except:pass
+        bot.reply_to(message,f"error logs file>> {e} ")
+        logger.error(f"config error >> {e}")
 
 @bot.message_handler(commands=['data_base'])
 def send_help(message):
@@ -314,12 +342,12 @@ def status(rec):
         status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть'][random.randint(0,2)]
     elif rec>=5:
         status=['ты хороший 😊','ты умница 👍','законопослушый так держать! '][random.randint(0,2)]
-        
+    elif rec>=0:
+        status=['ну это бан','в бан тебя'][random.randint(0,1)]
     else:
         status=["😐",'ну норм','нейтральный','не без гриха'][random.randint(0,3)]
     return status
-import sqlite3
-import logging
+
 
 @bot.message_handler(commands=['я', 'me'])
 def send_statbstic(message):
@@ -357,7 +385,7 @@ def send_statbstic(message):
                 bot.reply_to(message, f"Твоя репутация: 5 \n{status(5)}")
     
     except Exception as e:
-        logging.error(f'Ошибка в операции с базой данных: {e}')
+        logger.error(f'Ошибка в операции с базой данных: {e}')
         bot.reply_to(message, "Произошла ошибка. Пожалуйста, попробуйте позже.")
 
 
@@ -434,7 +462,7 @@ def data_base(chat_id, warn_user_id, message,nfkaz)->int:
 
 #            bot.reply_to(message, 'Пользователь добавлен с репутацией 4')
     except Exception as e:
-        logging.error(f'Ошибка в операции с базой данных: {e}')
+        logger.error(f'Ошибка в операции с базой данных: {e}')
         bot.reply_to(message, "Произошла ошибка. Пожалуйста, попробуйте позже.")
     
     finally:
@@ -471,10 +499,19 @@ def handle_warn(message):
         
         # Проверяем, достаточно ли ответов для мута
             if reputation <= 0:
+                if bambam==True:
+                    #Ограничиваем пользователя на 24 часа 
+                    bot.restrict_chat_member(
+                    chat_id=message.chat.id,
+                    user_id=message.from_user.id,
+                    until_date=timedelta(hours=24),
+                    can_send_messages=False
+                    )
+                    bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
+                    logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
                 bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
-        #      bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
-            #  logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
+ 
         else:
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы снизить репутацию") 
     else:
@@ -587,18 +624,19 @@ def anti_spam(message):
     if len(user_messages[user_id]) > SPAM_LIMIT:
         #bot.kick_chat_member(message.chat.id,user_id, until_date=int(time.time()) + 86400) #выгоняем из чата
         try:
-            pass
-            '''
-            # Ограничиваем пользователя на 24 часа 
-            bot.restrict_chat_member(
+            user_messages[user_id] = []
+            if bambam==True:
+                #Ограничиваем пользователя на 24 часа 
+                bot.restrict_chat_member(
                 chat_id=message.chat.id,
                 user_id=user_id,
                 until_date=timedelta(hours=24),
                 can_send_messages=False
-            )
-            '''
-            
-            #bot.send_message(message.chat.id, f"Пользователь {user_id} замучен на 1 день")
+                )
+                if delet_messadge==True:
+                    bot.delete_message(message.chat.id,message.message_id)
+                reputation=data_base(message.chat_id,user_id,message,3)
+                bot.send_message(message.chat.id, f"Пользователь {user_id} замучен на 1 день.\n рапутация снижена:{reputation}" )
         except Exception as e:
             bot.send_message(message.chat.id, f"Ошибка: {str(e)}")
         #bot.delete_message(message.chat.id,message.message_id)
@@ -618,12 +656,16 @@ def anti_spam(message):
         logger.debug(logs)
 
 
-@bot.message_handler(content_types=['text', 'sticker','video'])
+@bot.message_handler(content_types=['text', 'sticker'])
 def message_handler(message):
     if time.time() - message.date > 1.5:
         return
     anti_spam(message)
 @bot.message_handler(content_types=['photo'])
+def message_handler(message):
+    if time.time() - message.date >= 1.5:
+        return
+@bot.message_handler(content_types=['video'])
 def message_handler(message):
     if time.time() - message.date >= 1.5:
         return
@@ -645,7 +687,7 @@ def welcome_new_member(message):
         logger.info('new member in chat')
         # Открываем исходный GIF
         try:
-            input_gif_path = '/home/pc/Рабочий стол/aea_bot/hello.gif'
+            input_gif_path = f'{os.getcwd()}/hello.gif'
             output_gif_path = 'output.gif'
             # Открываем изображение
             gif = Image.open(input_gif_path)
@@ -653,7 +695,7 @@ def welcome_new_member(message):
             frames_with_text = []
             # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
             try:
-                font = ImageFont.truetype("/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf", 35)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
+                font = ImageFont.truetype(f"{os.getcwd()}/Bounded-Black.ttf", 35)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
             except IOError:
                 font = ImageFont.load_default(size=35)
 
