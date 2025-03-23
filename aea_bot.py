@@ -13,14 +13,18 @@ import sqlite3
 import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
-TOKEN = "tokin" 
+import json
+TOKEN = "token" 
 try:
-    import config
+    with open("settings.json", "r") as json_settings:
+        settings= json.load(json_settings)
 except:
     logger.error('error import config')
     bambam=False
     delet_messadge=False
     admin_grops="-1002284704738"
+    SPAM_LIMIT = 8 # Максимальное количество сообщений
+    SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
 
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
@@ -58,7 +62,14 @@ logse="nan"
 is_bot_active = False
 i=0
 
-bambam,delet_messadge,admin_grops=config.setings()
+# Инициализация логирования
+logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
+
+bambam=settings['bambam']
+delet_messadge=settings['delet_messadge']
+admin_grops=settings['admin_grops']
+SPAM_LIMIT=settings['spam_limit']
+SPAM_TIMEFRAME=settings['spam_timet']
 
 admin_groups=admin_grops
 
@@ -215,7 +226,7 @@ def monitor_command(message):
         test=test+'Bounded-Black шрифт OK\n'
     else:
         test=test+'error not Bounded-Black \n'
-    if os.path.exists(f'{os.getcwd()}/config.py'):
+    if os.path.exists(f'{os.getcwd()}/settings.json'):
         test=test+'cofig file OK\n'
     else:
         test=test+'error not config file \n'
@@ -233,7 +244,7 @@ def time_server_command(message):
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон'])
-def time_server_command(message):
+def pravilo(message):
     bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
 report_data =  {}
@@ -298,7 +309,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
 @bot.message_handler(commands=['config'])
 def configfile(message):
     try:
-        f=open(f'{os.getcwd()}/config.py', 'r',encoding='utf-8', errors='replace')
+        f=open(f'{os.getcwd()}/settings.json', 'r',encoding='utf-8', errors='replace')
         out=f.read()
         print(out)
         if out=='' or out==None:
@@ -341,7 +352,7 @@ def status(rec):
     elif rec <=1:
         status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть'][random.randint(0,2)]
     elif rec>=5:
-        status=['ты хороший 😊','ты умница 👍','законопослушый так держать! '][random.randint(0,2)]
+        status=['ты хороший 😊','ты умница 👍','законопослушый так держать! ','харош'][random.randint(0,2)]
     elif rec<=0:
         status=['ну это бан','в бан тебя'][random.randint(0,1)]
     else:
@@ -386,7 +397,7 @@ def send_statbstic(message):
     
     except Exception as e:
         logger.error(f'Ошибка в операции с базой данных: {e}')
-        bot.reply_to(message, "Произошла ошибка. Пожалуйста, попробуйте позже.")
+        bot.reply_to(message, f"Произошла ошибка. Пожалуйста, попробуйте позже.\nerror>> {e}")
 
 
 def update_user(user_id, reputation=None):
@@ -535,11 +546,7 @@ def handle_warn(message):
             logger.debug(f"репутация повышена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} повысил репутацию ") 
         
-        else:
-        #print(f'{report_data=}')
-        #chat_id = message.chat.id
-        #report_data[chat_id]['message_id'] = message.message_id
-        #report_data[chat_id]['responses']  =report_data[chat_id]['responses'] + 1   
+        else: 
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы повысить репутацию")  
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
@@ -554,7 +561,6 @@ def handle_warn(message):
         ban_ded=message.reply_to_message.from_user.id
         #warn_chat=message.chat.id
         #message_to_warp=str(warn_chat).replace("-100", "")
-
         reputation=data_base(chat_id,ban_ded,message,0)
         bot.reply_to(message,f'текущая репутация пользователя:{reputation}')
     else: 
@@ -599,11 +605,8 @@ user_messages = {}#инициализация словарей
 user_text = {}
 
 
-SPAM_LIMIT = 8 # Максимальное количество сообщений
-SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
-
-# Инициализация логирования
-logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
+#SPAM_LIMIT = 8 # Максимальное количество сообщений
+#SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
 # Функция для обработки сообщений
 def anti_spam(message):
     
@@ -651,7 +654,9 @@ def anti_spam(message):
         if "[help]" in str(user_text[user_id]) or "[Help]" in str(user_text[user_id]):
             id_help_hat=str(message.chat.id).replace("-100", "")
             bot.send_message(admin_groups,  f"@HITHELL , @mggxst есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")
-        logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n {message.text if message.content_type == 'text' else message.content_type}"
+        if str(user_text[user_id])=='правила' or str(user_text[user_id])=='правило':
+            bot.reply_to(message,PRAVILO)
+        logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type}"
         print("————")
         logger.debug(logs)
 
@@ -695,7 +700,7 @@ def welcome_new_member(message):
             frames_with_text = []
             # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
             try:
-                font = ImageFont.truetype(f"{os.getcwd()}/Bounded-Black.ttf", 35)  # Замените "/home/pc/Рабочий стол/aea_bot/Bounded-Black.ttf" на путь к вашему шрифту
+                font = ImageFont.truetype(f"{os.getcwd()}/Bounded-Black.ttf", 35) 
             except IOError:
                 font = ImageFont.load_default(size=35)
 
