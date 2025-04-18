@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 from datetime import timedelta
 from collections import defaultdict
+import traceback
 import time
 import psutil
 import schedule
@@ -14,18 +15,21 @@ import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
 import json
-TOKEN = "token" 
+TOKEN = "tokin" 
+
+def umsettings():
+    bambam=False
+    delet_messadge=False
+    admin_grops="-1002284704738"
+    SPAM_LIMIT = 10 # Максимальное количество сообщений
+    SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
+
+
 try:
     with open("settings.json", "r") as json_settings:
         settings= json.load(json_settings)
 except:
-    logger.error('error import config')
-    bambam=False
-    delet_messadge=False
-    admin_grops="-1002284704738"
-    SPAM_LIMIT = 8 # Максимальное количество сообщений
-    SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
-
+    umsettings()
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
 PRAVILO='''
@@ -59,18 +63,20 @@ PRAVILO='''
 '''
 
 logse="nan"
-is_bot_active = False
 i=0
+admin_list=['@HITHELL','@mggxst']
 
 # Инициализация логирования
 logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
-
-bambam=settings['bambam']
-delet_messadge=settings['delet_messadge']
-admin_grops=settings['admin_grops']
-SPAM_LIMIT=settings['spam_limit']
-SPAM_TIMEFRAME=settings['spam_timet']
-
+try:
+    bambam=settings['bambam']
+    delet_messadge=settings['delet_messadge']
+    admin_grops=settings['admin_grops']
+    SPAM_LIMIT=settings['spam_limit']
+    SPAM_TIMEFRAME=settings['spam_timer']
+except:
+    umsettings()
+    logger.debug('error settings init')
 admin_groups=admin_grops
 
 bot = telebot.TeleBot(TOKEN)
@@ -100,26 +106,28 @@ except :
     print("\033[32m{}\033[0m".format('нет ошибок :3 '))
     
 
-# Функция для пинга
-def ping():
-    start_time = time.time()
-    response = requests.get('https://core.telegram.org/')
-    response_time = time.time() - start_time
-    print('Ping:', response_time)
-    return response_time
-
 # Функция для мониторинга ресурсов
 def monitor_resources():
-    print('Monitoring resources...')
-    cpu_percent = psutil.cpu_percent()
-    ram_percent = psutil.virtual_memory().percent
-    disk_percent = psutil.disk_usage('/').percent
-    response_time = ping()
+    response_time,response_time,cpu_percent,ram_percent,disk_percent=0,0,0,0,0
+    popitki=5
+    #пинг в среднем 5 (можно изменять в popitki )попыток
+    for  i in range(popitki):
+        start_time = time.time()
+        response=requests.get('https://core.telegram.org/')
+        if response.status_code==200:
+            scode= ''
+            pass
+        else:
+            scode=f' status code {response.status_code}'
+        response_time+= time.time() - start_time
+        cpu_percent += float(psutil.cpu_percent())
+        ram_percent +=float(psutil.virtual_memory().percent)
+        disk_percent +=float(psutil.disk_usage('/').percent)
     shutka=' '
-    if cpu_percent==100.0:
+    if cpu_percent==round(cpu_percent/popitki,1):
         shutka='процессор шя рванет 🤯'
-    print(f"CPU: {cpu_percent}%,\nRAM: {ram_percent}%,\nDisk: {disk_percent}%,\nPing: {response_time} \n{shutka}")
-    return cpu_percent, ram_percent, disk_percent, response_time
+    print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {response_time} \n{shutka}")
+    return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode)
 
 # Команда /help
 @bot.message_handler(commands=['help'])
@@ -191,7 +199,7 @@ def send_help(message):
 @bot.message_handler(commands=['cler','clear'])
 def send_help(message):
     #проверка на админа
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781': 
             bot.send_message(admin_grops,f"экран очищен, очистил : @{message.from_user.username}")
             os.system('clear')
             logger.debug(f"экран очищен очистил:  @{message.from_user.username}")
@@ -203,7 +211,7 @@ def send_help(message):
 @bot.message_handler(commands=['monitor'])
 def monitor_command(message):
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time:.2f}s")
+    bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
 
 # Команда /test 
 @bot.message_handler(commands=['test'])
@@ -248,13 +256,14 @@ def pravilo(message):
     bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
 report_data =  {}
+report_user=[]
 # Обработка ответа на сообщение с /report
 @bot.message_handler(commands=['report','репорт','fufufu'])
 def handle_report(message):
     if message.reply_to_message:
         chat_id = message.chat.id#инециалезацыя всякой хрени
         reported_message_text = message.reply_to_message.text
-
+        report_user.append(message.from_user.id)
         if chat_id not in report_data:#проверка на существования пометки chat_id
             report_data[chat_id] = {'responses': set()}
             
@@ -265,26 +274,25 @@ def handle_report(message):
         report_chat=message.chat.id
         
         message_to_report=str(report_chat).replace("-100", "")
-         
+        ps_reputation(message.reply_to_message.from_user.id,message,0,1)
+        
         bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
         logger.debug(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
         logger.info(f"Пользователь @{message.from_user.username} сообщил о нарушении.")
         bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
         if len(report['responses']) >= 5:
+            for i in range(len(report_user)):
+                ps_reputation(report_user[i],message,0,-1)
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
             bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
-            if delet_messadge==True:
+            if delet_messadge:
                 bot.delete_message(message.chat.id,message.message_id)
             #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
             #logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
         # Удаляем данные о репорте
         del report_data[chat_id]
-    else:
-       #print(f'{report_data=}')
-       #chat_id = message.chat.id
-       #report_data[chat_id]['message_id'] = message.message_id
-       #report_data[chat_id]['responses']  =report_data[chat_id]['responses'] + 1   
+    else: 
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы сообщить о нарушении.")
 
 
@@ -292,6 +300,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db')
     cursor = connection.cursor()
+    
     
     try:
         # Выполняем запрос для получения данных из указанного столбца по индексу строки
@@ -350,60 +359,31 @@ def status(rec):
     if rec >= 1000:
         status=["читы вырубай ! ",'как то многовато ,читы ?'][random.randint(0,1)]
     elif rec <=1:
-        status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть'][random.randint(0,2)]
+        status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть','а ну не нарушай ','правил что ли не знаешь \nтак прочти - /правило'][random.randint(0,4)]
     elif rec>=5:
         status=['ты хороший 😊','ты умница 👍','законопослушый так держать! ','харош'][random.randint(0,2)]
     elif rec<=0:
         status=['ну это бан','в бан тебя'][random.randint(0,1)]
+    elif rec==None:
+        status='ошибка получения данных '
     else:
-        status=["😐",'ну норм','нейтральный','не без гриха'][random.randint(0,3)]
+        status=["😐",'ну норм','нейтральный','не без греха'][random.randint(0,3)]
     return status
 
 
 @bot.message_handler(commands=['я', 'me'])
 def send_statbstic(message):
-    try:
-        with sqlite3.connect('Users_base.db') as connection:
-            cursor = connection.cursor()
-
-            # Создаем таблицу, если она не существует
-            cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Users (
-                id INTEGER PRIMARY KEY,
-                chat_id INTEGER NOT NULL,
-                reputation INTEGER NOT NULL,
-                warn_user_id INTEGER NOT NULL
-            )
-            ''')
-
-            # Создаем индекс, если он еще не существует
-            cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
-
-            user_id = message.from_user.id
-            
-            # Проверяем, существует ли пользователь с данным warn_user_id
-            cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (user_id,))
-            result = cursor.fetchone()
-
-            if result is not None:
-                # Извлекаем репутацию из результата
-                current_reputation = result[2]  # Предполагаем, что репутация находится в третьем столбце
-                bot.reply_to(message, f"Твоя репутация: {current_reputation} \n{status(current_reputation)}")
-            else:
-                # Пользователь не существует, добавляем его с начальной репутацией
-                cursor.execute("INSERT INTO Users (chat_id, reputation, warn_user_id) VALUES (?, ?, ?)",
-                               (message.chat.id, 5, user_id))
-                bot.reply_to(message, f"Твоя репутация: 5 \n{status(5)}")
-    
-    except Exception as e:
-        logger.error(f'Ошибка в операции с базой данных: {e}')
-        bot.reply_to(message, f"Произошла ошибка. Пожалуйста, попробуйте позже.\nerror>> {e}")
+    current_reputation=data_base(message.chat.id,message.from_user.id,message,0)
+    mess=ps_reputation(message.from_user.id,message,0,0)[1]
+    bot.reply_to(message, f"Твоя репутация: {current_reputation} \n{status(current_reputation)}\nколичество сообщений: {mess}")
 
 
-def update_user(user_id, reputation=None):
+def update_user(user_id, chat, db, reputation=None):
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db')
+    connection = sqlite3.connect(db,timeout=10)
     cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+
     
     # Формируем запрос для обновления
     query = "UPDATE Users SET "
@@ -415,26 +395,28 @@ def update_user(user_id, reputation=None):
     
     # Проверяем, были ли добавлены параметры
     if params:  # Если есть параметры, добавляем WHERE
-        query += " WHERE warn_user_id = ?"
-        params.append(user_id)
+        query += " WHERE warn_user_id = ? AND chat_id = ?"
+        params.append(user_id)  # Исправлено: добавляем только user_id
+        params.append(chat)  # Исправлено: добавляем chat
+        cursor.execute(query, params)  # Выполняем запрос
+        connection.commit()  # Сохраняем изменения
     else:
-        # Если нет параметров для обновления, не выполняем запрос
-        return None 
-
-    # Выполняем запрос
-    cursor.execute(query, params)
+        connection.close()
+        logger.warning("Нет параметров для обновления.")
+        return None
     
-    # Сохраняем изменения и закрываем соединение
-    connection.commit()
+    # Закрываем соединение
     connection.close()
-    
-def data_base(chat_id, warn_user_id, message,nfkaz)->int: 
+
+def data_base(chat_id, warn_user_id, message, nfkaz) -> int:
     try:
-        resperens=4
+        resperens = 5
         # Создаем подключение к базе данных
-        connection = sqlite3.connect('Users_base.db')
+        connection = sqlite3.connect('Users_base.db',timeout=10)
         cursor = connection.cursor()
-        
+        cursor.execute("PRAGMA journal_mode=WAL;")
+
+            
         # Создаем таблицу (если она еще не существует)
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS Users (
@@ -452,35 +434,118 @@ def data_base(chat_id, warn_user_id, message,nfkaz)->int:
         cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))
         result = cursor.fetchone()
         print('result>>', result) 
+        
         if result is not None:
             # Извлекаем репутацию из результата
             current_reputation = result[2]  # Предполагаем, что репутация находится в третьем столбце
-            new_reputation = current_reputation - nfkaz
-            
-            # Обновляем репутацию пользователя
-            update_user(warn_user_id, new_reputation)  # Передаем id пользователя для обновления
-#            bot.reply_to(message, f'Рейтинг понижен до {new_reputation}')
-            connection.commit()
-            connection.close()
-            return new_reputation
+            chat = result[1]  # id чата
+
+            if chat == message.chat.id:
+                new_reputation = current_reputation - nfkaz
+                # Обновляем репутацию пользователя
+                update_user(warn_user_id, chat, 'Users_base.db', new_reputation)  # Передаем id пользователя для обновления
+                connection.commit()
+                connection.close()
+                return new_reputation
+            else:
+                resperens = 5 - nfkaz
+                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id) VALUES (?, ?, ?)', (chat_id, resperens, warn_user_id))
+                connection.commit()
+                connection.close()
+                return resperens
         else:
             # Если пользователь не найден, добавляем его
-            resperens=5-nfkaz
+            resperens = 5 - nfkaz
             cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id) VALUES (?, ?, ?)', (chat_id, resperens, warn_user_id))
             connection.commit()
             connection.close()
             return resperens
 
-#            bot.reply_to(message, 'Пользователь добавлен с репутацией 4')
     except Exception as e:
         logger.error(f'Ошибка в операции с базой данных: {e}')
-        bot.reply_to(message, "Произошла ошибка. Пожалуйста, попробуйте позже.")
+        connection.close()
+        return None  # Возвращаем None в случае ошибки
+
+    finally:
+        # Закрываем соединение
+        connection.close()
+
+def ps_reputation(warn_user_id,message,soob_num,g)->int: 
+    try:
+        resperens=0
+        # Создаем подключение к базе данных
+        connection = sqlite3.connect('ps_reputation_base.db',timeout=10)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+
+        
+        # Создаем таблицу (если она еще не существует)
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY, 
+            chat_id INTEGER NOT NULL,
+            reputation INTEGER NOT NULL,
+            warn_user_id INTEGER NOT NULL,
+            num_message INTEGER NOT NULL
+        )
+        ''')
+        
+        # Создаем индекс (если он еще не существует)
+        cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
+        # Проверяем, существует ли пользователь с данным warn_user_id
+        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))
+        result = cursor.fetchone()
+        if result is not None :
+            # Извлекаем репутацию из результата
+            current_reputation = result[2]  #  репутация находится в третьем столбце
+            chat = result[1]  # id чата
+            text=result[4]
+
+            if text is None:
+                text=1
+            if current_reputation is None:
+                current_reputation=0
+            
+            if chat==message.chat.id:
+                new_reputation = current_reputation+g
+                # Формируем запрос для обновления
+                query = "UPDATE Users SET "
+                params = []
     
+                if new_reputation is not None:
+                    query += "reputation = ?,"
+                    params.append(new_reputation)
+                if new_reputation is not None:
+                    query += "num_message = ?"
+                    params.append(soob_num+text)
+                # Проверяем, были ли добавлены параметры
+                if params:  # Если есть параметры, добавляем WHERE
+                    query += " WHERE warn_user_id = ? AND chat_id = ? "
+                    params.append(message.from_user.id)  
+                    params.append(chat)
+                    cursor.execute(query, params)  # Выполняем запрос
+                connection.commit()
+                connection.close()
+            else:
+                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id ,num_message) VALUES (?, ?, ?, ?)', (message.chat.id, resperens, warn_user_id, soob_num))
+#               bot.reply_to(message, f'Рейтинг понижен до {new_reputation}')
+                connection.commit()
+                connection.close()
+            return [g,int(text+soob_num)]
+        else:
+            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id ,num_message) VALUES (?, ?, ?, ?)', (message.chat.id, resperens, warn_user_id,1))
+            connection.commit()
+            connection.close()
+            return [g,1]
+
+    except Exception as e:
+        connection.close()
+        logger.error(f'Ошибка в операции с базой данных: {e}')
+        bot.send_message(admin_grops, f"psr error>> {e}")
     finally:
         # Закрываем соединение
         connection.close()   
         
-
 warn_data= {}
 # Обработка ответа на сообщение /warn
 @bot.message_handler(commands=['warn'])
@@ -503,6 +568,7 @@ def handle_warn(message):
             message_to_warp=str(warn_chat).replace("-100", "")
 
             reputation=data_base(chat_id,ban_ded,message,1)
+            ps_reputation(ban_ded,message,0,2)
             bot.reply_to(message,f'репутация снижена \nтекущяя репутация пользевателя:{reputation}')
             bot.send_message(admin_grops,f"репутация снижена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.debug(f"репутация снижена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
@@ -536,16 +602,16 @@ def handle_warn(message):
 
             chat_id = message.chat.id#инециалезацыя всякой хрени 
             warn_message_text = message.reply_to_message.text
-            ban_ded=message.reply_to_message.from_user.id
+            user=message.reply_to_message.from_user.id
             warn_chat=message.chat.id
             message_to_warp=str(warn_chat).replace("-100", "")
 
-            reputation=data_base(chat_id,ban_ded,message,-1)#партия довольна вами +1 к репутации
+            reputation=data_base(chat_id,user,message,-1)#партия довольна вами +1 к репутации
+            ps_reputation(user,message,0,-2)
             bot.reply_to(message,f'репутация повышена \nтекущяя репутация пользевателя:{reputation}')
             bot.send_message(admin_grops,f"репутация повышена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.debug(f"репутация повышена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} повысил репутацию ") 
-        
         else: 
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы повысить репутацию")  
     else:
@@ -601,20 +667,47 @@ def send_reminder():
 # Планирование напоминаний
 #schedule.every().day.at("12:00").do(send_reminder)
 
-user_messages = {}#инициализация словарей 
+def nacase(message):
+    try:
+        user_messages[message.from_user.id] = []
+        if bool(bambam):
+            try:
+                 #Ограничиваем пользователя на 24 часа 
+                bot.restrict_chat_member(
+                chat_id=message.chat.id,
+                user_id=message.from_user.id,
+                until_date=timedelta(hours=24),
+                can_send_messages=False
+                )
+                reputation=data_base(message.chat_id,message.from_user.id,message,3)
+                bot.send_message(message.chat.id, f"Пользователь {message.from_user.id} замучен на 1 день.\n рапутация снижена:{reputation}" )
+            except Exception as e:
+                bot.send_message(admin_grops,f"error >> {e}")
+                logger.error(e)
+            if bool(delet_messadge):
+                bot.delete_message(message.chat.id,message.message_id)
+        id_spam_message=str(message.chat.id).replace("-100", "")
+        print(f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}')
+        bot.send_message(admin_groups, f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Ошибка: {str(e)}")
+
+user_messages = {}#инициализация словарей и тп
 user_text = {}
-
-
+message_text=[]
 #SPAM_LIMIT = 8 # Максимальное количество сообщений
 #SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
+s_level=0
+tekst_m=[]
+        
+
 # Функция для обработки сообщений
 def anti_spam(message):
-    
+    #инициализация хрени всякой 
     user_id = message.from_user.id
     current_time = time.time()
-    user_text[user_id] = message.text  # Сохраняем текст сообщения для пользователя
-    
-
+    user_text[user_id] = tekst_m.append(message.text)  # Сохраняем текст сообщения и id
+   
     # Удаление старых временных меток
     if user_id not in user_messages:
         user_messages[user_id] = []
@@ -622,57 +715,115 @@ def anti_spam(message):
 
     # Добавление текущего временного штампа
     user_messages[user_id].append(current_time)
-
-    # Проверка на спам
+   # Проверка на спам
     if len(user_messages[user_id]) > SPAM_LIMIT:
-        #bot.kick_chat_member(message.chat.id,user_id, until_date=int(time.time()) + 86400) #выгоняем из чата
-        try:
-            user_messages[user_id] = []
-            if bambam==True:
-                #Ограничиваем пользователя на 24 часа 
-                bot.restrict_chat_member(
-                chat_id=message.chat.id,
-                user_id=user_id,
-                until_date=timedelta(hours=24),
-                can_send_messages=False
-                )
-                if delet_messadge==True:
-                    bot.delete_message(message.chat.id,message.message_id)
-                reputation=data_base(message.chat_id,user_id,message,3)
-                bot.send_message(message.chat.id, f"Пользователь {user_id} замучен на 1 день.\n рапутация снижена:{reputation}" )
-        except Exception as e:
-            bot.send_message(message.chat.id, f"Ошибка: {str(e)}")
+        nacase(message)
         #bot.delete_message(message.chat.id,message.message_id)
-        id_spam_message=str(message.chat.id).replace("-100", "")
-        print(f'Обнаружен спам от пользователя >> tg://user?id={user_id}')
-        bot.send_message(admin_groups, f'Обнаружен спам от пользователя >> tg://user?id={user_id}, @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
+        return
+    user_messages = {}#инициализация словарей и тп
+user_text = {}
+message_text=[]
+#SPAM_LIMIT = 8 # Максимальное количество сообщений
+#SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
+tekst_m=[]
         
-    else:
-        #print(datetime.fromtimestamp(message.date).strftime('%Y-%m-%d %H:%M:%S')) вывот даты на будующее
-        global is_bot_active
-        is_bot_active = True
-        if "[help]" in str(user_text[user_id]) or "[Help]" in str(user_text[user_id]):
-            id_help_hat=str(message.chat.id).replace("-100", "")
-            bot.send_message(admin_groups,  f"@HITHELL , @mggxst есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")
-        if str(user_text[user_id])=='правила' or str(user_text[user_id])=='правило':
-            bot.reply_to(message,PRAVILO)
-        logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type}"
-        print("————")
-        logger.debug(logs)
+# Функция для обработки сообщений
+def anti_spam(message):
+    #инициализация хрени всякой     
+    user_id = message.from_user.id
+    current_time = time.time()
+    tekst_m.append(message.text)
+    user_text[user_id] = tekst_m  # Сохраняем текст сообщения и id
+    keys_to_delete=[]
+   
+    # Удаление старых временных меток
+    if user_id not in user_messages:
+        user_messages[user_id] = []
+    user_messages[user_id] = [timestamp for timestamp in user_messages[user_id] if current_time - timestamp < SPAM_TIMEFRAME]
 
-
+    # Добавление текущего временного штампа
+    user_messages[user_id].append(current_time)
+    
+    logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type}"
+    print("————")
+    logger.debug(logs)
+   # Проверка на спам
+    if len(user_messages[user_id]) > SPAM_LIMIT:
+        nacase(message)
+        #bot.delete_message(message.chat.id,message.message_id)
+        return
+    if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.content_type == 'text':
+        paket_num=4
+        sr_d,slova=0,[]
+        keys_to_delete=[]
+        for i in range(len(user_text.keys())):
+            list_mess=list(user_text[list(user_text.keys())[i]])
+            for a in range(len(list_mess)):
+                s_level=0
+                list_povt_slov=[]
+                if list_mess[a]!=None:
+                    text_s=str(list_mess[a])
+                    if str(text_s).count('@')>=10:
+                        s_level+=1
+                    if str(text_s)==list_mess[0] and len(list_mess)>=1:
+                        s_level+=1
+                    if len(text_s)>=300:
+                        s_level+=1
+                    if list_mess.count(" ")<=round(len(text_s)/10):# подсчет пробелов
+                        s_level+=1
+                    if len(text_s)>=10:
+                        slova=list(str(text_s).split(' '))
+                        for s in range(len(slova)):
+                            slova.append(slova[s].split(',')[0])
+                            sr_d=+len(slova[s])
+                        if  len(slova) !=0 and sr_d !=0 and len(slova)>len(text_s)-sr_d/len(slova):
+                            print(sr_d/len(slova))
+                            s_level+=sr_d/len(slova)
+                cours=0
+                for l in range(round(len(str(list_mess[a]))/paket_num)):
+                    text=''
+                    text = str(list_mess[a])[cours:cours + paket_num]
+                    list_povt_slov.append(text)
+                    cours += paket_num
+                for b in range(len(list_povt_slov)):
+                    if list_povt_slov[b]==list_povt_slov[0]:
+                        s_level=s_level+1
+        #print(list_povt_slov)
+        #print(list(user_text.keys())[i])
+        #print(s_level)# debug
+            if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
+                keys_to_delete.append(list(user_text.keys())[i])
+                nacase(message)
+    # Удаляем ключи после завершения итерации
+    for key in range(len(keys_to_delete)):
+        if key != None:
+            del user_text[keys_to_delete[key]]
+    #print(datetime.fromtimestamp(message.date).strftime('%Y-%m-%d %H:%M:%S')) вывот даты на будующее
 @bot.message_handler(content_types=['text', 'sticker'])
 def message_handler(message):
-    if time.time() - message.date > 1.5:
-        return
-    anti_spam(message)
-@bot.message_handler(content_types=['photo'])
+    teg=''
+    ps_reputation(message.from_user.id,message,1,0)
+    commad=str(message.text).lower()
+    if "[help]" in commad or "[Help]" in commad:     
+        id_help_hat=str(message.chat.id).replace("-100", "")
+        for i in range(len(admin_list)):
+            if i >0:
+                teg+=f",{admin_list[i]}"
+            else:
+                teg+=f"{admin_list[i]}"
+        bot.send_message(admin_groups,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
+    if commad=='!правила' or commad=='!правило' and message.reply_to_message != True:
+        bot.reply_to(message,'')
+    if commad=='!я' and message.reply_to_message != True:
+        send_statbstic(message)
+    if time.time() - message.date >= 2:
+        pass
+    else:
+        if message.forward_from == None:
+            anti_spam(message)
+@bot.message_handler(content_types=['video','photo'])
 def message_handler(message):
-    if time.time() - message.date >= 1.5:
-        return
-@bot.message_handler(content_types=['video'])
-def message_handler(message):
-    if time.time() - message.date >= 1.5:
+    if time.time() - message.date >= 2:
         return
     else:
         if time.time() - message.date <= 0.2:
@@ -680,7 +831,7 @@ def message_handler(message):
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
-    if time.time() - message.date > 1.5:
+    if time.time() - message.date >= 2:
         return
     anti_spam(message)
 
@@ -689,7 +840,7 @@ def other_message_handler(message):
 @bot.message_handler(content_types=['new_chat_members'])
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
-        logger.info('new member in chat')
+        logger.info(f'new member in chat | user name> {message.from_user.username}')
         # Открываем исходный GIF
         try:
             input_gif_path = f'{os.getcwd()}/hello.gif'
@@ -731,24 +882,22 @@ def welcome_new_member(message):
             except Exception as e:
                 bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
         except Exception as e:
-            logger.error(f'error hello >>{e}')
+            logger.error(f'error hello message >>{e}')
             username = new_member.username if new_member.username else "пользователь"
             welcome_message = [f"Привет, @{username}! Добро пожаловать в наш чат! \n/help для справки",f"новенький скинь ножки \nой не тот текст \nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
             bot.reply_to(message , welcome_message)
-
 # Основной цикл
 def main():
-
     while True:
         try:
             bot.polling(none_stop=True)
             schedule.run_pending()
             time.sleep(1)
         except Exception as e:
-  #          bot.send_message(message.chat.id, 'Увы, случилась ошибка>>\n' + str(e))
-            logger.error(f"Ошибка: {e}")
+            logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
             time.sleep(4)
 
 if __name__ == '__main__':
     main()
+    
     
