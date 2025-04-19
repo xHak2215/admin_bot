@@ -2,6 +2,6 @@
     "bambam":false,
     "delet_messadge":false,
     "admin_grops":"-1002284704738",
-    "spam_limit":8,
+    "spam_limit":10,
     "spam_timet":4 
 }
