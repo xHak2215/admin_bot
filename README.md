@@ -66,6 +66,27 @@ pip install -r requirements.txt
 
 python aea_bot.py
 ```
+
+<h3> настройка: </h3>
+
+```json
+{
+    "bambam":false,
+    "delet_messadge":false,
+    "admin_grops":"-1001234000000",
+    "spam_limit":10,
+    "spam_timer":4,
+    "ban_and_myte_command":true
+
+}
+```
+bambam - автоматичиские муты/баны<br>
+delet_messadge - автоматическое удаление сообщений (в частности при 5 репортах на одном сообщении оно будет удаляться)<br>
+admin_grops - группа администрации (впишите ее ID)<br>
+spam_limit - количество сообщений от одного пользователя которое будет считаться спамом (за отрезок времени указанный в spam_timer)<br>
+spam_timer - функционал описан выше <br>
+ban_and_myte_command - включает команды /бан и / мут для банов и мутов соотвецтвено <br>
+
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
 <p align="right">(<a href="#readme-top">↑верх↑</a>)</p>
