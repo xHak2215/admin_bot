@@ -15,6 +15,7 @@ import random
 from PIL import Image, ImageDraw, ImageFont
 import os.path
 import json
+import re
 TOKEN = "tokin" 
 
 def umsettings():
@@ -23,6 +24,7 @@ def umsettings():
     admin_grops="-1002284704738"
     SPAM_LIMIT = 10 # Максимальное количество сообщений
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
+    BAN_AND_MYTE_COMMAND= True
 
 
 try:
@@ -61,9 +63,9 @@ PRAVILO='''
 (Правила в дальнейшем будут пересмотренны и дополненны)
 
 '''
-
 logse="nan"
 i=0
+e=0
 admin_list=['@HITHELL','@mggxst']
 
 # Инициализация логирования
@@ -74,6 +76,7 @@ try:
     admin_grops=settings['admin_grops']
     SPAM_LIMIT=settings['spam_limit']
     SPAM_TIMEFRAME=settings['spam_timer']
+    BAN_AND_MYTE_COMMAND=settings['ban_and_myte_command']
 except:
     umsettings()
     logger.debug('error settings init')
@@ -93,7 +96,6 @@ if os.path.exists('Users_base.db'):
 else:
     print("error not bata base ")
 
-#print(__name__)
 now = datetime.now()
 current_time = now.strftime("%H:%M")
 bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}")
@@ -105,7 +107,6 @@ try:
 except :
     print("\033[32m{}\033[0m".format('нет ошибок :3 '))
     
-
 # Функция для мониторинга ресурсов
 def monitor_resources():
     response_time,response_time,cpu_percent,ram_percent,disk_percent=0,0,0,0,0
@@ -149,16 +150,19 @@ def send_help(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
         try:
         #проверка на админа
-            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
-                bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
-                file = open('cats_message.log', "w")
-                # Изменяем содержимое файла
-                file.write("log null")
-                # Закрываем файл
-                file.close()
-                logger.debug(f"логи очищены, очистил:  @{message.from_user.username}")
+            if message.chat.id==admin_grops or message.from_user.id =='5194033781':
+                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
+                    bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
+                    file = open('cats_message.log', "w")
+                #    Изменяем содержимое файла
+                    file.write("log null")
+                    # Закрываем файл
+                    file.close()
+                    logger.debug(f"логи очищены, очистил:  @{message.from_user.username}")
+                else:
+                    bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
             else:
-                bot.reply_to(message.chat.id,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
+                bot.reply_to(message,'команда доступна только из группы администрации')
         except Exception as e:
             bot.send_message(admin_grops,f"error logs file>> {e} ")
             logger.error(f"log null error >> {e}")
@@ -206,7 +210,6 @@ def send_help(message):
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
-
 # Команда /monitor    
 @bot.message_handler(commands=['monitor'])
 def monitor_command(message):
@@ -238,11 +241,10 @@ def monitor_command(message):
         test=test+'cofig file OK\n'
     else:
         test=test+'error not config file \n'
-    test=test+f"ID: {message.from_user.id}\n"
-    test=test+f"ID admin grup: {admin_grops}\n"
+    test=test+f"ID> {message.from_user.id}\n"
+    test=test+f"ID admin grup> {admin_grops}\n"
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time:.2f}s\n{test} \nadmin {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
-
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time} \n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -285,7 +287,12 @@ def handle_report(message):
             for i in range(len(report_user)):
                 ps_reputation(report_user[i],message,0,-1)
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
-            bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
+            for i in range(len(admin_list)):
+                if i >0:
+                    teg+=f",{admin_list[i]}"
+                else:
+                    teg+=f"{admin_list[i]}"
+            bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
             if delet_messadge:
                 bot.delete_message(message.chat.id,message.message_id)
             #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
@@ -295,12 +302,10 @@ def handle_report(message):
     else: 
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы сообщить о нарушении.")
 
-
 def fetch_data_by_column_and_row(column_name, row_index):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db')
     cursor = connection.cursor()
-    
     
     try:
         # Выполняем запрос для получения данных из указанного столбца по индексу строки
@@ -313,7 +318,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
             return None
     except sqlite3.Error as e:
         logger.error(f'get data base error >> {e}')
-        return 'get data base error >>',{e}
+        return 'get data base error >>'+e
     
 @bot.message_handler(commands=['config'])
 def configfile(message):
@@ -384,7 +389,6 @@ def update_user(user_id, chat, db, reputation=None):
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
 
-    
     # Формируем запрос для обновления
     query = "UPDATE Users SET "
     params = []
@@ -637,12 +641,16 @@ def handle_warn(message):
     
 @bot.message_handler(commands=['admin_command'])
 def handle_warn(message):
-    bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя')
+    bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя\n/ban - отпровляет в бан пример: `/бан reason:по рофлу`\n/мут - отпровляет в мут `/мут reason:причина time:1.h` .h - часы (по умолчанию) , .d - дни , .m - минуты')
 
 
 @bot.message_handler(commands=['52'])
 def handle_warn(message):
     bot.reply_to(message,'52')
+
+@bot.message_handler(commands=['гойда','goida'])
+def handle_warn(message):
+    bot.reply_to(message,['наш слон','ГООООООЛ'][random.randint(0,1)])
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
@@ -687,7 +695,7 @@ def nacase(message):
             if bool(delet_messadge):
                 bot.delete_message(message.chat.id,message.message_id)
         id_spam_message=str(message.chat.id).replace("-100", "")
-        print(f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}')
+        logger.info(f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}')
         bot.send_message(admin_groups, f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
     except Exception as e:
         bot.send_message(message.chat.id, f"Ошибка: {str(e)}")
@@ -777,7 +785,6 @@ def anti_spam(message):
                             slova.append(slova[s].split(',')[0])
                             sr_d=+len(slova[s])
                         if  len(slova) !=0 and sr_d !=0 and len(slova)>len(text_s)-sr_d/len(slova):
-                            print(sr_d/len(slova))
                             s_level+=sr_d/len(slova)
                 cours=0
                 for l in range(round(len(str(list_mess[a]))/paket_num)):
@@ -798,7 +805,7 @@ def anti_spam(message):
     for key in range(len(keys_to_delete)):
         if key != None:
             del user_text[keys_to_delete[key]]
-    #print(datetime.fromtimestamp(message.date).strftime('%Y-%m-%d %H:%M:%S')) вывот даты на будующее
+    #print(datetime.fromtimestamp(message.date).strftime('%Y-%m-%d %H:%M:%S')) вывот дату на будующее
 @bot.message_handler(content_types=['text', 'sticker'])
 def message_handler(message):
     teg=''
@@ -816,25 +823,94 @@ def message_handler(message):
         bot.reply_to(message,'')
     if commad=='!я' and message.reply_to_message != True:
         send_statbstic(message)
+    if commad.startswith('/ban') or commad.startswith('/бан'):
+        if BAN_AND_MYTE_COMMAND !=True:
+            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
+            return
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+            if message.reply_to_message:
+                if 'reason:' in commad:
+                    reason=commad.split('reason:')[1]
+                else :
+                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`')
+                try:
+                    bot.ban_chat_member(message.chat.id,message.reply_to_message)
+                    logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+                    bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
+        else:
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
+    if commad.startswith('/myte') or commad.startswith('/мут'):
+        if BAN_AND_MYTE_COMMAND !=True:
+            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
+            return
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+            if message.reply_to_message:
+                wirning=None
+                if 'reason:' in commad and 'time:'in commad:
+                    finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
+                    if format(finds[0])== 'reason:':
+                        arg=commad.replace("/myte", "").replace("/мут", "").split('time:')
+                        timer=arg[1]
+                        reason=arg[0]
+                    else:
+                        arg=commad.replace("/myte", "").replace("/мут", "").split('reason:')
+                        timer=arg[0]
+                        reason=arg[1]
+                    if '.' in timer: 
+                        deleu=timer.split('.')[1] 
+                        num_date=int(re.sub('\D', '',timer.split('.')[0])) #убираем буквы и т.д
+                        if deleu=='h' or deleu=='d' or deleu=='m':
+                            if deleu=='h':
+                                deleu=3600
+                            elif deleu=='d':
+                                deleu=86400
+                            elif deleu=='m':
+                                deleu=60
+                    else:
+                        wirning+=f'не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты '
+                        deleu=3600
+                else:
+                    error=''
+                    if 'reason:' not in commad :
+                        error+=' не хватает аргумента `reason:`'
+                    if 'time:' not in commad :
+                        error+=' не хватает аргумента `time:`'
+                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
+                    return
+                #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
+                try:
+                    bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + num_date*deleu)
+                    logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
+                    bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
+                    if wirning != None:
+                        bot.reply_to(message,wirning)
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
+        else:
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
+
     if time.time() - message.date >= 2:
         pass
     else:
         if message.forward_from == None:
             anti_spam(message)
+
 @bot.message_handler(content_types=['video','photo'])
 def message_handler(message):
-    if time.time() - message.date >= 2:
+    if time.time() - message.date >= 2 or message.media_group_id:
         return
     else:
-        if time.time() - message.date <= 0.2:
-            anti_spam(message)
+        anti_spam(message)
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
-    if time.time() - message.date >= 2:
+    if time.time() - message.date >= 2 or message.media_group_id:
         return
     anti_spam(message)
-
 
 #новый юзер 
 @bot.message_handler(content_types=['new_chat_members'])
@@ -854,7 +930,6 @@ def welcome_new_member(message):
                 font = ImageFont.truetype(f"{os.getcwd()}/Bounded-Black.ttf", 35) 
             except IOError:
                 font = ImageFont.load_default(size=35)
-
             # Добавляем текст на каждый кадр
             for frame in range(gif.n_frames):
                 gif.seek(frame)
@@ -890,12 +965,14 @@ def welcome_new_member(message):
 def main():
     while True:
         try:
-            bot.polling(none_stop=True)
-            schedule.run_pending()
-            time.sleep(1)
+            try:
+                bot.polling(none_stop=True)
+                schedule.run_pending()
+            except requests.exceptions.ReadTimeout:
+                print("time out")
         except Exception as e:
             logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
-            time.sleep(4)
+            time.sleep(3)
 
 if __name__ == '__main__':
     main()
