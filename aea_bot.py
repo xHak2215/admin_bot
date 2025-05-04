@@ -16,6 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 import os.path
 import json
 import re
+import sys
 TOKEN = "tokin" 
 
 def umsettings():
@@ -65,7 +66,6 @@ PRAVILO='''
 '''
 logse="nan"
 i=0
-e=0
 admin_list=['@HITHELL','@mggxst']
 
 # Инициализация логирования
@@ -100,12 +100,6 @@ now = datetime.now()
 current_time = now.strftime("%H:%M")
 bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}")
 logger.info("бот запущен")
-try:
-    if e !='1':
-         #bot.send_message(message.chat.id,'Увы, случилась ошибка>> \n' + str(e))
-         pass
-except :
-    print("\033[32m{}\033[0m".format('нет ошибок :3 '))
     
 # Функция для мониторинга ресурсов
 def monitor_resources():
@@ -123,15 +117,18 @@ def monitor_resources():
         response_time+= time.time() - start_time
         cpu_percent += float(psutil.cpu_percent())
         ram_percent +=float(psutil.virtual_memory().percent)
-        disk_percent +=float(psutil.disk_usage('/').percent)
+        if sys.platform.startswith('win'):
+            disk_percent +=float(psutil.disk_usage('C:/').percent)
+        else:
+            disk_percent +=float(psutil.disk_usage('/').percent)
     shutka=' '
     if cpu_percent==round(cpu_percent/popitki,1):
         shutka='процессор шя рванет 🤯'
     print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {response_time} \n{shutka}")
-    return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode)
+    return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+f'\n{shutka}')
 
 # Команда /help
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help','помощь'])
 def send_help(message):
     bot.send_message(message.chat.id, help_user)
     
@@ -200,7 +197,7 @@ def send_help(message):
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
 # очистка консоли /cler 
-@bot.message_handler(commands=['cler','clear'])
+@bot.message_handler(commands=['cls','clear'])
 def send_help(message):
     #проверка на админа
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781': 
@@ -211,7 +208,7 @@ def send_help(message):
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
 # Команда /monitor    
-@bot.message_handler(commands=['monitor'])
+@bot.message_handler(commands=['monitor','монитор'])
 def monitor_command(message):
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
     bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
@@ -253,7 +250,7 @@ def time_server_command(message):
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
 #команда /правило 
-@bot.message_handler(commands=['правило','правила','закон'])
+@bot.message_handler(commands=['правило','правила','закон','specification'])
 def pravilo(message):
     bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
@@ -274,7 +271,7 @@ def handle_report(message):
         report['responses'].add(message.reply_to_message.from_user.id) 
         ban_ded=message.reply_to_message.from_user.id
         report_chat=message.chat.id
-        
+    
         message_to_report=str(report_chat).replace("-100", "")
         ps_reputation(message.reply_to_message.from_user.id,message,0,1)
         
@@ -320,7 +317,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
         logger.error(f'get data base error >> {e}')
         return 'get data base error >>'+e
     
-@bot.message_handler(commands=['config'])
+@bot.message_handler(commands=['config','настройки'])
 def configfile(message):
     try:
         f=open(f'{os.getcwd()}/settings.json', 'r',encoding='utf-8', errors='replace')
@@ -493,7 +490,6 @@ def ps_reputation(warn_user_id,message,soob_num,g)->int:
             num_message INTEGER NOT NULL
         )
         ''')
-        
         # Создаем индекс (если он еще не существует)
         cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
         # Проверяем, существует ли пользователь с данным warn_user_id
@@ -869,6 +865,8 @@ def message_handler(message):
                                 deleu=86400
                             elif deleu=='m':
                                 deleu=60
+                            elif deleu=='s':
+                                deleu=0
                     else:
                         wirning+=f'не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты '
                         deleu=3600
@@ -877,6 +875,8 @@ def message_handler(message):
                     if 'reason:' not in commad :
                         error+=' не хватает аргумента `reason:`'
                     if 'time:' not in commad :
+                        if len(error)>1:
+                            error+=','
                         error+=' не хватает аргумента `time:`'
                     bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
                     return
@@ -899,15 +899,16 @@ def message_handler(message):
         if message.forward_from == None:
             anti_spam(message)
 
-@bot.message_handler(content_types=['video','photo'])
+@bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
-    if time.time() - message.date >= 2 or message.media_group_id:
+    if time.time() - message.date >= 2 or message.media_group_id != None:
         return
     else:
         anti_spam(message)
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
+    print(message.media_group_id)
     if time.time() - message.date >= 2 or message.media_group_id:
         return
     anti_spam(message)
@@ -963,17 +964,20 @@ def welcome_new_member(message):
             bot.reply_to(message , welcome_message)
 # Основной цикл
 def main():
-    while True:
-        try:
+    try:
+        print("\033[32m{}\033[0m".format('нет ошибок :3 '))
+        while True:
             try:
-                bot.polling(none_stop=True)
-                schedule.run_pending()
-            except requests.exceptions.ReadTimeout:
-                print("time out")
-        except Exception as e:
-            logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
-            time.sleep(3)
-
+                try:
+                    bot.polling(none_stop=True)
+                    schedule.run_pending()
+                except requests.exceptions.ReadTimeout:
+                    print("time out")
+            except Exception as e:
+                logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
+                time.sleep(3)
+    except Exception as e:
+        bot.send_message(admin_grops,'ошибка при старте\n'+e)
 if __name__ == '__main__':
     main()
     
