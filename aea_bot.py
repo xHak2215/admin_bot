@@ -838,7 +838,7 @@ def message_handler(message):
             else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
-    if commad.startswith('/myte') or commad.startswith('/мут'):
+    if commad.startswith('/mute') or commad.startswith('/мут'):
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
@@ -848,11 +848,11 @@ def message_handler(message):
                 if 'reason:' in commad and 'time:'in commad:
                     finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
                     if format(finds[0])== 'reason:':
-                        arg=commad.replace("/myte", "").replace("/мут", "").split('time:')
+                        arg=commad.replace("/mute", "").replace("/мут", "").split('time:')
                         timer=arg[1]
                         reason=arg[0]
                     else:
-                        arg=commad.replace("/myte", "").replace("/мут", "").split('reason:')
+                        arg=commad.replace("/mute", "").replace("/мут", "").split('reason:')
                         timer=arg[0]
                         reason=arg[1]
                     if '.' in timer: 
