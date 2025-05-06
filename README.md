@@ -24,8 +24,7 @@
 
 <h2>информация </h2>
 
-<h3>бот адменистратор с оповешением о спаме репортах
-</h3>
+<h3>бот адменистратор с оповешением о спаме репортах</h3>
 <h3>описание</h3>
 <h4>
 Это бот с распознаванием спама и оповещением администраторов чата о нем.имеет настройки анти спама выдаваемых наказаний и группы администрации  <br>
@@ -42,12 +41,9 @@
 
 <h3>eng</h3>
 This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
-
 Key Functions:<br>
 Spam detection with instant admin notifications<br>
-
 Adjustable anti-spam thresholds and penalty settings<br>
-
 Admin group hierarchy support<br>
 
 Command List:<br>
