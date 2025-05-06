@@ -47,6 +47,7 @@ Adjustable anti-spam thresholds and penalty settings<br>
 Admin group hierarchy support<br>
 
 Command List:<br>
+
 /help - Displays help information<br>
 /report - Reports rule violations<br>
 /monitor - Tracks system metrics of PC/hosting<br>
