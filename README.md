@@ -40,6 +40,26 @@
 /мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и время.<br>
 имеет логирывание сообщений и других событий
 
+<h3>eng</h3>
+This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
+
+Key Functions:<br>
+Spam detection with instant admin notifications<br>
+
+Adjustable anti-spam thresholds and penalty settings<br>
+
+Admin group hierarchy support<br>
+
+Command List:<br>
+/help - Displays help information<br>
+/report - Reports rule violations<br>
+/monitor - Tracks system metrics of PC/hosting<br>
+/warn - Decreases user reputation<br>
+/reput - Increases user reputation<br>
+/me - Checks your own reputation<br>
+/ban - Bans user with reason logging<br>
+/mute - Temporarily mutes user with specified duration and reason<br>
+
 </h4>
 
 <h3> установка/install: </h3>
