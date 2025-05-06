@@ -17,13 +17,13 @@ import os.path
 import json
 import re
 import sys
-TOKEN = "tokin" 
+TOKEN = "token" 
 
 def umsettings():
     bambam=False
     delet_messadge=False
     admin_grops="-1002284704738"
-    SPAM_LIMIT = 10 # Максимальное количество сообщений
+    SPAM_LIMIT = 10 # Максимальное количество сообщенийф
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
     BAN_AND_MYTE_COMMAND= True
 
@@ -128,7 +128,7 @@ def monitor_resources():
     return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+f'\n{shutka}')
 
 # Команда /help
-@bot.message_handler(commands=['help','помощь'])
+@bot.message_handler(commands=['help','помощь','sos'])
 def send_help(message):
     bot.send_message(message.chat.id, help_user)
     
@@ -250,7 +250,7 @@ def time_server_command(message):
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
 #команда /правило 
-@bot.message_handler(commands=['правило','правила','закон','specification'])
+@bot.message_handler(commands=['правило','правила','закон','specification','rules'])
 def pravilo(message):
     bot.send_message(message.chat.id,PRAVILO)
 # Хранение данных о репортах
@@ -694,7 +694,7 @@ def nacase(message):
         logger.info(f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}')
         bot.send_message(admin_groups, f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
     except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка: {str(e)}")
+        bot.send_message(message, f"Ошибка: {str(e)}")
 
 user_messages = {}#инициализация словарей и тп
 user_text = {}
@@ -747,7 +747,6 @@ def anti_spam(message):
 
     # Добавление текущего временного штампа
     user_messages[user_id].append(current_time)
-    
     logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type}"
     print("————")
     logger.debug(logs)
@@ -762,7 +761,17 @@ def anti_spam(message):
         keys_to_delete=[]
         for i in range(len(user_text.keys())):
             list_mess=list(user_text[list(user_text.keys())[i]])
+            povtor_messade_shet=0
+            k=0
             for a in range(len(list_mess)):
+                k=a-1
+                if k<len(list_mess) or len(list_mess)>k:
+                    k=0
+                if str(list_mess[k]).lower() == str(list_mess[a]).lower():
+                    povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
+                if povtor_messade_shet>=SPAM_LIMIT:
+                    keys_to_delete.append(list(user_text.keys())[i])
+                    nacase(message)
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
