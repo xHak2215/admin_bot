@@ -867,7 +867,7 @@ def message_handler(message):
                     if '.' in timer: 
                         deleu=timer.split('.')[1] 
                         num_date=int(re.sub('\D', '',timer.split('.')[0])) #убираем буквы и т.д
-                        if deleu=='h' or deleu=='d' or deleu=='m':
+                        if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
                             if deleu=='h':
                                 deleu=3600
                             elif deleu=='d':
