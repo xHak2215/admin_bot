@@ -130,7 +130,7 @@ spam_timer - functionality described above<br>
 ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
-<h1><p align="right">(<a href="#readme-top">↑</a>)</p></h1>
+<h1><p align="right"><a href="#readme-top">↑</a></p></h1>
 <input type="button" name="↑верх↑" value="#readme-top"/>
 
 
