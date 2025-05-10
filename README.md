@@ -39,27 +39,9 @@
 /мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и время.<br>
 имеет логирывание сообщений и других событий
 
-<h3>eng</h3>
-This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
-Key Functions:<br>
-Spam detection with instant admin notifications<br>
-Adjustable anti-spam thresholds and penalty settings<br>
-Admin group hierarchy support<br>
-
-Command List:<br>
-
-/help - Displays help information<br>
-/report - Reports rule violations<br>
-/monitor - Tracks system metrics of PC/hosting<br>
-/warn - Decreases user reputation<br>
-/reput - Increases user reputation<br>
-/me - Checks your own reputation<br>
-/ban - Bans user with reason logging<br>
-/mute - Temporarily mutes user with specified duration and reason<br>
-
 </h4>
 
-<h3> установка/install: </h3>
+<h3> установка: </h3>
 
 для работы приложения необходим <a href="https://www.python.org/"> python 3.12v</a> или выше  
 
@@ -73,7 +55,7 @@ pip install -r requirements.txt
 python aea_bot.py
 ```
 
-<h3> настройка/setting: </h3>
+<h3> настройка: </h3>
 
 ```json
 {
@@ -92,12 +74,63 @@ delet_messadge - автоматическое удаление сообщени�
 admin_grops - группа администрации (впишите ее ID)<br>
 spam_limit - количество сообщений от одного пользователя которое будет считаться спамом (за отрезок времени указанный в spam_timer)<br>
 spam_timer - функционал описан выше <br>
-ban_and_myte_command - включает команды /бан и / мут для банов и мутов соотвецтвено <br>
+ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено <br>
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
-<p align="right">(<a href="#readme-top">↑верх↑</a>)</p>
+<h3>eng</h3>
+This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
+Key Functions:<br>
+Spam detection with instant admin notifications<br>
+Adjustable anti-spam thresholds and penalty settings<br>
+Admin group hierarchy support<br>
 
+Command List:<br>
+
+/help - Displays help information<br>
+/report - Reports rule violations<br>
+/monitor - Tracks system metrics of PC/hosting<br>
+/warn - Decreases user reputation<br>
+/reput - Increases user reputation<br>
+/me - Checks your own reputation<br>
+/ban - Bans user with reason logging<br>
+/mute - Temporarily mutes user with specified duration and reason<br>
+
+<h3>Installation:</h3>
+
+To run the application, <a href="https://www.python.org/">Python 3.12</a> or higher is required.
+```sh
+git clone https://github.com/xHak2215/admin_telegram_bot
+
+cd admin_telegram_bot
+
+pip install -r requirements.txt
+
+python aea_bot.py
+```
+<h3> settings: </h3>
+
+```json
+{
+    "bambam":false,
+    "delet_messadge":false,
+    "admin_grops":"-1001234000000",
+    "spam_limit":10,
+    "spam_timer":4,
+    "ban_and_myte_command":true
+
+}
+```
+true - enabled, false - disabled  
+bambam - automatic mutes/bans<br>
+delet_messadge - automatic message deletion (specifically, a message will be deleted after 5 reports)<br>
+admin_grops - admin group (enter its ID)<br>
+spam_limit - number of messages from a single user that will be considered spam (within the time frame specified in spam_timer)<br>
+spam_timer - functionality described above<br>
+ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
+
+The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
+<h1><p align="right">(<a href="#readme-top">↑</a>)</p></h1>
 <input type="button" name="↑верх↑" value="#readme-top"/>
 
 
