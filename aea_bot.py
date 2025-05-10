@@ -17,13 +17,13 @@ import os.path
 import json
 import re
 import sys
-TOKEN = "token" 
+TOKEN = " token " 
 
 def umsettings():
     bambam=False
     delet_messadge=False
     admin_grops="-1002284704738"
-    SPAM_LIMIT = 10 # Максимальное количество сообщенийф
+    SPAM_LIMIT = 10 # Максимальное количество сообщений
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
     BAN_AND_MYTE_COMMAND= True
 
@@ -671,6 +671,87 @@ def send_reminder():
 # Планирование напоминаний
 #schedule.every().day.at("12:00").do(send_reminder)
 
+@bot.message_handler(commands=['ban','бан'])
+def handle_warn(message):
+        commad=str(message.text).lower()
+        if BAN_AND_MYTE_COMMAND !=True:
+            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
+            return
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+            if message.reply_to_message:
+                if 'reason:' in commad:
+                    reason=commad.split('reason:')[1]
+                else :
+                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`')
+                try:
+                    bot.ban_chat_member(message.chat.id,message.reply_to_message)
+                    logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+                    bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
+        else:
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
+
+@bot.message_handler(commands=['mute','мут'])
+def handle_warn(message):
+        commad=str(message.text).lower()
+        if BAN_AND_MYTE_COMMAND !=True:
+            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
+            return
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+            if message.reply_to_message:
+                wirning=None
+                if 'reason:' in commad and 'time:'in commad:
+                    finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
+                    if format(finds[0])== 'reason:':
+                        arg=commad.replace("/mute", "").replace("/мут", "").split('time:')
+                        timer=arg[1]
+                        reason=arg[0]
+                    else:
+                        arg=commad.replace("/mute", "").replace("/мут", "").split('reason:')
+                        timer=arg[0]
+                        reason=arg[1]
+                    if '.' in timer: 
+                        deleu=timer.split('.')[1] 
+                        num_date=int(re.sub('\D', '',timer.split('.')[0])) #убираем буквы и т.д
+                        if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
+                            if deleu=='h':
+                                deleu=3600
+                            elif deleu=='d':
+                                deleu=86400
+                            elif deleu=='m':
+                                deleu=60
+                            elif deleu=='s':
+                                deleu=0
+                    else:
+                        wirning+=f'не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты '
+                        deleu=3600
+                else:
+                    error=''
+                    if 'reason:' not in commad :
+                        error+=' не хватает аргумента `reason:`'
+                    if 'time:' not in commad :
+                        if len(error)>1:
+                            error+=','
+                        error+=' не хватает аргумента `time:`'
+                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
+                    return
+
+                #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
+                try:
+                    bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + num_date*deleu)
+                    logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
+                    bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
+                    if wirning != None:
+                        bot.reply_to(message,wirning)
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
+        else:
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
+
+
 def nacase(message):
     try:
         user_messages[message.from_user.id] = []
@@ -828,89 +909,16 @@ def message_handler(message):
         bot.reply_to(message,'')
     if commad=='!я' and message.reply_to_message != True:
         send_statbstic(message)
-    if commad.startswith('/ban') or commad.startswith('/бан'):
-        if BAN_AND_MYTE_COMMAND !=True:
-            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
-            return
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
-            if message.reply_to_message:
-                if 'reason:' in commad:
-                    reason=commad.split('reason:')[1]
-                else :
-                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`')
-                try:
-                    bot.ban_chat_member(message.chat.id,message.reply_to_message)
-                    logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-                    bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-                except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
-            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
-        else:
-            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
-    if commad.startswith('/mute') or commad.startswith('/мут'):
-        if BAN_AND_MYTE_COMMAND !=True:
-            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
-            return
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
-            if message.reply_to_message:
-                wirning=None
-                if 'reason:' in commad and 'time:'in commad:
-                    finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
-                    if format(finds[0])== 'reason:':
-                        arg=commad.replace("/mute", "").replace("/мут", "").split('time:')
-                        timer=arg[1]
-                        reason=arg[0]
-                    else:
-                        arg=commad.replace("/mute", "").replace("/мут", "").split('reason:')
-                        timer=arg[0]
-                        reason=arg[1]
-                    if '.' in timer: 
-                        deleu=timer.split('.')[1] 
-                        num_date=int(re.sub('\D', '',timer.split('.')[0])) #убираем буквы и т.д
-                        if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
-                            if deleu=='h':
-                                deleu=3600
-                            elif deleu=='d':
-                                deleu=86400
-                            elif deleu=='m':
-                                deleu=60
-                            elif deleu=='s':
-                                deleu=0
-                    else:
-                        wirning+=f'не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты '
-                        deleu=3600
-                else:
-                    error=''
-                    if 'reason:' not in commad :
-                        error+=' не хватает аргумента `reason:`'
-                    if 'time:' not in commad :
-                        if len(error)>1:
-                            error+=','
-                        error+=' не хватает аргумента `time:`'
-                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
-                    return
-                #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
-                try:
-                    bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + num_date*deleu)
-                    logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
-                    bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
-                    if wirning != None:
-                        bot.reply_to(message,wirning)
-                except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
-            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
-        else:
-            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
 
-    if time.time() - message.date >= 2:
+
+    if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None or message.forward_date and message.forward_from and message.forward_from_chat:
         pass
     else:
-        if message.forward_from == None:
-            anti_spam(message)
+        anti_spam(message)
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
-    if time.time() - message.date >= 2 or message.media_group_id != None:
+    if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None or message.forward_date and message.forward_from and message.forward_from_chat:
         return
     else:
         anti_spam(message)
@@ -918,9 +926,10 @@ def message_handler(message):
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
     print(message.media_group_id)
-    if time.time() - message.date >= 2 or message.media_group_id:
+    if time.time() - message.date >= SPAM_TIMEFRAME or message.forward_date and message.forward_from and message.forward_from_chat:
         return
     anti_spam(message)
+
 
 #новый юзер 
 @bot.message_handler(content_types=['new_chat_members'])
