@@ -132,6 +132,8 @@ admin_grops - admin group (enter its ID)<br>
 spam_limit - number of messages from a single user that will be considered spam (within the time frame specified in spam_timer)<br>
 spam_timer - functionality described above<br>
 ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
+console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console <terminal command>. Works only in the admin group and can be used solely by the group administrator.
+(⚠️ This command can execute malicious commands as well—be cautious when enabling it.)
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
 <h1><p align="right"><a href="#readme-top">↑</a></p></h1>
