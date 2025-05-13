@@ -61,10 +61,11 @@ python aea_bot.py
 {
     "bambam":false,
     "delet_messadge":false,
-    "admin_grops":"-1001234000000",
+    "admin_grops":"-1002284704738",
     "spam_limit":10,
     "spam_timer":4,
-    "ban_and_myte_command":true
+    "ban_and_myte_command":true,
+    "console_control":true
 
 }
 ```
@@ -114,10 +115,11 @@ python aea_bot.py
 {
     "bambam":false,
     "delet_messadge":false,
-    "admin_grops":"-1001234000000",
+    "admin_grops":"-1002284704738",
     "spam_limit":10,
     "spam_timer":4,
-    "ban_and_myte_command":true
+    "ban_and_myte_command":true,
+    "console_control":true
 
 }
 ```
