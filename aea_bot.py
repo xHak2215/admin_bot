@@ -344,7 +344,7 @@ def send_help(message):
     datas=''
     try:
         #проверка на админа
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
             connection = sqlite3.connect('Users_base.db')
             cursor = connection.cursor()
             # Получаем информацию о столбцах в таблице Users
@@ -555,7 +555,7 @@ warn_data= {}
 # Обработка ответа на сообщение /warn
 @bot.message_handler(commands=['warn'])
 def handle_warn(message):
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
 
             chat_id = message.chat.id#инециалезацыя всякой хрени
@@ -602,7 +602,7 @@ def handle_warn(message):
 
 @bot.message_handler(commands=['reput'])
 def handle_warn(message):
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
 
             chat_id = message.chat.id#инециалезацыя всякой хрени 
@@ -624,7 +624,7 @@ def handle_warn(message):
         
 @bot.message_handler(commands=['info','user'])#узнать репутацию
 def handle_warn(message):
-#    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+#    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
     if message.reply_to_message:
 
         chat_id = message.chat.id#инециалезацыя всякой хрени 
@@ -655,7 +655,7 @@ def handle_warn(message):
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
             if message.from_user.id =='5806296576':
                 bot.reply_to(message,['маге не понравилось','мага покарай нарушителей мутом!'][random.randint(0,1)])
@@ -682,7 +682,7 @@ def handle_warn(message):
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
             if message.reply_to_message:
                 if 'reason:' in commad:
                     reason=commad.split('reason:')[1]
@@ -704,7 +704,7 @@ def handle_warn(message):
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
             if message.reply_to_message:
                 wirning=None
                 if 'reason:' in commad and 'time:'in commad:
@@ -764,8 +764,8 @@ def run_command(cmd):
 @bot.message_handler(commands=['cmd','console'])
 def handle_warn(message):
     if CONSOLE_CONTROL:
-        if str(message.chat.id)==admin_grops or message.from_user.id=='5194033781':
-            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+        if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
+            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
                 command=str(message.text).split(' ')[1]
                 if sys.platform.startswith('win'):
                     out=run_command(command)
