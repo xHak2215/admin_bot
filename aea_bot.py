@@ -20,7 +20,7 @@ from loguru import logger
 import sqlite3
 from PIL import Image, ImageDraw, ImageFont
 
-TOKEN = " token " 
+TOKEN = " tokin " 
 
 def umsettings():
     bambam=False
@@ -28,13 +28,14 @@ def umsettings():
     admin_grops="-1002284704738"
     SPAM_LIMIT = 10 # Максимальное количество сообщений
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
-    BAN_AND_MYTE_COMMAND= True
-
+    BAN_AND_MYTE_COMMAND = True
+    CONSOLE_CONTROL = False
 
 try:
     with open("settings.json", "r") as json_settings:
         settings= json.load(json_settings)
 except:
+    logger.debug('error settings import ')
     umsettings()
 help_user = '/report - забань дебила в чате \nчтобы получить список правил \n/правило \n Если есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
 message_reminder = 'Не забывайте про команду /report для сообщений о нарушении правил.'
@@ -74,12 +75,13 @@ admin_list=['@HITHELL','@mggxst']
 # Инициализация логирования
 logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
 try:
-    bambam=settings['bambam']
-    delet_messadge=settings['delet_messadge']
-    admin_grops=settings['admin_grops']
-    SPAM_LIMIT=settings['spam_limit']
-    SPAM_TIMEFRAME=settings['spam_timer']
-    BAN_AND_MYTE_COMMAND=settings['ban_and_myte_command']
+    bambam=bool(settings['bambam'])
+    delet_messadge=bool(settings['delet_messadge'])
+    admin_grops=str(settings['admin_grops'])
+    SPAM_LIMIT=int(settings['spam_limit'])
+    SPAM_TIMEFRAME=int(settings['spam_timer'])
+    BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
+    CONSOLE_CONTROL=bool(settings['console_control'])
 except:
     umsettings()
     logger.debug('error settings init')
@@ -761,16 +763,23 @@ def run_command(cmd):
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_warn(message):
-    if str(message.chat.id)==admin_grops or message.from_user.id=='5194033781':
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
-            command=str(message.text).split(':')[1]
-            out=run_command(command)
-            bot.reply_to(message,out)
+    if CONSOLE_CONTROL:
+        if str(message.chat.id)==admin_grops or message.from_user.id=='5194033781':
+            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id =='5194033781':
+                command=str(message.text).split(' ')[1]
+                if sys.platform.startswith('win'):
+                    out=run_command(command)
+                else:
+                    out=run_command(command)
+                    if 'sudo: error initializing audit plugin sudoers_audit'in out:
+                        out=out+'\n! пользеватель не найден проверте настройку (она находиться в mein файле)' 
+                bot.reply_to(message,out)
+            else:
+                bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
         else:
-            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
+            bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
     else:
-        bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
-
+        bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
 
 def nacase(message):
     try:
@@ -848,7 +857,10 @@ def anti_spam(message):
 
     # Добавление текущего временного штампа
     user_messages[user_id].append(current_time)
-    logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type}"
+    emoji=''
+    if message.content_type=='sticker':
+        emoji='('+message.sticker.emoji+')'
+    logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.debug(logs)
    # Проверка на спам
