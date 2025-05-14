@@ -766,7 +766,7 @@ def handle_warn(message):
     if CONSOLE_CONTROL:
         if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
             if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-                command=str(message.text).split(' ')[1]
+                command=str(message.text).split(':')[1]
                 if sys.platform.startswith('win'):
                     out=run_command(command)
                 else:
