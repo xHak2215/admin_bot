@@ -76,7 +76,7 @@ admin_grops - группа администрации (впишите ее ID)<b
 spam_limit - количество сообщений от одного пользователя которое будет считаться спамом (за отрезок времени указанный в spam_timer)<br>
 spam_timer - функционал описан выше <br>
 ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено <br>
-console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console <команда терминала> работает только в группе администрации администратором группы<br>
+console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console :<команда терминала> работает только в группе администрации администратором группы<br>
 (⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением)
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
@@ -132,7 +132,7 @@ admin_grops - admin group (enter its ID)<br>
 spam_limit - number of messages from a single user that will be considered spam (within the time frame specified in spam_timer)<br>
 spam_timer - functionality described above<br>
 ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
-console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console <terminal command>. Works only in the admin group and can be used solely by the group administrator.<br>
+console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console :<terminal command>. Works only in the admin group and can be used solely by the group administrator.<br>
 (⚠️ This command can execute malicious commands as well—be cautious when enabling it.)
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
