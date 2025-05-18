@@ -137,7 +137,7 @@ console_control - permissions for remote execution of terminal commands via the 
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
 <h1><p align="right"><a href="#readme-top">↑</a></p></h1>
-<input type="button" name="↑верх↑" value="#readme-top"/>
+<h3><input type="button" name="↑" value="#readme-top"/></h3>
 
 
 
