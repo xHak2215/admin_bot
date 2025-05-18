@@ -20,7 +20,7 @@ from loguru import logger
 import sqlite3
 from PIL import Image, ImageDraw, ImageFont
 
-TOKEN = " tokin " 
+TOKEN = " token " 
 
 def umsettings():
     bambam=False
@@ -498,7 +498,7 @@ def ps_reputation(warn_user_id,message,soob_num,g)->int:
         # Создаем индекс (если он еще не существует)
         cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
         # Проверяем, существует ли пользователь с данным warn_user_id
-        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))
+        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (warn_user_id,message.chat.id))
         result = cursor.fetchone()
         if result is not None :
             # Извлекаем репутацию из результата
@@ -651,7 +651,7 @@ def handle_warn(message):
 
 @bot.message_handler(commands=['гойда','goida'])
 def handle_warn(message):
-    bot.reply_to(message,['наш слон','ГООООООЛ'][random.randint(0,1)])
+    bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
@@ -766,7 +766,7 @@ def handle_warn(message):
     if CONSOLE_CONTROL:
         if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
             if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-                command=str(message.text).split(':')[1]
+                command=str(message.text).split(' ')[1]
                 if sys.platform.startswith('win'):
                     out=run_command(command)
                 else:
