@@ -23,6 +23,8 @@ from PIL import Image, ImageDraw, ImageFont
 TOKEN = " token " 
 
 def umsettings():
+    global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND
+    #настройки по умолчанию(если settings.json) не найдет
     bambam=False
     delet_messadge=False
     admin_grops="-1002284704738"
