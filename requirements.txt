@@ -1,5 +1,7 @@
-loguru==0.7.2
-telebot==0.0.5
-psutil==6.0.0
-requests==2.23.0
-Pillow==11.1.0
+loguru == 0.7.2
+telebot ==0.0.5
+psutil == 6.0.0
+requests == 2.23.0
+subprocess.run == 0.0.8
+schedule == 1.2.2
+
