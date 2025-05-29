@@ -5,26 +5,37 @@ import re
 import sys
 import time
 import random
-
-import telebot
-from telebot import types
 from datetime import timedelta
-from collections import defaultdict
-import traceback
-import psutil
-import schedule
 from datetime import datetime
-import requests
-import subprocess
-from loguru import logger
-import sqlite3
-from PIL import Image, ImageDraw, ImageFont
+import traceback
+
+try:
+    import telebot
+    from telebot import types
+    from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+    from collections import defaultdict
+    import psutil
+    import schedule
+    import requests
+    import subprocess
+    from loguru import logger
+    import sqlite3
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:
+    print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
+    if os.name == 'nt':
+        if os.system('pip install -r requirements.txt') == 0: print('suppress (успешно)')
+        else:
+            print('error install (что то пошло не так )')
+    else: 
+        if os.system('pip3 install -r requirements.txt') == 0: print('suppress (успешно)')
+        else:
+            print('error install (что то пошло не так )')
 
 TOKEN = " token " 
 
 def umsettings():
-    global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND
-    #настройки по умолчанию(если settings.json) не найдет
+    global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL
     bambam=False
     delet_messadge=False
     admin_grops="-1002284704738"
@@ -87,21 +98,32 @@ try:
 except:
     umsettings()
     logger.debug('error settings init')
-admin_groups=admin_grops
 
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 #os.chdir(os.getcwd())
+warn=0
 print(os.getcwd())
 if os.path.exists('hello.gif'):
     print('gif OK')
 else:
-    print('error not gif ')
-if os.path.exists('Users_base.db'):
+    warn=warn+1
+    print('error no hello.gif')
+if os.path.exists('settings.json'):
+    print('settings.json OK')
+else:
+    warn=warn+1
+    print('error no settings.json')
+if os.path.exists('requirements.txt') != True:
+    warn=warn+1
+if os.path.exists('Users_base.db') and os.path.exists('ps_reputation_base.db'):
     print('data base ok')
 else:
-    print("error not bata base ")
+    warn=warn+1
+    print("error no bata base ")
+if warn >=3:
+    bot.send_message(admin_grops, f"обнаружены не критичные ошибки возможны неполадки\nwarn level:{warn}")
 
 now = datetime.now()
 current_time = now.strftime("%H:%M")
@@ -257,9 +279,13 @@ def time_server_command(message):
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
 #команда /правило 
-@bot.message_handler(commands=['правило','правила','закон','specification','rules'])
+@bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
     bot.send_message(message.chat.id,PRAVILO)
+    #markup = types.InlineKeyboardMarkup()
+    #button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
+    #markup.add(button1)
+    #bot.reply_to(message, 'правила находиться на web странице', reply_markup=markup)
 # Хранение данных о репортах
 report_data =  {}
 report_user=[]
@@ -280,12 +306,18 @@ def handle_report(message):
         report_chat=message.chat.id
     
         message_to_report=str(report_chat).replace("-100", "")
-        ps_reputation(message.reply_to_message.from_user.id,message,0,1)
         
-        bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
-        logger.debug(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
-        logger.info(f"Пользователь @{message.from_user.username} сообщил о нарушении.")
-        bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ'][random.randint(0,4)])
+        ps_reputation(message.reply_to_message.from_user.id,message,0,1)
+
+        if message.reply_to_message.content_type == 'sticker':
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | ↓стикер↓")
+            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} стикер id > {message.reply_to_message.sticker.file_id}")
+            bot.send_sticker(admin_grops, message.reply_to_message.sticker.file_id)
+        else:
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
+            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
+
+        bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ','записал ...'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
         if len(report['responses']) >= 5:
             for i in range(len(report_user)):
@@ -439,7 +471,7 @@ def data_base(chat_id, warn_user_id, message, nfkaz) -> int:
         cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
         
         # Проверяем, существует ли пользователь с данным warn_user_id
-        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))
+        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ?', (warn_user_id,))# cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (warn_user_id,chat_id))
         result = cursor.fetchone()
         print('result>>', result) 
         
@@ -943,7 +975,7 @@ def message_handler(message):
                 teg+=f",{admin_list[i]}"
             else:
                 teg+=f"{admin_list[i]}"
-        bot.send_message(admin_groups,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
+        bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
     if commad=='!правила' or commad=='!правило' and message.reply_to_message != True:
         bot.reply_to(message,'')
     if commad=='!я' and message.reply_to_message != True:
