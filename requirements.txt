@@ -4,4 +4,5 @@ psutil == 6.0.0
 requests == 2.23.0
 subprocess.run == 0.0.8
 schedule == 1.2.2
+googletrans==4.0.0-rc1
 
