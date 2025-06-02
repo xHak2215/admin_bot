@@ -38,6 +38,7 @@
 /бан - бан (блокировка) пользователя с сохранением причины.<br>
 /мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и время.<br>
 /настройки - отображает настройки(файл конфигурации `settings.json` ) имеет парамитер -r который перезагружает настройки если они были изменены без необходимости перезапуска бота пример :`/настройки -r` 
+/t - перевод сообщения на русский 
 имеет логирывание сообщений и других событий
 
 </h4>
@@ -100,6 +101,7 @@ Command List:<br>
 /ban - Bans user with reason logging<br>
 /mute - Temporarily mutes user with specified duration and reason<br>
 /config - displays the current settings (from the configuration file `settings.json` ), Parameter: -r - reloads the settings if they have been modified, eliminating the need to restart the bot using: `/config -r`
+/t -more translation of the Russian
 
 <h3>Installation:</h3>
 
