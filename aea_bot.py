@@ -21,6 +21,7 @@ try:
     from loguru import logger
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
+    from googletrans import Translator
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     if os.name == 'nt':
@@ -32,7 +33,9 @@ except ImportError:
         else:
             print('error install (что то пошло не так )')
 
-TOKEN = " token " 
+
+TOKEN = " tokin " 
+
 
 def umsettings():
     global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL
@@ -125,7 +128,7 @@ else:
 if warn >=3:
     bot.send_message(admin_grops, f"обнаружены не критичные ошибки возможны неполадки\nwarn level:{warn}")
 
-now = datetime.now()
+now = datetime.now() 
 current_time = now.strftime("%H:%M")
 bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}")
 logger.info("бот запущен")
@@ -245,8 +248,9 @@ def monitor_command(message):
 # Команда /test 
 @bot.message_handler(commands=['test'])
 def monitor_command(message):
-    test='none'
+    test=''
     test+=os.getcwd()+'\n'
+    swap = psutil.swap_memory()
     if os.path.exists(f'{os.getcwd()}/hello.gif'):
         test=test+'gif OK\n'
     else:
@@ -270,7 +274,7 @@ def monitor_command(message):
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time} \n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time} \nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -285,7 +289,7 @@ def pravilo(message):
     #markup = types.InlineKeyboardMarkup()
     #button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
     #markup.add(button1)
-    #bot.reply_to(message, 'правила находиться на web странице', reply_markup=markup)
+    #bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
 # Хранение данных о репортах
 report_data =  {}
 report_user=[]
@@ -366,6 +370,26 @@ def configfile(message):
             out='none'
         bot.reply_to(message,out)
         f.close()
+        if  '-r' in message.text :
+            try:
+                with open("settings.json", "r") as json_settings:
+                    settings= json.load(json_settings)
+                try:
+                    bambam=bool(settings['bambam'])
+                    delet_messadge=bool(settings['delet_messadge'])
+                    admin_grops=str(settings['admin_grops'])
+                    SPAM_LIMIT=int(settings['spam_limit'])
+                    SPAM_TIMEFRAME=int(settings['spam_timer'])
+                    BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
+                    CONSOLE_CONTROL=bool(settings['console_control'])
+                    logger.info('настройки пере инициалезированы')
+                except:
+                    bot.reply_to(message,'не удалось использованы настройки по умолчанию ')
+                    umsettings()
+                    logger.debug('error settings init')
+            except:
+                bot.reply_to(message,'не удалось прочитать файл настроек')
+                logger.debug('error settings reload ')
     except Exception as e:
         try:
             f.close()
@@ -814,7 +838,14 @@ def handle_warn(message):
             bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
     else:
         bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
-
+@bot.message_handler(commands=['translite','t'])
+def translitor(message):
+    if message.reply_to_message:
+        translator = Translator()
+        conf = translator.detect(message.reply_to_message.text)
+        kont=f'Язык: {conf.lang}'
+        result = translator.translate(message.reply_to_message.text, src=conf.lang, dest='ru')
+        bot.reply_to(message,kont+'\n'+str(result.text))
 def nacase(message):
     try:
         user_messages[message.from_user.id] = []
