@@ -9,6 +9,7 @@ from datetime import timedelta
 from datetime import datetime
 import traceback
 from collections import Counter
+import threading
 
 try:
     import telebot
@@ -18,6 +19,7 @@ try:
     import psutil
     import schedule
     import requests
+    from requests import get
     import subprocess
     from loguru import logger
     import sqlite3
@@ -66,9 +68,10 @@ try:
 except:
     logger.debug('error settings import ')
     umsettings()
-help_user = '/report - забань дебила в чате \nЕсли есть вопросы задайте его добвавив в сообщение [help] и наши хелперы по возмодности помогут вам \n/admin_command команды администраторов  ' 
+help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite - перевод сообщения на русский\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 logse="nan"
 i=0
+otklik=0
 admin_list=["@HITHELL","@mggxst"]
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
 
@@ -115,7 +118,7 @@ if warn >=3:
 
 now = datetime.now() 
 current_time = now.strftime("%H:%M")
-bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}")
+bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}\nотклик>> {time.time()-otklik}")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -147,7 +150,13 @@ def monitor_resources():
 # Команда /help
 @bot.message_handler(commands=['help','помощь','sos'])
 def send_help(message):
-    bot.send_message(message.chat.id, help_user)
+    if message.date - time.time() >= 35:
+        bot.send_message(message.chat.id, help_user)
+
+@bot.message_handler(commands=['admin_command'])
+def handle_warn(message):
+    if message.date - time.time() >= 35:
+        bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя\n/ban - отпровляет в бан пример: `/бан reason:по рофлу`\n/мут - отпровляет в мут `/мут reason:причина time:1.h` .h - часы (по умолчанию) , .d - дни , .m - минуты')
     
 # Команда /log
 @bot.message_handler(commands=['log'])
@@ -227,8 +236,9 @@ def send_help(message):
 # Команда /monitor    
 @bot.message_handler(commands=['monitor','монитор'])
 def monitor_command(message):
-    cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
+    if message.date - time.time() >= 35:
+        cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
+        bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
 
 # Команда /test 
 @bot.message_handler(commands=['test'])
@@ -236,30 +246,31 @@ def monitor_command(message):
     test=''
     test+=os.getcwd()+'\n'
     swap = psutil.swap_memory()
-    if os.path.exists(f'{os.getcwd()}/asets/hello.gif'):
+    if os.path.exists(os.path.join(os.getcwd(), 'asets', 'hello.gif')):
         test=test+'gif OK\n'
     else:
-        test=test+'error not gif\n'
-    if os.path.exists(f'{os.getcwd()}/Users_base.db'):
+        test=test+'error no gif\n'
+    if os.path.exists(os.path.join(os.getcwd(), 'Users_base.db')):
         test=test+'data base OK\n'
     else:
-        test=test+"error not bata base \n"
-    if os.path.exists(f'{os.getcwd()}/cats_message.log'):
+        test=test+"error no bata base \n"
+    if os.path.exists(os.path.join(os.getcwd(), 'cats_message.log')):
         test=test+'messege log OK\n'
     else:
-        test=test+'warning not messege log \n'
-    if os.path.exists(f'{os.getcwd()}/asets/Roboto_Condensed-ExtraBoldItalic.ttf'):
+        test=test+'warning no messege log \n'
+    if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'Roboto_Condensed-ExtraBoldItalic.ttf')):
         test=test+'Roboto_Condensed-ExtraBoldItalic шрифт OK\n'
     else:
-        test=test+'error not Bounded-Black \n'
+        test=test+'error no Roboto_Condensed-ExtraBoldItalic \n'
     if os.path.exists(f'{os.getcwd()}/settings.json'):
         test=test+'cofig file OK\n'
     else:
-        test=test+'error not config file \n'
+        test=test+'error no config file \n'
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
+    test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
     cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time} \nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -270,7 +281,8 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
-    pass
+    if message.date - time.time() >= 35:
+        pass
     #markup = types.InlineKeyboardMarkup()
     #button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
     #markup.add(button1)
@@ -331,7 +343,6 @@ def fetch_data_by_column_and_row(column_name, row_index):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db')
     cursor = connection.cursor()
-    
     try:
         # Выполняем запрос для получения данных из указанного столбца по индексу строки
         query = f'SELECT {column_name} FROM Users LIMIT 1 OFFSET ?'
@@ -500,7 +511,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0,soob_num=0,ps_reputation_upt=0,time
                 ps_reputation_new=ps_reputation+ps_reputation_upt
                 new_reputation = current_reputation - nfkaz
                 # Обновляем репутацию пользователя
-                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,text+soob_num)# Передаем id,chat и данные  пользователя для обновления
+                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num)# Передаем id,chat и данные  пользователя для обновления
                 connection.commit()
                 connection.close()
                 return [new_reputation,ps_reputation_new,int(text+soob_num),result[8],result[6]]
@@ -527,7 +538,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0,soob_num=0,ps_reputation_upt=0,time
         # Закрываем соединение
         connection.close()
         
-def set_day_message():
+def set_day_message():#я не смог это реализовать я походу тупой 
     file_path = os.path.join(os.getcwd(), 'asets', 'set_day_message_time.json')
     # Создаем папку asets, если её нет
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -540,8 +551,9 @@ def set_day_message():
             timer = 0
     except (json.JSONDecodeError, KeyError):
         timer = 0
+    print(timer)
     # Если таймер не установлен или прошло больше суток
-    if timer == 0 or time.time() - timer >= 86400:
+    if timer == 0 or time.time() - timer >= 1*86400:
         try:
             # Обновляем базу данных
             connection = sqlite3.connect('Users_base.db', timeout=10)
@@ -585,7 +597,7 @@ def status(rec):
 @bot.message_handler(commands=['я', 'me'])
 def send_statbstic(message):
     data=data_base(message.chat.id,message.from_user.id,soob_num=1)
-    bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}\nза день:{data[4]}")
+    bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}")
 
 warn_data= {}
 # Обработка ответа на сообщение /warn
@@ -657,7 +669,7 @@ def handle_warn(message):
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
         if '-all' in str(message.text).lower():
-            bot.reply_to(message,f'репутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\nза день:{data[4]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}\nid:{user}')
+            bot.reply_to(message,f'репутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}\nid:{user}')
             return
         if str(data[3]) != str(0):
             if data[3]>=86400:
@@ -679,22 +691,16 @@ def handle_warn(message):
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
 #    else:
 #        bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
-        
-@bot.message_handler(commands=['admin_command'])
-def handle_warn(message):
-    bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя\n/ban - отпровляет в бан пример: `/бан reason:по рофлу`\n/мут - отпровляет в мут `/мут reason:причина time:1.h` .h - часы (по умолчанию) , .d - дни , .m - минуты')
-
- 
-@bot.message_handler(commands=['52'])
-def handle_warn(message):
-    bot.reply_to(message,'52')
 
 @bot.message_handler(commands=['гойда','goida'])
-def handle_warn(message):
-    bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
+def handle_goida(message):
+    if message.data - time.time() >= 35:
+        bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
+    if message.data - time.time() >= 35:
+        return
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
             if message.from_user.id =='5806296576':
@@ -781,7 +787,6 @@ def handle_warn(message):
                         error+=' не хватает аргумента `time:`'
                     bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
                     return
-
                 #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
                 try:
                     bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + num_date*deleu)
@@ -790,7 +795,7 @@ def handle_warn(message):
                     if wirning != None:
                         bot.reply_to(message,wirning)
                 except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
             else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
@@ -840,31 +845,36 @@ def translitor(message):
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
         else:
             bot.reply_to(message,'ответе на сообщение что ты перевести его на Русский\nпример перевода на иностранный язык: /t en:привет (/t язык:текст)')
+            
+''' голосовые в текст 
+@bot.message_handler(commands=['text'])
+def audio_to_text(message):
+    if message.voice:
+        file_info = bot.get_file(message.voice.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+'''
         
 def nacase(message):
     try:
         user_messages[message.from_user.id] = []
         if bool(bambam):
-            try:
-                # Ограничиваем пользователя на 24 часа 
-                bot.restrict_chat_member(
-                chat_id=message.chat.id,
-                user_id=message.from_user.id,
-                until_date=timedelta(hours=24),
-                can_send_messages=False
-                )
-                reputation=data_base(message.chat_id,message.from_user.id,message,3)
-                bot.send_message(message.chat.id, f"Пользователь {message.from_user.username} замучен на 1 день.\n рапутация снижена:{reputation}" )
-            except Exception as e:
-                bot.send_message(admin_grops,f"error >> {e}")
-                logger.error(e)
+            # Ограничиваем пользователя на 24 часа 
+            bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=message.from_user.id,
+            until_date=timedelta(hours=24),
+            can_send_messages=False
+            )
+            reputation=data_base(message.chat_id,message.from_user.id,message,3)
+            bot.send_message(message.chat.id, f"Пользователь {message.from_user.username} замучен на 1 день.\n рапутация снижена:{reputation}" )
+            
             if bool(delet_messadge):
                 bot.delete_message(message.chat.id,message.message_id)
         id_spam_message=str(message.chat.id).replace("-100", "")
-        logger.info(f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}')
-        bot.send_message(admin_grops, f'Обнаружен спам от пользователя >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
+        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username},id:{message.from_user.id}')
+        bot.send_message(admin_grops, f'Обнаружен спам от пользователя >> @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
     except Exception as e:
-        bot.send_message(message, f"Ошибка: {str(e)}")
+        bot.send_message(admin_grops, f"Ошибка: {str(e)}")
 
 user_messages = {}#инициализация словарей и тп
 user_text = {}
@@ -879,7 +889,7 @@ def anti_spam(message):
     #инициализация хрени всякой     
     user_id = message.from_user.id
     current_time = time.time()
-    tekst_m.append(message.text)
+    tekst_m.append({message.text:message.id})
     user_text[user_id] = tekst_m  # Сохраняем текст сообщения и id
     keys_to_delete=[]
    
@@ -888,7 +898,7 @@ def anti_spam(message):
         user_messages[user_id] = []
     user_messages[user_id] = [timestamp for timestamp in user_messages[user_id] if current_time - timestamp < SPAM_TIMEFRAME]
 
-    data_base(message.chat.id,message.from_user.id,soob_num=1)#добовляем 1 сообщение
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение 
     
     # Добавление текущего временного штампа
     user_messages[user_id].append(current_time)
@@ -907,8 +917,10 @@ def anti_spam(message):
         paket_num=4
         sr_d,slova=0,[]
         keys_to_delete=[]
+        list_mess=[]
         for i in range(len(user_text.keys())):
-            list_mess=list(user_text[list(user_text.keys())[i]])
+            for temp_list_mess in list(user_text[list(user_text.keys())[i]]):
+                list_mess.append(list(temp_list_mess.keys())[0])# достаю текст сообщения и добовляю list_mess
             povtor_messade_shet=0
             k=0
             for a in range(len(list_mess)):
@@ -952,7 +964,6 @@ def anti_spam(message):
                 if bambamSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message)
-                    return
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
@@ -1046,7 +1057,7 @@ def welcome_new_member(message):
                 text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
                 text_position =(60, 300) # Позиция (x, y) для текста        
                 # Добавляем текст на кадр
-                draw.text(text_position, text, font=font, fill=(65, 105, 225))  # Цвет текста задан в формате RGB
+                draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
                 # Добавляем новый кадр в список
                 frames_with_text.append(new_frame)
                 # Сохраняем новый GIF с текстом
@@ -1059,9 +1070,10 @@ def welcome_new_member(message):
                 bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
         except Exception as e:
             logger.error(f'error hello message >>{e}')
-            username = new_member.username if new_member.username else "пользователь"
-            welcome_message = [f"Привет, @{username}! Добро пожаловать в наш чат! \n/help для справки",f"новенький скинь ножки \nой не тот текст \nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
-            bot.reply_to(message , welcome_message)
+            username = '@'+new_member.username if new_member.username else "пользователь"
+            welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат! \n/help для справки",f"~новенький скинь ножки~\nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
+            bot.reply_to(message , welcome_message, parse_mode='MarkdownV2')
+            
 # Основной цикл
 def main():
     try:
@@ -1071,6 +1083,11 @@ def main():
                 try:
                     bot.polling(none_stop=True)
                     schedule.run_pending()
+                    # Запускаем в отдельном потоке при старте бота
+                    #scheduler_thread = threading.Thread(target=update_user)
+                    #scheduler_thread.daemon = True
+                    #scheduler_thread.start()
+                    otklik=time.time()
                 except requests.exceptions.ReadTimeout:
                     print("time out")
             except Exception as e:
