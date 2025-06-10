@@ -30,15 +30,25 @@
 Это бот с распознаванием спама и оповещением администраторов чата о нем.имеет настройки анти спама выдаваемых наказаний и группы администрации  <br>
 Он имеет множество команд, например:<br>
 /help - справка.<br>
+
 /report — для оповещения о нарушении.<br>  
+
 /monitor — для отслеживания системных показателей ПК/хостинга.<br>
+
 /warn - снижение репутации.<br>
+
 /reput - повышение репутации.<br>
+
 /я - своя репутация.<br>
+
 /бан - бан (блокировка) пользователя с сохранением причины.<br>
+
 /мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и время.<br>
+
 /настройки - отображает настройки(файл конфигурации `settings.json` ) имеет парамитер -r который перезагружает настройки если они были изменены без необходимости перезапуска бота пример :`/настройки -r` 
+
 /t - перевод сообщения на русский 
+
 имеет логирывание сообщений и других событий
 
 </h4>
@@ -93,14 +103,23 @@ Admin group hierarchy support<br>
 Command List:<br>
 
 /help - Displays help information<br>
+
 /report - Reports rule violations<br>
+
 /monitor - Tracks system metrics of PC/hosting<br>
+
 /warn - Decreases user reputation<br>
+
 /reput - Increases user reputation<br>
+
 /me - Checks your own reputation<br>
+
 /ban - Bans user with reason logging<br>
+
 /mute - Temporarily mutes user with specified duration and reason<br>
+
 /config - displays the current settings (from the configuration file `settings.json` ), Parameter: -r - reloads the settings if they have been modified, eliminating the need to restart the bot using: `/config -r`
+
 /t -more translation of the Russian
 
 <h3>Installation:</h3>
