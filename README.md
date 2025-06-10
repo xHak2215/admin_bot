@@ -147,8 +147,8 @@ python aea_bot.py
 }
 ```
 true - enabled, false - disabled  
-bambam - automatic mutes/bans<br>
-delet_messadge - automatic message deletion (specifically, a message will be deleted after 5 reports)<br>
+bambam - automatic mutes and bans<br>
+delet_messadge - automatic message deletion (specifically, a message will be deleted after 5 reports) it also includes the "delete spam" button attached to the spam message.<br>
 admin_grops - admin group (enter its ID)<br>
 spam_limit - number of messages from a single user that will be considered spam (within the time frame specified in spam_timer)<br>
 spam_timer - functionality described above<br>
