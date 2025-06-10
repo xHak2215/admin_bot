@@ -49,7 +49,7 @@ except ImportError:
             print('\33[32m error install (что то пошло не так )')
 
 
-TOKEN = "7567661827:AAHiwdDlLCdAJ4MXVremhlYXTZNrA_Txzp8" 
+TOKEN = " TOKIN " 
 
 
 def umsettings():
@@ -71,7 +71,6 @@ except:
 help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite - перевод сообщения на русский\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 logse="nan"
 i=0
-otklik=0
 admin_list=["@HITHELL","@mggxst"]
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
 
@@ -92,7 +91,6 @@ except:
 bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
-#os.chdir(os.getcwd())
 warn=0
 print(os.getcwd())
 
@@ -116,9 +114,9 @@ else:
 if warn >=3:
     bot.send_message(admin_grops, f"обнаружены не критичные ошибки возможны неполадки\nwarn level:{warn}")
 
-now = datetime.now() 
-current_time = now.strftime("%H:%M")
-bot.send_message(admin_grops, f"бот запущен \ntime>> {current_time}\nотклик>> {time.time()-otklik}")
+date = datetime.now().strftime("%H:%M")
+
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -236,7 +234,7 @@ def send_help(message):
 # Команда /monitor    
 @bot.message_handler(commands=['monitor','монитор'])
 def monitor_command(message):
-    if message.date - time.time() >= 35:
+    if message.date - time.time() <= 60:
         cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
         bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
 
@@ -281,18 +279,20 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
-    if message.date - time.time() >= 35:
+    if message.date - time.time() <= 35:
         pass
     #markup = types.InlineKeyboardMarkup()
     #button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
     #markup.add(button1)
     #bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
+    
 # Хранение данных о репортах
 report_data =  {}
 report_user=[]
 # Обработка ответа на сообщение с /report
 @bot.message_handler(commands=['report','репорт','fufufu'])
 def handle_report(message):
+    n=5
     if message.reply_to_message:
         chat_id = message.chat.id#инециалезацыя всякой хрени
         reported_message_text = message.reply_to_message.text
@@ -320,7 +320,14 @@ def handle_report(message):
 
         bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ','записал ...'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
-        if len(report['responses']) >= 5:
+        reput=data_base(message.chat.id,ban_ded)[1]
+        if reput > 2:
+            n=4
+        elif reput <0:
+            n=6
+        else:
+            n=5
+        if len(report['responses']) >= n:
             for i in range(len(report_user)):
                 data_base(message.chat.id,report_user[i],ps_reputation_upt=-1)
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
@@ -329,11 +336,9 @@ def handle_report(message):
                     teg+=f",{admin_list[i]}"
                 else:
                     teg+=f"{admin_list[i]}"
-            bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> tg://user?id={ban_ded} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
+            bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
             if delet_messadge:
                 bot.delete_message(message.chat.id,message.message_id)
-            #bot.send_message(admin_grops, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
-            #logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
         # Удаляем данные о репорте
         del report_data[chat_id]
     else: 
@@ -463,7 +468,7 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
     finally:
         connection.close()
         
-def data_base(chat_id, warn_user_id, nfkaz=0,soob_num=0,ps_reputation_upt=0,time_v=0) -> list: # data_base(message.chat.id,message.from_user.id,0,0,0) (вызов без изменения базы ) выход: [resperens,ps_reputation_new,int(soob_num),time.time()] (репутация,2 репутация_ps,каличество сообщений,время входа) 
+def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, time_v=0) -> list: # data_base(message.chat.id,message.from_user.id,0,0,0) (вызов без изменения базы ) выход: [resperens,ps_reputation_new,int(soob_num),time.time()] (репутация,2 репутация_ps,каличество сообщений,время входа) 
     try:
         resperens = 5
         # Создаем подключение к базе данных
@@ -551,7 +556,6 @@ def set_day_message():#я не смог это реализовать я пох�
             timer = 0
     except (json.JSONDecodeError, KeyError):
         timer = 0
-    print(timer)
     # Если таймер не установлен или прошло больше суток
     if timer == 0 or time.time() - timer >= 1*86400:
         try:
@@ -617,9 +621,9 @@ def handle_warn(message):
             logger.debug(f"репутация снижена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
             logger.info(f"Пользователь @{message.from_user.username} понизил репутацию @{message.reply_to_message.from_user.username} ") 
         
-        # Проверяем, достаточно ли ответов для мута
-            if reputation <= 0:
-                if bambam==True:
+        # Проверяем, достаточно ли маленькая репутация для мута
+            if bambam==True:
+                if reputation <= 0:
                     #Ограничиваем пользователя на 24 часа 
                     bot.restrict_chat_member(
                     chat_id=message.chat.id,
@@ -627,8 +631,8 @@ def handle_warn(message):
                     until_date=timedelta(hours=24),
                     can_send_messages=False
                     )
-                    bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")
-                    logger.debug(f"Пользователь {message.reply_to_message.from_user.username} получил бан на 24 часа за нарушение.")        
+                    bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")
+                    logger.info(f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")        
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
                 bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={warn_message} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
         else:
@@ -694,12 +698,12 @@ def handle_warn(message):
 
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
-    if message.data - time.time() >= 35:
+    if time.time() - message.date <= 35:
         bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
-    if message.data - time.time() >= 35:
+    if time.time() - message.date <= 35:
         return
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
@@ -853,29 +857,117 @@ def audio_to_text(message):
         file_info = bot.get_file(message.voice.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
 '''
+class delete_data:
+    def __init__(self,message_l:list,chat_id):
+        self.message_l=message_l
+        self.chat_id=chat_id
         
-def nacase(message):
+        
+class DeleteData:
+    def __init__(self):
+        self.message_l = []
+        self.chat_id = None
+
+# Глобальный экземпляр для хранения данных
+delete_data = DeleteData()
+
+def nacase(message, delete_message=None):
     try:
         user_messages[message.from_user.id] = []
-        if bool(bambam):
-            # Ограничиваем пользователя на 24 часа 
+        the_message = str(message.chat.id).replace("-100", "")
+        
+        if bool(bambam): 
+            # Ограничиваем пользователя на 24 часа
             bot.restrict_chat_member(
-            chat_id=message.chat.id,
-            user_id=message.from_user.id,
-            until_date=timedelta(hours=24),
-            can_send_messages=False
+                chat_id=message.chat.id,
+                user_id=message.from_user.id,
+                until_date=int(time.time()) + 86400, 
+                can_send_messages=False
             )
-            reputation=data_base(message.chat_id,message.from_user.id,message,3)
-            bot.send_message(message.chat.id, f"Пользователь {message.from_user.username} замучен на 1 день.\n рапутация снижена:{reputation}" )
+            reputation = data_base(message.chat.id, message.from_user.id, ps_reputation_upt=3)
+            bot.send_message(
+                message.chat.id, 
+                f"Пользователью @{message.from_user.username} выдан мут на 1 день.\nРепутация снижена: {reputation}"
+            )
+        
+        # Формируем сообщение для админов
+        admin_msg = (
+            f'Обнаружен спам от пользователя >> @{message.from_user.username}\n'
+            f'Сообщение: {message.text if message.content_type == "text" else message.content_type}\n'
+            f'Ссылка: https://t.me/c/{the_message}/{message.message_id}'
+        )
+        
+        # Если нужно удаление сообщений
+        if delet_messadge and delete_message:
+            markup = types.InlineKeyboardMarkup()
+            button = types.InlineKeyboardButton(
+                "Удалить спам", 
+                callback_data=f"delete_spam_{message.chat.id}"
+            )
+            markup.add(button)
             
-            if bool(delet_messadge):
-                bot.delete_message(message.chat.id,message.message_id)
-        id_spam_message=str(message.chat.id).replace("-100", "")
-        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username},id:{message.from_user.id}')
-        bot.send_message(admin_grops, f'Обнаружен спам от пользователя >> @{message.from_user.username} | сообщение: {message.text if message.content_type == "text" else "Не текстовое сообщение"} \n|https://t.me/c/{id_spam_message}/{message.message_id}')
+            # Сохраняем данные для удаления
+            delete_data.message_l = delete_message
+            delete_data.chat_id = message.chat.id
+            bot.send_message(admin_grops, admin_msg, reply_markup=markup)
+        else:
+            bot.send_message(admin_grops, admin_msg)
+        
+        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username}, id: {message.from_user.id}')
+        
+    except telebot.apihelper.ApiTelegramException as e:
+        bot.send_message(admin_grops, f'{str(e)}\nВероятно у бота недостаточно прав')
+        logger.error(f'{str(e)}\nВероятно у бота недостаточно прав')
     except Exception as e:
-        bot.send_message(admin_grops, f"Ошибка: {str(e)}")
+        bot.send_message(admin_grops, f"Неожиданная ошибка: {str(e)}")
+        logger.error(f"Неожиданная ошибка: {str(e)}")
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('delete_spam_'))
+def handle_spam_deletion(call):
+    try:
+        # Проверка прав администратора
+        if (call.from_user.id not in [5194033781] and bot.get_chat_member(call.message.chat.id, call.from_user.id).status not in ['creator', 'administrator']):
+            bot.answer_callback_query(
+                call.id,
+                text=random.choice(['Ты не администратор!','Только админы вершат правосудие','Ты не админ','Неа, тебе нельзя','Нет']),
+                show_alert=False
+            )
+            return
+        # Проверка наличия сообщений для удаления
+        if not hasattr(delete_data, 'message_l') or not delete_data.message_l:
+            bot.answer_callback_query(call.id, "Нет сообщений для удаления")
+            return
+        # Удаление сообщений
+        deleted_count = 0
+        for msg_id in delete_data.message_l:
+            try:
+                bot.delete_message(delete_data.chat_id, msg_id)
+                deleted_count += 1
+            except:
+                continue
+        # Ответ пользователю
+        bot.answer_callback_query(call.id, f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений")
+    except Exception as e:
+        bot.answer_callback_query(call.id,f"Ошибка при удалении: {str(e)}")
+        logger.error(f"Ошибка в handle_spam_deletion: {str(e)}")
+        
+@bot.callback_query_handler(func=lambda call: call.data.startswith('delete_spam_'))
+def show_profile(call):
+    if bot.get_chat_member(call.chat.id, call.from_user.id).status in ['creator','administrator'] or call.from_user.id == 5194033781:
+        if len(delete_data.message_l)>=0:
+            for i in delete_data.message_l:
+                bot.delete_message(delete_data.chat_id,i)
+            bot.answer_callback_query(call.id, f"успешно , удаелно:{len(delete_data.message_l)} сообщений")
+        else:
+            bot.answer_callback_query(call.id, "Нет сообщений для удаления")
+    else:
+        bot.answer_callback_query(
+        call.id,
+        text=['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,5)],
+        show_alert=False
+    )
+        
+    
 user_messages = {}#инициализация словарей и тп
 user_text = {}
 message_text=[]
@@ -883,25 +975,31 @@ message_text=[]
 #SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
 s_level=0
 tekst_m=[]
+delete_message=[]
         
 # Функция для обработки сообщений
 def anti_spam(message):
     #инициализация хрени всякой     
     user_id = message.from_user.id
     current_time = time.time()
-    tekst_m.append({message.text:message.id})
+    tekst_m.append({message.text:message.message_id})
     user_text[user_id] = tekst_m  # Сохраняем текст сообщения и id
     keys_to_delete=[]
+    
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение 
    
     # Удаление старых временных меток
     if user_id not in user_messages:
         user_messages[user_id] = []
-    user_messages[user_id] = [timestamp for timestamp in user_messages[user_id] if current_time - timestamp < SPAM_TIMEFRAME]
-
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение 
+    user_messages[user_id] = [
+        [ts, msg_id] 
+        for [ts, msg_id] in user_messages[user_id] 
+        if current_time - ts < SPAM_TIMEFRAME
+    ]
     
     # Добавление текущего временного штампа
-    user_messages[user_id].append(current_time)
+    user_messages[user_id].append([current_time, message.message_id])
+    
     emoji=''
     if message.content_type=='sticker':
         emoji='( '+message.sticker.emoji+' )'
@@ -910,7 +1008,9 @@ def anti_spam(message):
     logger.debug(logs)
    # Проверка на спам
     if len(user_messages[user_id]) > SPAM_LIMIT:
-        nacase(message)
+        for i in user_messages[user_id]:
+            delete_message.append(i[1])
+        nacase(message,delete_message)
         #bot.delete_message(message.chat.id,message.message_id)
         return
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
@@ -919,6 +1019,7 @@ def anti_spam(message):
         keys_to_delete=[]
         list_mess=[]
         for i in range(len(user_text.keys())):
+            mess=list(user_text[list(user_text.keys())[i]])
             for temp_list_mess in list(user_text[list(user_text.keys())[i]]):
                 list_mess.append(list(temp_list_mess.keys())[0])# достаю текст сообщения и добовляю list_mess
             povtor_messade_shet=0
@@ -931,13 +1032,11 @@ def anti_spam(message):
                     povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
                 if povtor_messade_shet>=SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
-                    nacase(message)
+                    nacase(message,[message.message.id])
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
                     text_s=str(list_mess[a])
-                    if str(text_s).count('@')>=10:
-                        s_level+=1
                     if str(text_s)==list_mess[0] and len(list_mess)>=1:
                         s_level+=1
                     if len(text_s)>=300:
@@ -963,13 +1062,14 @@ def anti_spam(message):
                         bambamSpamerBlat=bambamSpamerBlat+1
                 if bambamSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
-                    nacase(message)
+                    nacase(message,[message.message.id])
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
             if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
                 keys_to_delete.append(list(user_text.keys())[i])
-                nacase(message)
+                print(mess[list(user_text.keys())[i]])
+                nacase(message,[message.message.id])
     # Удаляем ключи после завершения итерации
     for key in range(len(keys_to_delete)):
         if key != None:
@@ -1087,7 +1187,6 @@ def main():
                     #scheduler_thread = threading.Thread(target=update_user)
                     #scheduler_thread.daemon = True
                     #scheduler_thread.start()
-                    otklik=time.time()
                 except requests.exceptions.ReadTimeout:
                     print("time out")
             except Exception as e:
