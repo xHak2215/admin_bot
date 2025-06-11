@@ -10,6 +10,7 @@ from datetime import datetime
 import traceback
 from collections import Counter
 import threading
+import io
 
 try:
     import telebot
@@ -27,6 +28,7 @@ try:
     from googletrans import Translator
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
+    print('full error message>>\n'+traceback.format_exc())
     i=0
     if os.name == 'nt':
         print('\33[0m pip upgrade')
@@ -68,7 +70,7 @@ try:
 except:
     logger.debug('error settings import ')
     umsettings()
-help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite - перевод сообщения на русский\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
@@ -698,12 +700,12 @@ def handle_warn(message):
 
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
-    if time.time() - message.date <= 35:
+    if time.time() - message.date <= 60:
         bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
 
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
-    if time.time() - message.date <= 35:
+    if time.time() - message.date >= 60:
         return
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
@@ -717,7 +719,7 @@ def handle_warn(message):
             else:    
                 bot.reply_to(message,['что то случилось мистер админ','bam bam бум бум','глдавное не спамь!','ану ка что тут такого'][random.randint(0,3)])
     else:
-        bot.reply_to(message,['что тебе нужно','кто то плохо себя вел?','главное не спамь !','боньк','спам == вычисление по IP и марсельное унижение'] [random.randint(0,4)])
+        bot.reply_to(message,['что тебе нужно','кто то плохо себя вел?','главное не спамь !','боньк',] [random.randint(0,3)])
 # Периодическое напоминание
 def send_reminder():
     chat_id = '-1002170027967'# Укажите ID чата для отправки напоминаний
@@ -736,13 +738,13 @@ def handle_warn(message):
                 if 'reason:' in commad:
                     reason=commad.split('reason:')[1]
                 else :
-                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`')
+                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`',parse_mode='MarkdownV2')
                 try:
                     bot.ban_chat_member(message.chat.id,message.reply_to_message)
                     logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
                     bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
                 except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав  ')
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
             else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
@@ -789,7 +791,7 @@ def handle_warn(message):
                         if len(error)>1:
                             error+=','
                         error+=' не хватает аргумента `time:`'
-                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты  ')
+                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты',parse_mode='MarkdownV2')
                     return
                 #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
                 try:
@@ -797,7 +799,7 @@ def handle_warn(message):
                     logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
                     bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
                     if wirning != None:
-                        bot.reply_to(message,wirning)
+                        bot.reply_to(message,wirning,parse_mode='MarkdownV2')
                 except telebot.apihelper.ApiTelegramException:
                     bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
             else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
@@ -811,27 +813,37 @@ def run_command(cmd):
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_warn(message):
-    if CONSOLE_CONTROL:
-        if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
-            if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-                command=str(message.text).split(' ')[1]
-                if sys.platform.startswith('win'):
-                    out=run_command(command)
+    try:
+        if CONSOLE_CONTROL:
+            if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
+                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+                    command=str(message.text).split(' ')[1]
+                    if sys.platform.startswith('win'):
+                        out=run_command(command) # возможная кросс плотформиность
+                    else:
+                        out=run_command(command)
+                        if 'sudo: error initializing audit plugin sudoers_audit'in out:
+                            out=out+'\n! пользеватель не найден проверте настройку (она находиться в mein файле)' 
+                    bot.reply_to(message,out)
                 else:
-                    out=run_command(command)
-                    if 'sudo: error initializing audit plugin sudoers_audit'in out:
-                        out=out+'\n! пользеватель не найден проверте настройку (она находиться в mein файле)' 
-                bot.reply_to(message,out)
+                    bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
             else:
-                bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
+                bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
         else:
-            bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
-    else:
-        bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
+            if message.date - time.time()<=60:
+                bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
+    except:
+        bot.reply_to(message,traceback.format_exc())
         
-@bot.message_handler(commands=['translite','t'])
+@bot.message_handler(commands=['t','translate'])  
 def translitor(message):
     if message.reply_to_message:
+#        try:
+#            bin=str(int(message.reply_to_message.text.replace(' ','')).encode('utf-8').decode('utf-8'))
+#            bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
+#            bot.reply_to(message,bytes_list)
+#            return
+#        except:print(traceback.format_exc())
         translator = Translator()
         conf = translator.detect(message.reply_to_message.text)
         kont=f'Язык: {conf.lang}'
@@ -841,27 +853,63 @@ def translitor(message):
         if ':' in message.text:
             try:
                 text=str(message.text).replace('/t','').replace('/translite','').split(':')
+                if text[1]=="bin":
+                    bot.reply_to(message, ''.join(format(byte, '08b') for byte in text[0].encode("utf-8")))
+                    return
+                elif text[1]=="hex":
+                    bot.reply_to(message, text[0].encode("utf-8").hex().replace("'",''))
+                    return
                 translator = Translator()
                 conf = translator.detect(str(message.text))
                 result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
-        else:
-            bot.reply_to(message,'ответе на сообщение что ты перевести его на Русский\nпример перевода на иностранный язык: /t en:привет (/t язык:текст)')
-            
+                
 ''' голосовые в текст 
 @bot.message_handler(commands=['text'])
 def audio_to_text(message):
-    if message.voice:
-        file_info = bot.get_file(message.voice.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
+    if message.reply_to_message:
+        if message.voice:
+            file_info = bot.get_file(message.voice.file_id)
+            downloaded_file = bot.download_file(file_info.file_path)
 '''
-class delete_data:
-    def __init__(self,message_l:list,chat_id):
-        self.message_l=message_l
-        self.chat_id=chat_id
-        
+
+@bot.message_handler(commands=['download','dow'])
+def download(message):
+    if message.reply_to_message:
+            if message.reply_to_message.sticker:
+                if len(list(str(message.text).split(' ')))<2:
+                    bot.reply_to(message,"неверное использование команды пример: /download png ")
+                    return
+                output_format=str(message.text).split(' ')[1].upper()
+                sticker_id = message.reply_to_message.sticker.file_id
+                # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
+                file_info = bot.get_file(sticker_id)
+                # формируем ссылку и "загружаем" изображение открываем  из байтов 
+                with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
+                # Конвертируем в RGB для форматов, которые не поддерживают прозрачность
+                    if output_format in ('JPEG', 'JPG'):
+                        img = img.convert('RGB')
+                # Сохраняем в байтовый поток
+                output_buffer = io.BytesIO()
+                if "resize:" in message.text:
+                    rise=str(message.text).split('resize:')[1]
+                    print(rise.split(',')[0],rise.split(',')[1])
+                    img.resize(rise.split(',')[0],rise.split(',')[1])
+                try:
+                    img.save(output_buffer, format=output_format)
+                except KeyError:
+                    bot.reply_to(message,f'ошибка с форматом {output_format} не определен')
+                bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+            elif message.reply_to_message.voice:
+                file_info = bot.get_file(message.reply_to_message.voice.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                bot.send_document(message.chat.id, downloaded_file ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.ogg')
+            else:
+                bot.reply_to(message,'не подлежит скачиванию')
+    else:
+        bot.reply_to(message,'ответе на ГС или стикер чтобы скачать')
         
 class DeleteData:
     def __init__(self):
@@ -884,20 +932,19 @@ def nacase(message, delete_message=None):
                 until_date=int(time.time()) + 86400, 
                 can_send_messages=False
             )
-            reputation = data_base(message.chat.id, message.from_user.id, ps_reputation_upt=3)
+            data_base(message.chat.id, message.from_user.id, ps_reputation_upt=3)
             bot.send_message(
                 message.chat.id, 
-                f"Пользователью @{message.from_user.username} выдан мут на 1 день.\nРепутация снижена: {reputation}"
+                f"Пользователью @{message.from_user.username} выдан мут на 1 день."
             )
         
         # Формируем сообщение для админов
         admin_msg = (
             f'Обнаружен спам от пользователя >> @{message.from_user.username}\n'
-            f'Сообщение: {message.text if message.content_type == "text" else message.content_type}\n'
-            f'Ссылка: https://t.me/c/{the_message}/{message.message_id}'
+            f'Сообщение: {message.text if message.content_type == "text" else message.content_type}'
+            f'|https://t.me/c/{the_message}/{message.message_id}'
         )
         
-        # Если нужно удаление сообщений
         if delet_messadge and delete_message:
             markup = types.InlineKeyboardMarkup()
             button = types.InlineKeyboardButton(
