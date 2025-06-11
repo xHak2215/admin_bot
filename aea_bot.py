@@ -680,7 +680,7 @@ def handle_warn(message):
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
         if '-all' in str(message.text).lower():
-            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}\nid:{user}')
+            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}')
             return
         if str(data[3]) != str(0):
             if data[3]>=86400:
