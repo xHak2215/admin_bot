@@ -25,6 +25,7 @@
 <h2>информация </h2>
 
 <h3>бот адменистратор с оповешением о спаме репортах</h3>
+<h3>для запуска бота вставите свой токен в файл TOKEN без пробелов или каких либо других символов!</h3>
 <h3>описание</h3>
 <h4>
 Это бот с распознаванием спама и оповещением администраторов чата о нем.имеет настройки анти спама выдаваемых наказаний и группы администрации  <br>
@@ -95,6 +96,7 @@ console_control - разрешения удалённого запуска ко�
 
 <h3>eng</h3>
 This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
+<h3>To launch the bot, insert your token into the TOKIN file without spaces or any others!</h3>
 Key Functions:<br>
 Spam detection with instant admin notifications<br>
 Adjustable anti-spam thresholds and penalty settings<br>
