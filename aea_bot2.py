@@ -13,6 +13,7 @@ import threading
 import io
 
 try:
+    from vosk import Model, KaldiRecognizer
     import telebot
     from telebot import types
     from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -50,10 +51,15 @@ except ImportError:
         else:
             print('\33[32m error install (что то пошло не так )')
 
-
-TOKEN = " TOKIN " 
-
-
+try:
+    with open("TOKEN", "r") as t:
+        TOKEN=t.read().replace(' ','')
+except FileNotFoundError:
+    print('\33[31m error no file TOKEN ,the file auto creat please write you token to file TOKEN \33[0m')
+    with open(os.path.join(os.getcwd(), 'TOKEN'), 'w') as f:
+        f.write('please write you token')
+    sys.exit(1)
+    
 def umsettings():
     global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL
     bambam=False
@@ -70,7 +76,7 @@ try:
 except:
     logger.debug('error settings import ')
     umsettings()
-help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \nto_text - перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
@@ -96,19 +102,19 @@ bot = telebot.TeleBot(TOKEN)
 warn=0
 print(os.getcwd())
 
-if os.path.exists(f'{os.getcwd()}\\asets\\hello.gif'):
+if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
     print('gif OK')
 else:
     warn=warn+1
     print('error no hello.gif')
-if os.path.exists('settings.json'):
+if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
     print('settings.json OK')
 else:
     warn=warn+1
     print('error no settings.json')
-if os.path.exists('requirements.txt') != True:
+if os.path.exists(os.path.join(os.getcwd(), 'requirements.txt')) != True:
     warn=warn+1
-if os.path.exists('Users_base.db'):
+if os.path.exists(os.path.join(os.getcwd(), 'Users_base.db')):
     print('data base ok')
 else:
     warn=warn+1
@@ -262,7 +268,7 @@ def monitor_command(message):
         test=test+'Roboto_Condensed-ExtraBoldItalic шрифт OK\n'
     else:
         test=test+'error no Roboto_Condensed-ExtraBoldItalic \n'
-    if os.path.exists(f'{os.getcwd()}/settings.json'):
+    if os.path.exists(os.path.join(os.getcwd(),'settings.json')):
         test=test+'cofig file OK\n'
     else:
         test=test+'error no config file \n'
@@ -283,10 +289,10 @@ def time_server_command(message):
 def pravilo(message):
     if message.date - time.time() <= 35:
         pass
-    #markup = types.InlineKeyboardMarkup()
-    #button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
-    #markup.add(button1)
-    #bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
+    #    markup = types.InlineKeyboardMarkup()
+    #    button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
+    #    markup.add(button1)
+    #    bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
     
 # Хранение данных о репортах
 report_data =  {}
@@ -309,8 +315,8 @@ def handle_report(message):
         report_chat=message.chat.id
     
         message_to_report=str(report_chat).replace("-100", "")
-        
-        data_base(chat_id,message.reply_to_message,ps_reputation_upt=1)
+        if len(report['responses'])>1:
+            data_base(chat_id,message.reply_to_message,ps_reputation_upt=1)
 
         if message.reply_to_message.content_type == 'sticker':
             bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | ↓стикер↓")
@@ -675,7 +681,7 @@ def handle_warn(message):
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
         if '-all' in str(message.text).lower():
-            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}\nid:{user}')
+            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}')
             return
         if str(data[3]) != str(0):
             if data[3]>=86400:
@@ -865,15 +871,80 @@ def translitor(message):
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
-                
-''' голосовые в текст 
-@bot.message_handler(commands=['text'])
+
+@bot.message_handler(commands=['to_text'])
 def audio_to_text(message):
-    if message.reply_to_message:
-        if message.voice:
-            file_info = bot.get_file(message.voice.file_id)
-            downloaded_file = bot.download_file(file_info.file_path)
-'''
+    mes=None
+    if not message.reply_to_message or not message.reply_to_message.voice:
+        return bot.reply_to_message(message, "Пожалуйста, ответьте командой /text на голосовое сообщение")
+
+    try:
+        # Определяем путь к ffmpeg
+        if sys.platform.startswith('win'):
+            ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+        else:
+            ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+        
+        # Получаем голосовое сообщение
+        file_info = bot.get_file(message.reply_to_message.voice.file_id)
+        ogg_data = bot.download_file(file_info.file_path)
+        
+        # Сохраняем временный ogg-файл (бинарный режим!)
+        with open('save.ogg', 'wb') as f:
+            f.write(ogg_data)
+        
+        # Конвертируем в WAV
+        mes=subprocess.run([
+            ffmpeg,
+            '-i', 'save.ogg',
+            '-ar', '16000',  # частота дискретизации
+            '-ac', '1',      # моно-аудио
+            '-y',            # перезаписать если файл существует
+            'out.wav'
+        ], check=True,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if not os.path.exists('out.wav'):
+            logger.warning("Не удалось создать WAV-файл")
+        
+        # Читаем WAV-файл (бинарный режим!)
+        with open('out.wav', 'rb') as f:
+            wav_bytes = f.read()
+        
+        # Инициализация модели Vosk
+        model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
+        if not os.path.exists(model_path):
+            logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
+        
+        rec = KaldiRecognizer(Model(model_path), 16000)
+        
+        # Распознавание
+        results = []
+        wav_buffer = io.BytesIO(wav_bytes)
+        while True:
+            data = wav_buffer.read(4000)
+            if not data:
+                break
+            if rec.AcceptWaveform(data):
+                results.append(json.loads(rec.Result()))
+        
+        final = json.loads(rec.FinalResult())
+        text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
+        
+        bot.reply_to(message, f"Распознанный текст:\n{text}")
+        
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Ошибка конвертации аудио: {e}")
+        bot.reply_to(message, "Ошибка обработки аудио")
+    except Exception as e:
+        logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
+        bot.reply_to(message, f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}")
+    finally: 
+        # Удаляем временные файлы
+        for f in ['save.ogg', 'out.wav']:
+            try:
+                if os.path.exists(f):
+                    os.remove(f)
+            except:
+                pass
 
 @bot.message_handler(commands=['download','dow'])
 def download(message):
@@ -915,7 +986,6 @@ class DeleteData:
     def __init__(self):
         self.message_l = []
         self.chat_id = None
-
 # Глобальный экземпляр для хранения данных
 delete_data = DeleteData()
 
@@ -1178,7 +1248,7 @@ def welcome_new_member(message):
         logger.info(f'new member in chat | user name> {message.from_user.username}')
         data_base(message.chat.id,new_member.id,time_v=time.time())
         try:
-            input_gif_path = f'{os.getcwd()}/asets/hello.gif'
+            input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
             output_gif_path = 'output.gif'
             # Открываем изображение
             gif = Image.open(input_gif_path)
@@ -1186,7 +1256,7 @@ def welcome_new_member(message):
             frames_with_text = []
             # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
             try:
-                font = ImageFont.truetype(f"{os.getcwd()}/asets/Roboto_Condensed-ExtraBoldItalic.ttf", 35)
+                font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
             except IOError:
                 font = ImageFont.load_default(size=35)
             # Добавляем текст на каждый кадр
