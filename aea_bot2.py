@@ -11,6 +11,7 @@ import traceback
 from collections import Counter
 import threading
 import io
+import binascii
 
 try:
     from vosk import Model, KaldiRecognizer
@@ -76,7 +77,7 @@ try:
 except:
     logger.debug('error settings import ')
     umsettings()
-help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \nto_text - перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \n/to_text - перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
@@ -156,12 +157,12 @@ def monitor_resources():
 # Команда /help
 @bot.message_handler(commands=['help','помощь','sos'])
 def send_help(message):
-    if message.date - time.time() >= 35:
+    if message.date - time.time() <= 60:
         bot.send_message(message.chat.id, help_user)
 
 @bot.message_handler(commands=['admin_command'])
 def handle_warn(message):
-    if message.date - time.time() >= 35:
+    if message.date - time.time() <= 60:
         bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя\n/ban - отпровляет в бан пример: `/бан reason:по рофлу`\n/мут - отпровляет в мут `/мут reason:причина time:1.h` .h - часы (по умолчанию) , .d - дни , .m - минуты')
     
 # Команда /log
@@ -776,7 +777,7 @@ def handle_warn(message):
                         reason=arg[1]
                     if '.' in timer: 
                         deleu=timer.split('.')[1] 
-                        num_date=int(re.sub('\D', '',timer.split('.')[0])) #убираем буквы и т.д
+                        num_date=int(re.sub(r'\D', '',timer.split('.')[0])) #убираем буквы и т.д
                         if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
                             if deleu=='h':
                                 deleu=3600
@@ -844,12 +845,13 @@ def handle_warn(message):
 @bot.message_handler(commands=['t','translate'])  
 def translitor(message):
     if message.reply_to_message:
-#        try:
-#            bin=str(int(message.reply_to_message.text.replace(' ','')).encode('utf-8').decode('utf-8'))
-#            bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
-#            bot.reply_to(message,bytes_list)
-#            return
-#        except:print(traceback.format_exc())
+        try:
+            bin=str(message.reply_to_message.text).replace(' ','')
+            if set(bin) == {'0', '1'} :
+                bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
+                bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
+                return
+        except:print(traceback.format_exc())
         translator = Translator()
         conf = translator.detect(message.reply_to_message.text)
         kont=f'Язык: {conf.lang}'
@@ -860,7 +862,12 @@ def translitor(message):
             try:
                 text=str(message.text).replace('/t','').replace('/translite','').split(':')
                 if text[1]=="bin":
-                    bot.reply_to(message, ''.join(format(byte, '08b') for byte in text[0].encode("utf-8")))
+                    hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
+                    binary_str = ''.join([
+                    format(int(hex_str[i:i+2], 16), '08b') 
+                    for i in range(0, len(hex_str), 2)
+                        ])
+                    bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
                     return
                 elif text[1]=="hex":
                     bot.reply_to(message, text[0].encode("utf-8").hex().replace("'",''))
@@ -872,53 +879,81 @@ def translitor(message):
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
 
+
+def audio_conwert(data,format):
+        """
+        audio_conwert(data,format)
+        
+        :param1: binaru music data
+        
+        :param2: convert format data `mp4`
+        
+        :return: binaru converts data or error
+        """
+        try:
+            # Определяем путь к ffmpeg
+            if sys.platform.startswith('win'):
+                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+            else:
+                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+        
+            # Сохраняем временный файл
+            with open('save.ogg', 'wb') as f:
+                f.write(data)
+                
+            if not os.path.exists(ffmpeg):
+                logger.error(f'no file {ffmpeg} please download full asets file')
+            # Конвертируем в WAV
+            mes=subprocess.run([
+                ffmpeg,
+                '-i', 'save.ogg',
+                '-ar', '16000',  # частота дискретизации
+                '-ac', '1',      # моно-аудио
+                '-y',            # перезаписать если файл существует
+                f'out.{format}'
+            ], check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+            # Читаем файл
+            if os.path.exists(f'out.{format}'):
+                with open(f'out.{format}', 'rb') as f:
+                    return f.read()
+            else:
+                logger.warning(f'no file out.{format}')
+                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
+            os.remove(f'out.{format}')
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка конвертации аудио: {e}")
+            return "Ошибка обработки аудио"
+        except Exception as e:
+            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
+            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+        finally: 
+            # Удаляем временные файлы
+            for f in ['save.ogg', 'out.wav']:
+                try:
+                    if os.path.exists(f):
+                        os.remove(f)
+                except:
+                    pass
+
 @bot.message_handler(commands=['to_text'])
 def audio_to_text(message):
     mes=None
     if not message.reply_to_message or not message.reply_to_message.voice:
         return bot.reply_to_message(message, "Пожалуйста, ответьте командой /text на голосовое сообщение")
-
     try:
-        # Определяем путь к ffmpeg
-        if sys.platform.startswith('win'):
-            ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
-        else:
-            ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-        
-        # Получаем голосовое сообщение
-        file_info = bot.get_file(message.reply_to_message.voice.file_id)
-        ogg_data = bot.download_file(file_info.file_path)
-        
-        # Сохраняем временный ogg-файл (бинарный режим!)
-        with open('save.ogg', 'wb') as f:
-            f.write(ogg_data)
-        
-        # Конвертируем в WAV
-        mes=subprocess.run([
-            ffmpeg,
-            '-i', 'save.ogg',
-            '-ar', '16000',  # частота дискретизации
-            '-ac', '1',      # моно-аудио
-            '-y',            # перезаписать если файл существует
-            'out.wav'
-        ], check=True,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if not os.path.exists('out.wav'):
-            logger.warning("Не удалось создать WAV-файл")
-        
-        # Читаем WAV-файл (бинарный режим!)
-        with open('out.wav', 'rb') as f:
-            wav_bytes = f.read()
-        
+    
         # Инициализация модели Vosk
         model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
         if not os.path.exists(model_path):
             logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
         
         rec = KaldiRecognizer(Model(model_path), 16000)
-        
+        file_info = bot.get_file(message.reply_to_message.voice.file_id)
+        ogg_data = bot.download_file(file_info.file_path)
         # Распознавание
         results = []
-        wav_buffer = io.BytesIO(wav_bytes)
+        wav_buffer = io.BytesIO(audio_conwert(ogg_data,'wav')) # конвертирую в wav
         while True:
             data = wav_buffer.read(4000)
             if not data:
@@ -951,9 +986,11 @@ def download(message):
     if message.reply_to_message:
             if message.reply_to_message.sticker:
                 if len(list(str(message.text).split(' ')))<2:
-                    bot.reply_to(message,"неверное использование команды пример: /download png ")
-                    return
-                output_format=str(message.text).split(' ')[1].upper()
+                    #bot.reply_to(message,"неверное использование команды пример: /download png ")
+                    #return
+                    output_format='PNG'
+                else:
+                    output_format=str(message.text).split(' ')[1].upper()
                 sticker_id = message.reply_to_message.sticker.file_id
                 # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
                 file_info = bot.get_file(sticker_id)
@@ -974,9 +1011,16 @@ def download(message):
                     bot.reply_to(message,f'ошибка с форматом {output_format} не определен')
                 bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
             elif message.reply_to_message.voice:
-                file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
-                bot.send_document(message.chat.id, downloaded_file ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.ogg')
+                if len(list(str(message.text).split(' ')))<2:
+                    bot.reply_to(message,"неверное использование команды пример: /download mp3 ")
+                    return
+                output_format=str(message.text).split(' ')[1].lower()
+                if output_format in ['mp3','wav','aac','ogg','flac','wma','aiff','opus','alac','mp2']:
+                    file_info = bot.get_file(message.reply_to_message.voice.file_id)
+                    downloaded_file = bot.download_file(file_info.file_path)
+                    bot.send_document(message.chat.id, audio_conwert(downloaded_file,output_format) ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                else:
+                    bot.reply_to(message,'такого формата нет или он не потдерживаеться')
             else:
                 bot.reply_to(message,'не подлежит скачиванию')
     else:
