@@ -17,7 +17,8 @@ try:
     from vosk import Model, KaldiRecognizer
     import telebot
     from telebot import types
-    from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+    from telebot.types import InlineKeyboardButton
+    from telebot import formatting
     from collections import defaultdict
     import psutil
     import schedule
@@ -64,7 +65,7 @@ except FileNotFoundError:
 def umsettings():
     global bambam,delet_messadge,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL
     bambam=False
-    delet_messadge=False
+    delet_messadge=True
     admin_grops="-1002284704738"
     SPAM_LIMIT = 10 # Максимальное количество сообщений
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
@@ -77,7 +78,10 @@ try:
 except:
     logger.debug('error settings import ')
     umsettings()
-help_user = '/report - забань дебила в чате\n/я - узнать свою репутацию и количество сообщений\n/info - узнать информацию о пользователе\n/translite (сокращено /t) - перевод сообщения на русский\n/download (сокращено /dow) - скачивание стикеров/ГС при скачивании стикера можно изменить формат пример /download png \n/to_text - перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+    
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:`/t любой текст:eg` потдерживаються bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров/ГС при скачивании можно изменить формат пример: `/download png` \n/to_text — перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: `/бан reason:по рофлу`\n/мут — отправляет в мут `/мут reason:причина time:1.h` .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
+
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
@@ -133,7 +137,7 @@ def monitor_resources():
     response_time,response_time,cpu_percent,ram_percent,disk_percent=0,0,0,0,0
     popitki=5
     #пинг в среднем 5 (можно изменять в popitki )попыток
-    for  i in range(popitki):
+    for i in range(popitki):
         start_time = time.time()
         response=requests.get('https://core.telegram.org/')
         if response.status_code==200:
@@ -158,18 +162,18 @@ def monitor_resources():
 @bot.message_handler(commands=['help','помощь','sos'])
 def send_help(message):
     if message.date - time.time() <= 60:
-        bot.send_message(message.chat.id, help_user)
+        bot.reply_to(message, help_user)
 
 @bot.message_handler(commands=['admin_command'])
 def handle_warn(message):
     if message.date - time.time() <= 60:
-        bot.reply_to(message,'/monitor - показатели сервера \n/warn - понижение репутации на 1\n/reput - повышение репутации на 1\n/data_base - вся база данных\n/info - узнать репутацию пользователя\n/ban - отпровляет в бан пример: `/бан reason:по рофлу`\n/мут - отпровляет в мут `/мут reason:причина time:1.h` .h - часы (по умолчанию) , .d - дни , .m - минуты')
+        bot.reply_to(message, admin_command)
     
 # Команда /log
 @bot.message_handler(commands=['log'])
 def send_help(message):
     try:
-        bot.send_document(admin_grops,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
+        bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
     except Exception as e:
         bot.send_message(admin_grops,f"error logs file>> {e} ")
         logger.error(f"log error >> {e}")
@@ -288,7 +292,7 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
-    if message.date - time.time() <= 35:
+    if message.date - time.time()<=60:
         pass
     #    markup = types.InlineKeyboardMarkup()
     #    button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
@@ -375,7 +379,6 @@ def configfile(message):
     try:
         f=open(f'{os.getcwd()}/settings.json', 'r',encoding='utf-8', errors='replace')
         out=f.read()
-        print(out)
         if out=='' or out==None:
             out='none'
         bot.reply_to(message,out)
@@ -609,8 +612,9 @@ def status(rec):
 
 @bot.message_handler(commands=['я', 'me'])
 def send_statbstic(message):
-    data=data_base(message.chat.id,message.from_user.id,soob_num=1)
-    bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}")
+    if message.date - time.time()<=60:
+        data=data_base(message.chat.id,message.from_user.id,soob_num=1)
+        bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}")
 
 warn_data= {}
 # Обработка ответа на сообщение /warn
@@ -649,7 +653,6 @@ def handle_warn(message):
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
                     
-
 @bot.message_handler(commands=['reput'])
 def handle_warn(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
@@ -677,7 +680,7 @@ def handle_warn(message):
         data_v=''
         i=0
         c=''
-        chat_id = message.chat.id#инециалезацыя всякой хрени 
+        chat_id = message.chat.id# инециалезацыя всякой хрени 
         user=message.reply_to_message.from_user.id
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
@@ -699,7 +702,7 @@ def handle_warn(message):
                 i=str(round((time.time()-data[3])/3600))+ c
             else:
                 data_v=f'\nзащел в чат {datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')} ({i})'
-        bot.reply_to(message,f'текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}\nза день:{data[4]}{data_v}')
+        bot.reply_to(message,f'текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}') # \nза день:{data[4]}{data_v}
     else: 
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
 #    else:
@@ -813,29 +816,26 @@ def handle_warn(message):
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
 
-
-def run_command(cmd):
-    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    return result.stdout + result.stderr
-
 @bot.message_handler(commands=['cmd','console'])
 def handle_warn(message):
     try:
         if CONSOLE_CONTROL:
-            if str(message.chat.id)==admin_grops or message.from_user.id==5194033781:
-                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+            if str(message.chat.id)==admin_grops or message.from_user.id == 5194033781:
+                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
                     command=str(message.text).split(' ')[1]
-                    if sys.platform.startswith('win'):
-                        out=run_command(command) # возможная кросс плотформиность
+                    if sys.platform.startswith('win'): # кросс плотформиность
+                        result=subprocess.run(command , shell=True, stdout=subprocess.PIPE, text=True)
+                        out=result.stdout
                     else:
-                        out=run_command(command)
-                        if 'sudo: error initializing audit plugin sudoers_audit'in out:
-                            out=out+'\n! пользеватель не найден проверте настройку (она находиться в mein файле)' 
-                    bot.reply_to(message,out)
+                         result=subprocess.run(command , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                         out=result.stdout + result.stderr 
+                    bot.reply_to(message, out if out !=None else 'None')
                 else:
-                    bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
+                    if message.date - time.time()<=60:
+                        bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
             else:
-                bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
+                if message.date - time.time()<=60:
+                    bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
         else:
             if message.date - time.time()<=60:
                 bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
@@ -845,13 +845,15 @@ def handle_warn(message):
 @bot.message_handler(commands=['t','translate'])  
 def translitor(message):
     if message.reply_to_message:
-        try:
-            bin=str(message.reply_to_message.text).replace(' ','')
-            if set(bin) == {'0', '1'} :
-                bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
-                bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
-                return
-        except:print(traceback.format_exc())
+        bin=str(message.reply_to_message.text).replace(' ','')
+        if set(bin) == {'0', '1'} :
+            bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
+            bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
+            return
+        elif bin[0:6] == '0a2e14':
+            bot.reply_to(message, bytes.fromhex(bin).decode('utf-8'))
+            return
+            
         translator = Translator()
         conf = translator.detect(message.reply_to_message.text)
         kont=f'Язык: {conf.lang}'
@@ -861,7 +863,7 @@ def translitor(message):
         if ':' in message.text:
             try:
                 text=str(message.text).replace('/t','').replace('/translite','').split(':')
-                if text[1]=="bin":
+                if text[1].lower()=="bin":
                     hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
                     binary_str = ''.join([
                     format(int(hex_str[i:i+2], 16), '08b') 
@@ -869,8 +871,8 @@ def translitor(message):
                         ])
                     bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
                     return
-                elif text[1]=="hex":
-                    bot.reply_to(message, text[0].encode("utf-8").hex().replace("'",''))
+                elif text[1].lower()=="hex":
+                    bot.reply_to(message, '0a2e14'+(text[0].encode("utf-8").hex().replace("'",'')))
                     return
                 translator = Translator()
                 conf = translator.detect(str(message.text))
@@ -878,7 +880,6 @@ def translitor(message):
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
-
 
 def audio_conwert(data,format):
         """
@@ -939,48 +940,41 @@ def audio_conwert(data,format):
 @bot.message_handler(commands=['to_text'])
 def audio_to_text(message):
     mes=None
-    if not message.reply_to_message or not message.reply_to_message.voice:
-        return bot.reply_to_message(message, "Пожалуйста, ответьте командой /text на голосовое сообщение")
-    try:
-    
-        # Инициализация модели Vosk
-        model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
-        if not os.path.exists(model_path):
-            logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
-        
-        rec = KaldiRecognizer(Model(model_path), 16000)
-        file_info = bot.get_file(message.reply_to_message.voice.file_id)
-        ogg_data = bot.download_file(file_info.file_path)
-        # Распознавание
-        results = []
-        wav_buffer = io.BytesIO(audio_conwert(ogg_data,'wav')) # конвертирую в wav
-        while True:
-            data = wav_buffer.read(4000)
-            if not data:
-                break
-            if rec.AcceptWaveform(data):
-                results.append(json.loads(rec.Result()))
-        
-        final = json.loads(rec.FinalResult())
-        text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
-        
-        bot.reply_to(message, f"Распознанный текст:\n{text}")
-        
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Ошибка конвертации аудио: {e}")
-        bot.reply_to(message, "Ошибка обработки аудио")
-    except Exception as e:
-        logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-        bot.reply_to(message, f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}")
-    finally: 
-        # Удаляем временные файлы
-        for f in ['save.ogg', 'out.wav']:
+    if message.reply_to_message :
+        if message.reply_to_message.voice:
             try:
-                if os.path.exists(f):
-                    os.remove(f)
-            except:
-                pass
-
+                # Инициализация модели Vosk
+                model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
+                if not os.path.exists(model_path):
+                    logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
+        
+                rec = KaldiRecognizer(Model(model_path), 16000)
+                file_info = bot.get_file(message.reply_to_message.voice.file_id)
+                ogg_data = bot.download_file(file_info.file_path)
+                # Распознавание
+                results = []
+                data_r=audio_conwert(ogg_data,'wav')
+                if type(data_r)!='bytes':
+                    logger.error(data_r)
+                wav_buffer = io.BytesIO(data_r) # конвертирую в wav
+                while True:
+                    data = wav_buffer.read(4000)
+                    if not data:
+                        break
+                    if rec.AcceptWaveform(data):
+                        results.append(json.loads(rec.Result()))
+        
+                final = json.loads(rec.FinalResult())
+                text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
+                bot.reply_to(message, f"Распознанный текст:\n{text}")
+                
+            except Exception as e:
+                logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
+        elif message.reply_to_message.photo:
+            pass # распознование текста на фото не реализовал(спиздил код) из за необходимости использования нескольких тяжелых библиотек   
+    else:
+        bot.reply_to_message(message, "Пожалуйста, ответьте командой /to_text на голосовое сообщение")
+        
 @bot.message_handler(commands=['download','dow'])
 def download(message):
     if message.reply_to_message:
@@ -1026,6 +1020,49 @@ def download(message):
     else:
         bot.reply_to(message,'ответе на ГС или стикер чтобы скачать')
         
+@bot.message_handler(commands=['blaklist'])
+def download(message):
+    if message.reply_to_message.sticker and message.reply_to_message:
+        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+            logger.warning('no file blacklist.json')
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                json.dump([], f)
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+            blist = json.load(f)['stiker']
+    
+        sticker_id = message.reply_to_message.sticker.file_id
+        if sticker_id not in blist:
+            blist.append(sticker_id)
+    
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+            json.dump({'stiker':blist}, f)
+        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
+    
+    else:
+        bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
+    
+@bot.message_handler(commands=['unblaklist'])
+def download(message):
+    if message.reply_to_message.sticker and message.reply_to_message:
+        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+            logger.warning('no file blacklist.json')
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                json.dump([], f)
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+            blist = json.load(f)['stiker']
+    
+        blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
+
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+            if len(blist)<1:
+                blist=[0]
+            json.dump({'stiker':blist}, f)
+        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
+    
+    else:
+        bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
+            
+
 class DeleteData:
     def __init__(self):
         self.message_l = []
@@ -1112,23 +1149,56 @@ def handle_spam_deletion(call):
         bot.answer_callback_query(call.id,f"Ошибка при удалении: {str(e)}")
         logger.error(f"Ошибка в handle_spam_deletion: {str(e)}")
         
-@bot.callback_query_handler(func=lambda call: call.data.startswith('delete_spam_'))
-def show_profile(call):
-    if bot.get_chat_member(call.chat.id, call.from_user.id).status in ['creator','administrator'] or call.from_user.id == 5194033781:
-        if len(delete_data.message_l)>=0:
-            for i in delete_data.message_l:
-                bot.delete_message(delete_data.chat_id,i)
-            bot.answer_callback_query(call.id, f"успешно , удаелно:{len(delete_data.message_l)} сообщений")
-        else:
-            bot.answer_callback_query(call.id, "Нет сообщений для удаления")
+@bot.message_handler(commands=['ping'])
+def ping_command(message):
+    if '-help' in message.text:
+        bot.reply_to(message, 'аргументы: /ping ссылка для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки')
+    data=str(message.text).split(' ')
+    if len(data)>1:
+        command=data[1]
     else:
-        bot.answer_callback_query(
-        call.id,
-        text=['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,5)],
-        show_alert=False
-    )
+        url='https://ya.ru'
+        start_time = time.time()
+        response=requests.get(url)
+        if response.status_code==200:
+            scode= ''
+        else:
+            scode=f'\nerror conect\nstatus code {response.status_code}'
+        p_time=time.time() - start_time
+        bot.reply_to(message,'ping:'+p_time+scode)
+        return
+    parm=command.split(',')
+    regim=False
+    if len(parm) >= 2:
+        povt = int(parm[1])
+    else:
+        povt = 1
+    if len(parm) >= 3:
+        regim=parm[2]
+    if bool(regim):
+        p_time=0
+    else:
+        p_time=[]
+    for i in range(povt):
+        start_time = time.time()
+        response=requests.get(parm[0])
+        if response.status_code==200:
+            scode= ''
+        else:
+            scode=f'\nerror conect\nstatus code {response.status_code}'
+        if bool(regim):
+            p_time+=time.time() - start_time
+        else:
+            p_time.append(time.time() - start_time)
+    if bool(regim):
+        bot.reply_to(message,f'ping:{round(p_time/povt,4)}s{scode}')
+    else:
+        out=''
+        for i in range((len(p_time))):
+            out+=f'[{i}] ping: {round(p_time[i],5)}s\n' 
+        bot.reply_to(message,out+scode)
         
-    
+        
 user_messages = {}#инициализация словарей и тп
 user_text = {}
 message_text=[]
@@ -1251,6 +1321,17 @@ def anti_spam_forward(message,text=text,warn=warn):
 
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
+    if message.sticker:
+        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+            logger.warning('no file blacklist.json')
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                json.dump([], f)
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+            blist = json.load(f)['stiker']
+        if message.sticker.file_id in blist:
+            if bool(delet_messadge):
+                bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
+                bot.delete_message(message.chat.id,message.message_id)
     teg=''
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:     
