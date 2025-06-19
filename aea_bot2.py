@@ -79,7 +79,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:`/t любой текст:eg` потдерживаються bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров/ГС при скачивании можно изменить формат пример: `/download png` \n/to_text — перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:`/t любой текст:eg` потдерживаються bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: `/download png` \n/to_text — перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: `/бан reason:по рофлу`\n/мут — отправляет в мут `/мут reason:причина time:1.h` .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -322,21 +322,26 @@ def handle_report(message):
         message_to_report=str(report_chat).replace("-100", "")
         if len(report['responses'])>1:
             data_base(chat_id,message.reply_to_message,ps_reputation_upt=1)
+        coment_message=''
+        coment=message.text.replacce('/репорт','').replacce('/report','').replacce('/fufufu','').split(' ')
+        if len(coment)>1:
+            if len(coment[1])>2:
+                coment_message=f'| комментарий:{coment[1]}'
 
         if message.reply_to_message.content_type == 'sticker':
-            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | ↓стикер↓")
-            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} стикер id > {message.reply_to_message.sticker.file_id}")
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | ↓стикер↓")
+            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} стикер id > {message.reply_to_message.sticker.file_id}")
             bot.send_sticker(admin_grops, message.reply_to_message.sticker.file_id)
         else:
-            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
-            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
+            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
 
         bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ','записал ...'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
         reput=data_base(message.chat.id,ban_ded)[1]
         if reput > 2:
             n=4
-        elif reput <0:
+        elif reput < 0:
             n=6
         else:
             n=5
@@ -809,7 +814,7 @@ def handle_warn(message):
                     logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
                     bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
                     if wirning != None:
-                        bot.reply_to(message,wirning,parse_mode='MarkdownV2')
+                        bot.reply_to(message,wirning)
                 except telebot.apihelper.ApiTelegramException:
                     bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
             else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
@@ -881,13 +886,13 @@ def translitor(message):
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
 
-def audio_conwert(data,format):
+def audio_conwert(data,format,inp_format='save.ogg'):
         """
         audio_conwert(data,format)
         
         :param1: binaru music data
         
-        :param2: convert format data `mp4`
+        :param2: convert format data `mp3`
         
         :return: binaru converts data or error
         """
@@ -897,7 +902,6 @@ def audio_conwert(data,format):
                 ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
             else:
                 ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-        
             # Сохраняем временный файл
             with open('save.ogg', 'wb') as f:
                 f.write(data)
@@ -907,13 +911,12 @@ def audio_conwert(data,format):
             # Конвертируем в WAV
             mes=subprocess.run([
                 ffmpeg,
-                '-i', 'save.ogg',
+                '-i', inp_format,
                 '-ar', '16000',  # частота дискретизации
                 '-ac', '1',      # моно-аудио
                 '-y',            # перезаписать если файл существует
                 f'out.{format}'
             ], check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
             # Читаем файл
             if os.path.exists(f'out.{format}'):
                 with open(f'out.{format}', 'rb') as f:
@@ -930,7 +933,70 @@ def audio_conwert(data,format):
             return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
         finally: 
             # Удаляем временные файлы
-            for f in ['save.ogg', 'out.wav']:
+            for f in [inp_format, f'out.{format}']:
+                try:
+                    if os.path.exists(f):
+                        os.remove(f)
+                except:
+                    pass
+
+def video_to_audio_conwert(data,format):
+        """
+        audio_conwert(data,format)
+        
+        :param1: binaru music data
+        
+        :param2: video (`mp4`) convert to audio file 
+        
+        :return: binaru converts data or error
+        """
+        try:
+            # Определяем путь к ffmpeg
+            if sys.platform.startswith('win'):
+                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+            else:
+                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+        
+            # Сохраняем временный файл
+            with open('save.mp4', 'wb') as f:
+                f.write(data)
+                
+            if not os.path.exists(ffmpeg):
+                logger.error(f'no file {ffmpeg} please download full asets file')
+            codec = {
+            "ogg": "libopus",
+            "mp3": "libmp3lame",
+            "wav": "pcm_s16le",
+            "aac": "aac",
+            "flac": "flac",
+            "m4a": "aac",}
+            # Конвертируем в WAV
+            mes=subprocess.run([
+                ffmpeg,
+                '-i', 'save.mp4',
+                '-vn',
+                '-acodec', codec[format], # MP3 encoder
+                '-q:a', '2',              # Quality (0-9, 2=high)
+                '-y',
+                f'out.{format}'
+            ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # Читаем файл
+            if os.path.exists(f'out.{format}'):
+                with open(f'out.{format}', 'rb') as f:
+                    return f.read()
+            else:
+                logger.warning(f'no file out.{format}')
+                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
+            os.remove(f'out.{format}')
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ошибка конвертации аудио: {e}")
+            return "Ошибка обработки аудио"
+        except Exception as e:
+            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
+            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+        finally: 
+            # Удаляем временные файлы
+            for f in ['save.mp4', 'out.mp3']:
                 try:
                     if os.path.exists(f):
                         os.remove(f)
@@ -997,7 +1063,7 @@ def download(message):
                 output_buffer = io.BytesIO()
                 if "resize:" in message.text:
                     rise=str(message.text).split('resize:')[1]
-                    print(rise.split(',')[0],rise.split(',')[1])
+                    # print(rise.split(',')[0],rise.split(',')[1])
                     img.resize(rise.split(',')[0],rise.split(',')[1])
                 try:
                     img.save(output_buffer, format=output_format)
@@ -1013,6 +1079,17 @@ def download(message):
                     file_info = bot.get_file(message.reply_to_message.voice.file_id)
                     downloaded_file = bot.download_file(file_info.file_path)
                     bot.send_document(message.chat.id, audio_conwert(downloaded_file,output_format) ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                else:
+                    bot.reply_to(message,'такого формата нет или он не потдерживаеться')
+            elif message.reply_to_message.video:
+                if len(list(str(message.text).split(' ')))<2:
+                    bot.reply_to(message,"неверное использование команды пример: /download mp3 ")
+                    return
+                oformat=list(str(message.text).split(' '))[1]
+                file_info = bot.get_file(message.reply_to_message.video.file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                if oformat in ["ogg","mp3","wav","aac","flac","m4a"]:
+                    bot.send_document(message.chat.id, video_to_audio_conwert(downloaded_file,'mp3') ,reply_to_message_id=message.message_id ,visible_file_name=f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}')
                 else:
                     bot.reply_to(message,'такого формата нет или он не потдерживаеться')
             else:
@@ -1330,8 +1407,11 @@ def message_handler(message):
             blist = json.load(f)['stiker']
         if message.sticker.file_id in blist:
             if bool(delet_messadge):
-                bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
-                bot.delete_message(message.chat.id,message.message_id)
+                try:
+                    bot.delete_message(message.chat.id,message.message_id)
+                    bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
     teg=''
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:     
