@@ -106,7 +106,7 @@ console_control - разрешения удалённого запуска ко�
 - .ac3 (Dolby Digital)
 - .wma (Windows Media Audio)
 - .mp4 (AAC/ALAC)
-- .mkv (Любой кодек, включая FLAC)
+- .mkv (Любой кодек, включая FLAC)<br>
 загрузка стикеров :
 - .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
 - .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
@@ -197,7 +197,7 @@ download voice messages and audio tracks:
 - .ac3 (Dolby Digital)
 - .wma (Windows Media Audio)
 - .mp4 (AAC/ALAC)
-- .mkv (Любой кодек, включая FLAC)
+- .mkv (Любой кодек, включая FLAC)<br>
 
 download sticker:
 - .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
