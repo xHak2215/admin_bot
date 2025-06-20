@@ -91,7 +91,31 @@ spam_limit - количество сообщений от одного поль�
 spam_timer - функционал описан выше <br>
 ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено <br>
 console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console :<команда терминала> работает только в группе администрации администратором группы<br>
-(⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением)
+(⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением)<br>
+
+<a id="format"></a>
+поддерживаемые форматы:
+загрузка голосовых сообщений и аудио дорожек:
+- .mp3 (MPEG Audio Layer III)
+- .ogg (Opus/Vorbis)
+- .m4a (AAC в MP4-контейнере)
+- .flac (Free Lossless Audio Codec)
+- .wav (PCM/WAVE)
+- .aac (Raw AAC-поток)
+- .webm (Opus/Vorbis)
+- .ac3 (Dolby Digital)
+- .wma (Windows Media Audio)
+- .mp4 (AAC/ALAC)
+- .mkv (Любой кодек, включая FLAC)
+загрузка стикеров :
+- .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
+- .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
+- .JPEG	Joint Photographic Experts Group	L, RGB
+- .GIF	Graphics Interchange Format	L, P
+- .TIFF	Tagged Image File Format	L, LA, P, RGB, RGBA
+- .WebP	Современный формат от Google	RGB, RGBA
+- .PPM	Portable Pixmap	RGB
+- .ICO	Иконки Windows	RGBA
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
@@ -159,7 +183,31 @@ spam_limit - number of messages from a single user that will be considered spam 
 spam_timer - functionality described above<br>
 ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
 console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console :<terminal command>. Works only in the admin group and can be used solely by the group administrator.<br>
-(⚠️ This command can execute malicious commands as well—be cautious when enabling it.)
+(⚠️ This command can execute malicious commands as well—be cautious when enabling it.)<br>
+
+Supported formats:
+download voice messages and audio tracks:
+- .mp3 (MPEG Audio Layer III)
+- .ogg (Opus/Vorbis)
+- .m4a (AAC в MP4-контейнере)
+- .flac (Free Lossless Audio Codec)
+- .wav (PCM/WAVE)
+- .aac (Raw AAC-поток)
+- .webm (Opus/Vorbis)
+- .ac3 (Dolby Digital)
+- .wma (Windows Media Audio)
+- .mp4 (AAC/ALAC)
+- .mkv (Любой кодек, включая FLAC)
+
+download sticker:
+- .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
+- .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
+- .JPEG	Joint Photographic Experts Group	L, RGB
+- .GIF	Graphics Interchange Format	L, P
+- .TIFF	Tagged Image File Format	L, LA, P, RGB, RGBA
+- .WebP	Современный формат от Google	RGB, RGBA
+- .PPM	Portable Pixmap	RGB
+- .ICO	Иконки Windows	RGBA
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
 <h1><p align="right"><a href="#readme-top">↑</a></p></h1>
