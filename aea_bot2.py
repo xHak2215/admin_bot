@@ -277,6 +277,15 @@ def monitor_command(message):
         test=test+'cofig file OK\n'
     else:
         test=test+'error no config file \n'
+                # Определяем путь к ffmpeg
+    if sys.platform.startswith('win'):
+        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+    else:
+        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux    
+    if os.path.exists(ffmpeg):
+        test=test+'ffmpeg OK\n'
+    else:
+        test=test+'error no ffmpeg\n'
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
