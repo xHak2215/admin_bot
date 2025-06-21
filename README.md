@@ -92,7 +92,7 @@ console_control - разрешения удалённого запуска ко�
 (⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением)
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
-
+---
 <h3>eng</h3>
 This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
 Key Functions:<br>
