@@ -1,0 +1,9 @@
+loguru == 0.7.2
+telebot ==0.0.5
+psutil == 6.0.0
+requests == 2.23.0
+subprocess.run == 0.0.8
+schedule == 1.2.2
+googletrans == 4.0.0-rc1
+vosk == 0.3.45
+
