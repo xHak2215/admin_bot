@@ -1,0 +1,15 @@
+name: Replace files
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force replace files from feature branch
+        run: |
+          git fetch origin feature
+          git checkout bot2.0 -- .  # Заменить все файлы из feature
+          git commit -am "Replace all files with feature branch version"
+          git push origin main
