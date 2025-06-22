@@ -116,6 +116,8 @@ console_control - разрешения удалённого запуска ко�
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
+---
+
 <h3>eng</h3>
 This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
 <h3>To launch the bot, insert your token into the TOKIN file without spaces or any others!</h3>
