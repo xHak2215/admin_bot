@@ -1,5 +1,3 @@
-<a id="readme-top"></a>Add commentMore actions
-
   <h3 align="center">Telegram бот админестратор</h3>
 
 
@@ -19,7 +17,7 @@
      </li>
   </ol>
 </details>
-
+<a id="readme-top"></a>
 
 <h2>информация </h2>
 
