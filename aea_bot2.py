@@ -1571,9 +1571,8 @@ def welcome_new_member(message):
         except Exception as e:
             logger.error(f'error hello message >>{e}')
             username = '@'+new_member.username if new_member.username else "пользователь"
-            welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат! \n/help для справки",f"~новенький скинь ножки~\nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
-            bot.reply_to(message , welcome_message, parse_mode='MarkdownV2')
-            
+            welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
+            bot.reply_to(message , welcome_message, parse_mode="HTML")
 # Основной цикл
 def main():
     try:
