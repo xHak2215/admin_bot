@@ -102,9 +102,9 @@ console_control - разрешения удалённого запуска ко�
 - .webm (Opus/Vorbis)
 - .ac3 (Dolby Digital)
 - .wma (Windows Media Audio)
-- .mp4 (AAC/ALAC)
 - .mkv (Любой кодек, включая FLAC)<br>
-загрузка стикеров :
+
+загрузка стикеров/фото :
 - .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
 - .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
 - .JPEG	Joint Photographic Experts Group	L, RGB
@@ -196,7 +196,7 @@ download voice messages and audio tracks:
 - .mp4 (AAC/ALAC)
 - .mkv (Любой кодек, включая FLAC)<br>
 
-download sticker:
+download sticker/photo:
 - .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
 - .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
 - .JPEG	Joint Photographic Experts Group	L, RGB
