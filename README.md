@@ -55,7 +55,7 @@
 
 для работы приложения необходим <a href="https://www.python.org/"> python 3.12v</a> или выше  
 программа кросс плотформеная<br>
-для полной работы необходимо загрузить все асеты и заменить директорию asets на полную скачать может <a href="https://drive.google.com/file/d/1YEb0Wuvcz8syOwTeZ4ZmvEcPPelid61G/view?usp=drive_link">здесь</a>
+
 ```sh
 git clone https://github.com/xHak2215/admin_telegram_bot
 
