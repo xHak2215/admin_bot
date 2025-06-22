@@ -35,7 +35,7 @@ except ImportError:
     i=0
     if os.name == 'nt':
         print('\33[0m pip upgrade')
-        i=i+os.system('python3 -m pip install --upgrade pip')
+        i=i+os.system('python -m pip install --upgrade pip')
         print('\33[0m libs install')
         i=i+os.system('pip install -r requirements.txt')
         if i < 1:
@@ -1002,12 +1002,16 @@ def video_to_audio_conwert(data,format):
             if not os.path.exists(ffmpeg):
                 logger.error(f'no file {ffmpeg} please download full asets file')
             codec = {
-            "ogg": "libopus",
-            "mp3": "libmp3lame",
-            "wav": "pcm_s16le",
-            "aac": "aac",
+            "ogg" : "libopus",
+            "mp3" : "libmp3lame",
+            "wav" : "pcm_s16le",
+            "aac" : "aac",
             "flac": "flac",
-            "m4a": "aac",}
+            "m4a" : "aac",
+            "webm": "libopus -b:a 128k",
+            "ac3" :  "ac3 -b:a 448k",
+            "wma" : "wmapro -ac 6 -q:a 1"
+            }
             # Конвертируем в WAV
             mes=subprocess.run([
                 ffmpeg,
@@ -1090,6 +1094,7 @@ def download(message):
             'скачивание стикеров: <code>/download(или де /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
             'скачивание голосовых сообщений: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
             'скачивание аудио дорожек: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
+            'скачивание фото: <code>/download(или де /dow) png(любой доступный формат) </code>'
         ,parse_mode='HTML',disable_web_page_preview=True) 
         return
     
@@ -1160,7 +1165,7 @@ def download(message):
                 oformat=list(str(message.text).split(' '))[1]
                 file_info = bot.get_file(message.reply_to_message.video.file_id)
                 downloaded_file = bot.download_file(file_info.file_path)
-                if oformat in ["ogg","mp3","wav","aac","flac","m4a"]:
+                if oformat in ["ogg","mp3","wav","aac","flac","m4a","webm","ac3","wma"]:
                     data=video_to_audio_conwert(downloaded_file,'mp3')
                     if type(data) != bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} ')
