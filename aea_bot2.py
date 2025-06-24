@@ -71,6 +71,7 @@ def umsettings():
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
     BAN_AND_MYTE_COMMAND = True
     CONSOLE_CONTROL = False
+    AUTO_TRANSLETE = False
 
 try:
     with open("settings.json", "r") as json_settings:
@@ -97,6 +98,7 @@ try:
     SPAM_TIMEFRAME=int(settings['spam_timer'])
     BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
     CONSOLE_CONTROL=bool(settings['console_control'])
+    AUTO_TRANSLETE=dict(settings['auto_translete'])
 except:
     umsettings()
     logger.debug('error settings init')
@@ -1506,11 +1508,17 @@ def message_handler(message):
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
         data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
-        
+        return
     elif message.forward_from:
         anti_spam_forward(message)
     else:
         anti_spam(message)
+        if AUTO_TRANSLETE['Activate']:
+            translator = Translator()
+            conf = translator.detect(str(message.text))
+            if conf.lang != AUTO_TRANSLETE['laung']:
+                result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
+                bot.reply_to(message,result.text)
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
@@ -1570,7 +1578,7 @@ def welcome_new_member(message):
                 bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
         except Exception as e:
             logger.error(f'error hello message >>{e}')
-            username = '@'+new_member.username if new_member.username else "пользователь"
+            username = '@'+new_member.username if new_member.username else new_member.first_name 
             welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
             bot.reply_to(message , welcome_message, parse_mode="HTML")
 # Основной цикл
