@@ -5,6 +5,7 @@
     "spam_limit":10,
     "spam_timer":4,
     "ban_and_myte_command":true,
-    "console_control":true
+    "console_control":true,
+    "auto_translete":{"laung":"ru","Activate":false}
 
 }
