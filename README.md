@@ -72,12 +72,13 @@ python aea_bot.py
 ```json
 {
     "bambam":false,
-    "delet_messadge":false,
-    "admin_grops":"-1002284704738",
+    "delet_messadge":true,
+    "admin_grops":"-1002428028295",
     "spam_limit":10,
     "spam_timer":4,
     "ban_and_myte_command":true,
-    "console_control":true
+    "console_control":true,
+    "auto_translete":{"laung":"ru","Activate":false}
 
 }
 ```
@@ -167,12 +168,13 @@ python aea_bot.py
 ```json
 {
     "bambam":false,
-    "delet_messadge":false,
-    "admin_grops":"-1002284704738",
+    "delet_messadge":true,
+    "admin_grops":"-1002428028295",
     "spam_limit":10,
     "spam_timer":4,
     "ban_and_myte_command":true,
-    "console_control":true
+    "console_control":true,
+    "auto_translete":{"laung":"ru","Activate":false}
 
 }
 ```
