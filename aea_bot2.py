@@ -1182,45 +1182,52 @@ def download(message):
         
 @bot.message_handler(commands=['blaklist'])
 def blaklist(message):
-    if message.reply_to_message.sticker and message.reply_to_message:
-        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
-            logger.warning('no file blacklist.json')
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+        if message.reply_to_message.sticker and message.reply_to_message:
+            if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+                logger.warning('no file blacklist.json')
+                with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                    json.dump({'stiker':[1]}, f)
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+                blist = json.load(f)['stiker']
+    
+            sticker_id = message.reply_to_message.sticker.file_id
+            if sticker_id not in blist:
+                blist.append(sticker_id)
+    
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump({'stiker':[1]}, f)
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-            blist = json.load(f)['stiker']
+                json.dump({'stiker':blist}, f)
+            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
     
-        sticker_id = message.reply_to_message.sticker.file_id
-        if sticker_id not in blist:
-            blist.append(sticker_id)
-    
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-            json.dump({'stiker':blist}, f)
-        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
-    
+        else:
+            bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
-        bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
+        if message.date - time.time()<=60:
+            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
     
 @bot.message_handler(commands=['unblaklist'])
 def unblaklist(message):
-    if message.reply_to_message.sticker and message.reply_to_message:
-        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
-            logger.warning('no file blacklist.json')
-            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump([], f)
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-            blist = json.load(f)['stiker']
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+        if message.reply_to_message.sticker and message.reply_to_message:
+            if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+                logger.warning('no file blacklist.json')
+                with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                    json.dump([], f)
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+                blist = json.load(f)['stiker']
     
-        blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
+            blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
 
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-            if len(blist)<1:
-                blist=[0]
-            json.dump({'stiker':blist}, f)
-        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
-    
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                if len(blist)<1:
+                    blist=[0]
+                json.dump({'stiker':blist}, f)
+            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
+        else:
+            bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
     else:
-        bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
+        if message.date - time.time()<=60:
+            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
             
 class DeleteData:
     def __init__(self):
