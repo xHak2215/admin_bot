@@ -27,7 +27,8 @@ try:
     import subprocess
     from loguru import logger
     import sqlite3
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw, ImageFontfrom
+    from PIL import ImageSequence
     from googletrans import Translator
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
@@ -39,7 +40,7 @@ except ImportError:
         print('\33[0m libs install')
         i=i+os.system('pip install -r requirements.txt')
         if i < 1:
-            print('\33[31m suppress (успешно)')
+            print('\33[32m suppress (успешно)')
         else:
             print('\33[31m error install (что то пошло не так )')
     else: 
@@ -107,13 +108,16 @@ bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
-print(os.getcwd())
+print('\33[0m'+os.getcwd())
 
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
     print('gif OK')
 else:
     warn=warn+1
     print('error no hello.gif')
+if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'blacklist.json')):pass
+else:
+    warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
     print('settings.json OK')
 else:
@@ -448,7 +452,7 @@ def send_help(message):
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
         
-def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None):
+def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db', timeout=10)
     cursor = connection.cursor()
@@ -471,9 +475,14 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
         updates.append("num_message = ?")
         params.append(soob_num)
         
-    if soob_num is not None:
+    if day_message_num is not None:
         updates.append("day_message = ?")
         params.append(day_message_num)
+        
+    if reputation_time is not None:
+        updates.append("auto_reputation_data = ?")
+        params.append(reputation_time)
+        
 
     # Проверяем, были ли добавлены параметры
     if not updates:
@@ -524,8 +533,14 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     2-soob_num -- количество сообщений
     
     3-time_v -- дата входа если нет то возворощяет 0
+    
+    3-reputation_time -- дана изменения авто репутации содержит `dict` словарь
     '''
 
+    if ps_reputation_upt == 0:
+        reputation_time=None
+    else:
+        reputation_time=time.time()
     try:
         resperens = 5
         # Создаем подключение к базе данных
@@ -544,6 +559,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             num_message INTEGER NOT NULL,
             day_message INTEGER NOT NULL,
             auto_reputation INTEGER NOT NULL,
+            auto_reputation_data TEXT , 
             vhod_data INTEGER NOT NULL,
             temp REAL
         )
@@ -563,7 +579,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             ps_reputation = result[7]
             chat = result[1]  # id чата
             text = result[5] # кол.во сообщений
-
+            
             if text is None:
                 text=1
             if current_reputation is None:
@@ -573,23 +589,23 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
                 ps_reputation_new=ps_reputation+ps_reputation_upt
                 new_reputation = current_reputation - nfkaz
                 # Обновляем репутацию пользователя
-                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num)# Передаем id,chat и данные  пользователя для обновления
+                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num ,reputation_time)# Передаем id,chat и данные пользователя для обновления
                 connection.commit()
                 connection.close()
-                return [new_reputation,ps_reputation_new,int(text+soob_num),result[8]]# ,result[6]
+                return [new_reputation,ps_reputation_new,int(text+soob_num),result[9],reputation_time]# ,result[6]
             else:
                 resperens = 5 - nfkaz
-                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message) VALUES (?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num))
+                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
                 connection.commit()
                 connection.close()
-                return [resperens,ps_reputation_new,int(text+soob_num),time_v]# ,result[6]
+                return [resperens,ps_reputation_new,int(text+soob_num),time_v,reputation_time]# ,result[6]
         else:
             # Если пользователь не найден, добавляем его
             resperens = 5 - nfkaz
-            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message) VALUES (?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num))
+            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
             connection.commit()
             connection.close()
-            return [resperens,ps_reputation_new,int(soob_num),time_v]
+            return [resperens,ps_reputation_new,int(soob_num),time_v,reputation_time]
 
     except Exception as e:
         logger.error(f'Ошибка в операции с базой данных: {e}\n{traceback.format_exc()}')
@@ -756,6 +772,7 @@ def handle_warn(message):
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
     if time.time() - message.date <= 60:
+        bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://soski.tv/images/thumbnails/76828318.jpg').content),reply_to_message_id=message.message_id)
         bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
 
 @bot.message_handler(commands=['bambambam'])
@@ -1105,19 +1122,25 @@ def download(message):
                 if len(list(str(message.text).split(' ')))<2:
                     #bot.reply_to(message,"неверное использование команды пример: /download png ")
                     #return
-                    output_format='PNG'
+                    output_format='png'
                 else:
-                    output_format=str(message.text).split(' ')[1].upper()
+                    output_format=str(message.text).split(' ')[1].lower()
                 
                 if message.reply_to_message.sticker:
                     sticker_id = message.reply_to_message.sticker.file_id
                     file_info = bot.get_file(sticker_id)
-                    # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
-                    # формируем ссылку и "загружаем" изображение открываем  из байтов 
-                    with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
-                    # Конвертируем в RGB для форматов, которые не поддерживают прозрачность
-                        if output_format in ('JPEG', 'JPG'):
-                            img = img.convert('RGB')
+                    if message.reply_to_message.sticker.is_animated or message.reply_to_message.sticker.is_video:
+                        otv='анимированные стикеры не поддерживаться'
+                        if random.randint(0,15)==5:otv=' автор заебался реализовывать поддержку этой фигни 100 с лишнем строк кода было написано а затем удалено это ппц кокого хрена для того что бы скачать анимировный стикер нужно создовать и редактировать 3 промежуточных файла потому что видители загруженые байты кроме того что отличаються webm/tgs так еще хрен их конвертируеш без костылей в нормальное gif бл и да это сообщение редкое-' 
+                        bot.reply_to(message,otv)
+                        return
+                    else:
+                        # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
+                        # формируем ссылку и "загружаем" изображение открываем  из байтов 
+                        with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
+                        # Конвертируем в RGB для форматов, которые не поддерживают прозрачность
+                            if output_format in ('JPEG', 'JPG'):
+                                img = img.convert('RGB')
                             
                 elif message.reply_to_message.photo:# скачиваем фото
                     photo_id = message.reply_to_message.photo[-1].file_id
@@ -1399,7 +1422,7 @@ def anti_spam(message):
     
     emoji=''
     if message.content_type=='sticker':
-        emoji='( '+message.sticker.emoji+' )'
+        emoji=f'( {message.sticker.emoji} )'
     logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.debug(logs)
