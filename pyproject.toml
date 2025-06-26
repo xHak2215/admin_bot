@@ -1,0 +1,11 @@
+[project]
+name = "senbot"
+version = 2.0.0
+description = "бот помощник администратора с дополнительным функционалом для пользователей"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/xHak2215/admin_trlrgram_bot"
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools"]
