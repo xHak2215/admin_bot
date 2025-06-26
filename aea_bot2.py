@@ -579,6 +579,8 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             ps_reputation = result[7]
             chat = result[1]  # id чата
             text = result[5] # кол.во сообщений
+            vhod_data = result[9]
+            day_message = result[6]
             
             if text is None:
                 text=1
@@ -592,13 +594,13 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
                 update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num ,reputation_time)# Передаем id,chat и данные пользователя для обновления
                 connection.commit()
                 connection.close()
-                return [new_reputation,ps_reputation_new,int(text+soob_num),result[9],reputation_time]# ,result[6]
+                return [new_reputation,ps_reputation_new,int(text+soob_num),vhod_data,reputation_time]# ,day_message
             else:
                 resperens = 5 - nfkaz
                 cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
                 connection.commit()
                 connection.close()
-                return [resperens,ps_reputation_new,int(text+soob_num),time_v,reputation_time]# ,result[6]
+                return [resperens,ps_reputation_new,int(text+soob_num),time_v,reputation_time]# ,day_message
         else:
             # Если пользователь не найден, добавляем его
             resperens = 5 - nfkaz
@@ -772,9 +774,13 @@ def handle_warn(message):
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
     if time.time() - message.date <= 60:
-        bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://soski.tv/images/thumbnails/76828318.jpg').content),reply_to_message_id=message.message_id)
-        bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
-
+        rand=random.randint(0,4)
+        if rand==0:bot.reply_to(message,'наш слон')
+        elif rand==1:bot.reply_to(message,'ГООООООЛ')
+        elif rand==2:bot.reply_to(message,'да будет же гойда')
+        elif rand==3:bot.reply_to(message,'держи гойду')
+        elif rand==4:bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://soski.tv/images/thumbnails/76828318.jpg').content),reply_to_message_id=message.message_id)
+        
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
     if time.time() - message.date >= 60:
@@ -1335,7 +1341,7 @@ def handle_spam_deletion(call):
         # Ответ пользователю
         bot.answer_callback_query(call.id, f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений")
     except Exception as e:
-        bot.answer_callback_query(call.id,f"Ошибка при удалении: {str(e)}")
+        bot.send_message(admin_grops,f"Ошибка при удалении: {str(e)}")
         logger.error(f"Ошибка в handle_spam_deletion: {str(e)}")
         
 @bot.message_handler(commands=['ping'])
