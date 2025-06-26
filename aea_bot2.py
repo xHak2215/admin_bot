@@ -1633,10 +1633,10 @@ def main():
                 except requests.exceptions.ReadTimeout:
                     print("time out")
             except Exception as e:
-                logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
+                logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")
                 time.sleep(3)
     except Exception as e:
-        bot.send_message(admin_grops,'ошибка при старте\n'+e)
+        bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
 if __name__ == '__main__':
     main()
     
