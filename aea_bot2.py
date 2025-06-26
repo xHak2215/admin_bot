@@ -9,7 +9,7 @@ from datetime import timedelta
 from datetime import datetime
 import traceback
 from collections import Counter
-import threading
+#import threading
 import io
 import binascii
 
@@ -27,28 +27,31 @@ try:
     import subprocess
     from loguru import logger
     import sqlite3
-    from PIL import Image, ImageDraw, ImageFontfrom
-    from PIL import ImageSequence
+    from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
     i=0
     if os.name == 'nt':
+        if not os.path.exists(os.path.join(os.getcwd(), 'virtual')):
+            print('\33[0m Created venv')
+            i=i+os.system('python -m venv virtual')
         print('\33[0m pip upgrade')
-        i=i+os.system('python -m pip install --upgrade pip')
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','Scripts','python')+'-m pip install --upgrade pip')
         print('\33[0m libs install')
-        i=i+os.system('pip install -r requirements.txt')
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','Scripts','pip3')+' -r requirements.txt')
         if i < 1:
             print('\33[32m suppress (успешно)')
         else:
             print('\33[31m error install (что то пошло не так )')
     else: 
-        i=i+os.system('python3 -m venv venv')
+        print('\33[0m Created venv')
+        i=i+os.system('python3 -m venv virtual')
         print('\33[0m pip upgrade')
-        i=i+os.system("./venv/bin/python3 -m pip install --upgrade pip")
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','bin','python3')+" -m pip install --upgrade pip")
         print('\33[0m libs install')
-        i=i+os.system('pip3 install -r requirements.txt') 
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','bin','pip3')+' install -r requirements.txt') 
         if i<1:
             print('\33[32m suppress (успешно)')
         else:
@@ -135,7 +138,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -1116,10 +1119,10 @@ def download(message):
             'потдерживает скачивание голосовых сообщений,стикеров и аудио дорожек видео(звук из видео)\n'
             "возможные форматы: <a href='https://github.com/xHak2215/admin_trlrgram_bot#format'>см. дакументацию</a>\n"
             'инструкция и примеры использования:\n'
-            'скачивание стикеров: <code>/download(или де /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
-            'скачивание голосовых сообщений: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
-            'скачивание аудио дорожек: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
-            'скачивание фото: <code>/download(или де /dow) png(любой доступный формат) </code>'
+            'скачивание стикеров: <code>/download(или же /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
+            'скачивание голосовых сообщений: <code>/download mp3 </code>\n'
+            'скачивание аудио дорожек: <code>/download mp3 </code>\n'
+            'скачивание фото: <code>/download png </code>'
         ,parse_mode='HTML',disable_web_page_preview=True) 
         return
     
@@ -1575,48 +1578,49 @@ def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f'new member in chat | user name> {message.from_user.username}')
         data_base(message.chat.id,new_member.id,time_v=time.time())
-        try:
-            input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
-            output_gif_path = 'output.gif'
-            # Открываем изображение
-            gif = Image.open(input_gif_path)
-            # Создаем список для хранения кадров с текстом
-            frames_with_text = []
-            # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+        if message.date - time.time()<=300:
             try:
-                font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
-            except IOError:
-                font = ImageFont.load_default(size=35)
-            # Добавляем текст на каждый кадр
-            for frame in range(gif.n_frames):
-                gif.seek(frame)
-                # Копируем текущий кадр
-                new_frame = gif.copy()
-            #    Преобразуем в rgba 
-                new_frame = new_frame.convert('RGBA')
-                draw = ImageDraw.Draw(new_frame)
-                # Определяем текст и его позицию
-                usernameh=message.from_user.first_name
-                ot=26-len(usernameh)
-                otstup=' '*ot
-                text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
-                text_position =(60, 300) # Позиция (x, y) для текста        
-                # Добавляем текст на кадр
-                draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
-                frames_with_text.append(new_frame)# Добавляем новый кадр в список
-                # Сохраняем новый GIF с текстом
-            frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
-            try:
-                with open('output.gif', 'rb') as gif_file:
-                    bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
-                os.remove('output.gif') 
+                input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
+                output_gif_path = 'output.gif'
+                # Открываем изображение
+                gif = Image.open(input_gif_path)
+                # Создаем список для хранения кадров с текстом
+                frames_with_text = []
+                # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+                try:
+                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
+                except IOError:
+                    font = ImageFont.load_default(size=35)
+                # Добавляем текст на каждый кадр
+                for frame in range(gif.n_frames):
+                    gif.seek(frame)
+                    # Копируем текущий кадр
+                    new_frame = gif.copy()
+                #    Преобразуем в rgba 
+                    new_frame = new_frame.convert('RGBA')
+                    draw = ImageDraw.Draw(new_frame)
+                    # Определяем текст и его позицию
+                    usernameh=message.from_user.first_name
+                    ot=26-len(usernameh)
+                    otstup=' '*ot
+                    text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
+                    text_position =(60, 300) # Позиция (x, y) для текста        
+                    # Добавляем текст на кадр
+                    draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
+                    frames_with_text.append(new_frame)# Добавляем новый кадр в список
+                    # Сохраняем новый GIF с текстом
+                frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
+                try:
+                    with open('output.gif', 'rb') as gif_file:
+                        bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
+                    os.remove('output.gif') 
+                except Exception as e:
+                    bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
             except Exception as e:
-                bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
-        except Exception as e:
-            logger.error(f'error hello message >>{e}')
-            username = '@'+new_member.username if new_member.username else new_member.first_name 
-            welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
-            bot.reply_to(message , welcome_message, parse_mode="HTML")
+                logger.error(f'error hello message >>{e}')
+                username = '@'+new_member.username if new_member.username else new_member.first_name 
+                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
+                bot.reply_to(message , welcome_message, parse_mode="HTML")
 # Основной цикл
 def main():
     try:
