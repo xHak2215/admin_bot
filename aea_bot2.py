@@ -13,12 +13,14 @@ from collections import Counter
 import io
 import binascii
 
+import asets.ffmpeg_tool
+
 try:
     from vosk import Model, KaldiRecognizer
     import telebot
     from telebot import types
     from telebot.types import InlineKeyboardButton
-    from telebot import formatting
+    from telebot import formatting , util
     from collections import defaultdict
     import psutil
     import schedule
@@ -138,7 +140,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -951,128 +953,7 @@ def translitor(message):
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
-
-def audio_conwert(data,format,inp_format='save.ogg'):
-        """
-        audio_conwert(data,format)
         
-        :param1: binaru music data
-        
-        :param2: convert format data `mp3`
-        
-        :return: binaru converts data or error
-        """
-        try:
-            # Определяем путь к ffmpeg
-            if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
-            else:
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-            # Сохраняем временный файл
-            with open('save.ogg', 'wb') as f:
-                f.write(data)
-                
-            if not os.path.exists(ffmpeg):
-                logger.error(f'no file {ffmpeg} please download full asets file')
-            # Конвертируем в WAV
-            mes=subprocess.run([
-                ffmpeg,
-                '-i', inp_format,
-                '-ar', '16000',  # частота дискретизации
-                '-ac', '1',      # моно-аудио
-                '-y',            # перезаписать если файл существует
-                f'out.{format}'
-            ], check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # Читаем файл
-            if os.path.exists(f'out.{format}'):
-                with open(f'out.{format}', 'rb') as f:
-                    return f.read()
-            else:
-                logger.warning(f'no file out.{format}')
-                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
-            os.remove(f'out.{format}')
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Ошибка конвертации аудио: {e}")
-            return "Ошибка обработки аудио"
-        except Exception as e:
-            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
-        finally: 
-            # Удаляем временные файлы
-            for f in [inp_format, f'out.{format}']:
-                try:
-                    if os.path.exists(f):
-                        os.remove(f)
-                except:
-                    pass
-
-def video_to_audio_conwert(data,format):
-        """
-        audio_conwert(data,format)
-        
-        :param1: binaru music data
-        
-        :param2: video (`mp4`) convert to audio file 
-        
-        :return: binaru converts data or error
-        """
-        try:
-            # Определяем путь к ffmpeg
-            if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
-            else:
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-        
-            # Сохраняем временный файл
-            with open('save.mp4', 'wb') as f:
-                f.write(data)
-                
-            if not os.path.exists(ffmpeg):
-                logger.error(f'no file {ffmpeg} please download full asets file')
-            codec = {
-            "ogg" : "libopus",
-            "mp3" : "libmp3lame",
-            "wav" : "pcm_s16le",
-            "aac" : "aac",
-            "flac": "flac",
-            "m4a" : "aac",
-            "webm": "libopus -b:a 128k",
-            "ac3" :  "ac3 -b:a 448k",
-            "wma" : "wmapro -ac 6 -q:a 1"
-            }
-            # Конвертируем в WAV
-            mes=subprocess.run([
-                ffmpeg,
-                '-i', 'save.mp4',
-                '-vn',
-                '-acodec', codec[format], # MP3 encoder
-                '-q:a', '2',              # Quality (0-9, 2=high)
-                '-y',
-                f'out.{format}'
-            ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # Читаем файл
-            if os.path.exists(f'out.{format}'):
-                with open(f'out.{format}', 'rb') as f:
-                    return f.read()
-            else:
-                logger.warning(f'no file out.{format}')
-                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
-            os.remove(f'out.{format}')
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Ошибка конвертации аудио: {e}")
-            return "Ошибка обработки аудио"
-        except Exception as e:
-            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
-        finally:
-            del data # очистка данных
-            # Удаляем временные файлы
-            for f in ['save.mp4', 'out.mp3']:
-                try:
-                    if os.path.exists(f):
-                        os.remove(f)
-                except:
-                    pass
 
 @bot.message_handler(commands=['to_text'])
 def audio_to_text(message):
@@ -1090,7 +971,7 @@ def audio_to_text(message):
                 ogg_data = bot.download_file(file_info.file_path)
                 # Распознавание
                 results = []
-                data_r=audio_conwert(ogg_data,'wav')
+                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data,'wav')
                 if type(data_r)!='bytes':
                     logger.error(data_r)
                 wav_buffer = io.BytesIO(data_r) # конвертирую в wav
@@ -1117,6 +998,7 @@ def download(message):
     if '-help' in message.text:
         bot.reply_to(message,
             'потдерживает скачивание голосовых сообщений,стикеров и аудио дорожек видео(звук из видео)\n'
+            'придел веса файла 20 мб\n'
             "возможные форматы: <a href='https://github.com/xHak2215/admin_trlrgram_bot#format'>см. дакументацию</a>\n"
             'инструкция и примеры использования:\n'
             'скачивание стикеров: <code>/download(или же /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
@@ -1137,10 +1019,14 @@ def download(message):
                 
                 if message.reply_to_message.sticker:
                     sticker_id = message.reply_to_message.sticker.file_id
-                    file_info = bot.get_file(sticker_id)
+                    try:
+                        file_info = bot.get_file(sticker_id)
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ')
+                        return
                     if message.reply_to_message.sticker.is_animated or message.reply_to_message.sticker.is_video:
                         otv='анимированные стикеры не поддерживаться'
-                        if random.randint(0,15)==5:otv=' автор заебался реализовывать поддержку этой фигни 100 с лишнем строк кода было написано а затем удалено это ппц кокого хрена для того что бы скачать анимировный стикер нужно создовать и редактировать 3 промежуточных файла потому что видители загруженые байты кроме того что отличаються webm/tgs так еще хрен их конвертируеш без костылей в нормальное gif бл и да это сообщение редкое-' 
+                        #' автор заебался реализовывать поддержку этой фигни 100 с лишнем строк кода было написано а затем удалено это ппц кокого хрена для того что бы скачать анимировный стикер нужно создовать и редактировать 3 промежуточных файла потому что видители загруженые байты кроме того что отличаються webm/tgs так еще хрен их конвертируеш без костылей в нормальное gif бл и да это сообщение редкое-' 
                         bot.reply_to(message,otv)
                         return
                     else:
@@ -1171,7 +1057,21 @@ def download(message):
                     bot.reply_to(message,f'ошибка с форматом {output_format} не определен')
                     del output_buffer # очищяем дабы осбободить память
                     return
-                bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                try:
+                        # Используем BytesIO как файлоподобный объект
+                    with io.BytesIO(output_buffer.getvalue()) as file_stream:
+                        file_stream.name = f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+            
+                     # Отправляем файл напрямую из памяти
+                        bot.send_document(
+                        chat_id=message.chat.id,
+                        document=file_stream,
+                        reply_to_message_id=message.message_id,
+                        timeout=30  # Увеличиваем таймаут для больших файлов
+                        )
+                except Exception as e:
+                    bot.reply_to(message, f"Ошибка отправки файла: {str(e)}")
+                #bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
                 del output_buffer # очищяем дабы осбободить память
                 
             elif message.reply_to_message.voice:
@@ -1180,15 +1080,33 @@ def download(message):
                     return
                 output_format=str(message.text).split(' ')[1].lower()
                 if output_format in ['mp3','wav','aac','ogg','flac','wma','aiff','opus','alac','mp2']:
-                    file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                    downloaded_file = bot.download_file(file_info.file_path)
-                    
-                    data=audio_conwert(downloaded_file,output_format)
+                    try:
+                        file_info = bot.get_file(message.reply_to_message.video.file_id)
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ')
+                        return
+                    with requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', stream=True) as r:
+                        r.raise_for_status()
+                        total_size = int(r.headers.get('content-length', 0))
+                        chunk_size = 1024 * 1024  # 1MB chunks
+                        video_data = io.BytesIO()
+            
+                        for chunk in r.iter_content(chunk_size=chunk_size):
+                            video_data.write(chunk)
+                    data=asets.ffmpeg_tool.audio_conwert(video_data,output_format)
                     if type(data) !=bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} приняты параметры по умолчанию')
-                        data=downloaded_file
+                        data=video_data
                         output_format='ogg'
-                    bot.send_document(message.chat.id, data ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                    with io.BytesIO(data) as file_stream:
+                        file_stream.name = f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+                            # Отправляем файл напрямую из памяти
+                        bot.send_document(
+                        chat_id=message.chat.id,
+                        document=file_stream,
+                        reply_to_message_id=message.message_id,
+                        timeout=30  # Увеличиваем таймаут для больших файлов
+                        )
                 else:
                     bot.reply_to(message,'такого формата нет или он не потдерживаеться')
                     return
@@ -1196,15 +1114,40 @@ def download(message):
                 if len(list(str(message.text).split(' ')))<2:
                     bot.reply_to(message,"неверное использование команды пример: /download mp3 ")
                     return
-                oformat=list(str(message.text).split(' '))[1]
-                file_info = bot.get_file(message.reply_to_message.video.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
+                oformat=list(str(message.text).split(' '))[1].lower()
+                try:
+                    file_info = bot.get_file(message.reply_to_message.video.file_id)
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,f'файл слишком большой ')
+                    return
+                with requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', stream=True) as r:
+                    r.raise_for_status()
+                    total_size = int(r.headers.get('content-length', 0))
+                    chunk_size = 1024 * 1024  # 1MB chunks
+                    video_data = io.BytesIO()
+            
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        video_data.write(chunk)
+                    
                 if oformat in ["ogg","mp3","wav","aac","flac","m4a","webm","ac3","wma"]:
-                    data=video_to_audio_conwert(downloaded_file,'mp3')
+                    data=asets.ffmpeg_tool.video_to_audio_conwert(video_data.getvalue() ,oformat)
                     if type(data) != bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} ')
                         return
-                    bot.send_document(message.chat.id, data ,reply_to_message_id=message.message_id ,visible_file_name=f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}')
+                    try:
+                        with io.BytesIO(data) as file_stream:
+                            file_stream.name = f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}'
+            
+                            # Отправляем файл напрямую из памяти
+                            bot.send_document(
+                            chat_id=message.chat.id,
+                            document=file_stream,
+                            reply_to_message_id=message.message_id,
+                            timeout=30  # Увеличиваем таймаут для больших файлов
+                            )
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ({len(data)} байт) ')
+                        return
                 else:
                     bot.reply_to(message,'такого формата нет или он не потдерживаеться')
             else:
@@ -1261,6 +1204,37 @@ def unblaklist(message):
         if message.date - time.time()<=60:
             bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
             
+@bot.message_handler(commands=['message_info'])
+def unblaklist(message):
+    if message.reply_to_message:
+        out_message=' '
+        out_message+=f'тип: {message.reply_to_message.content_type}\n'
+        out_message+=f'message id:{message.message_id}\n'
+        if str(message.reply_to_message.content_type) in ['video','photo','animation','sticker']:
+            if message.reply_to_message.sticker: media_id = message.reply_to_message.sticker.file_id
+            elif message.reply_to_message.video: media_id = message.reply_to_message.video.file_id
+            elif message.reply_to_message.photo:
+                media_id = message.reply_to_message.photo[-1].file_id
+            elif message.reply_to_message.animation: media_id = message.reply_to_message.animation.file_id
+            if 'media_id' in locals():
+                file_info = bot.get_file(media_id)
+                out_message+=f'ulr:https://api.telegram.org/file/bot{bot.token}/{file_info.file_path} \nвес: {round(len(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}').content),2)} байт\n'
+        if message.reply_to_message.sticker: out_message+=f'sticker ID: {message.reply_to_message.sticker.file_id}\nemoji:{message.reply_to_message.sticker.emoji}\n'
+        if message.reply_to_message.video:
+            media_id = message.reply_to_message.video.file_id
+            file_info = bot.get_file(media_id)
+            out_message+=f'meta data:{asets.ffmpeg_tool.video_meta_data(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)}\n'
+        elif message.reply_to_message.photo:
+            media_id = message.reply_to_message.photo[-1].file_id
+            file_info = bot.get_file(media_id)
+            
+            with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
+                out_message+=f'meta data (exif):{img.getexif()}\n'
+            out_message+=f'width(высота): {message.reply_to_message.photo[-1].width}\n'
+            out_message+=f'height(ширена): {message.reply_to_message.photo[-1].height}\n'
+        
+        bot.reply_to(message,out_message)
+        
 class DeleteData:
     def __init__(self):
         self.message_l = []
