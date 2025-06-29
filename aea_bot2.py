@@ -1539,6 +1539,23 @@ def message_handler(message):
         return
     else:
         anti_spam(message)
+@bot.message_handler(content_types=['voice'])
+def message_voice(message):
+    if time.time() - message.date >= SPAM_TIMEFRAME:
+        data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
+        return
+    elif message.forward_from:
+        anti_spam_forward(message)
+        if message.voice.duration>=300:
+            bot.reply_to(message,'чет как то многовато')
+        elif message.voice.duration>=1800:
+            bot.reply_to(message,'скока бл ...ужас')
+    else:
+        anti_spam(message)
+        if message.voice.duration>=300:
+            bot.reply_to(message,'чет как то многовато')
+        elif message.voice.duration>=1800:
+            bot.reply_to(message,'скока бл ...ужас')
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
