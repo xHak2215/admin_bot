@@ -5,7 +5,7 @@ import traceback
 from loguru import logger
 import subprocess
 
-def audio_conwert(data,format,inp_format='save.ogg'):
+def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         """
         audio_conwert(data,format)
         
@@ -50,7 +50,9 @@ def audio_conwert(data,format,inp_format='save.ogg'):
             return "Ошибка обработки аудио"
         except Exception as e:
             logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+            if 'mes' in locals():
+                return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+            else: return f"error:Произошла ошибка: {str(e)}"
         finally: 
             # Удаляем временные файлы
             for f in [inp_format, f'out.{format}']:
@@ -60,7 +62,7 @@ def audio_conwert(data,format,inp_format='save.ogg'):
                 except:
                     pass
 
-def video_to_audio_conwert(data,format):
+def video_to_audio_conwert(data:bytes,format:str):
         """
         audio_conwert(data,format)
         
@@ -101,7 +103,7 @@ def video_to_audio_conwert(data,format):
                 '-i', 'save.mp4',
                 '-vn',
                 '-acodec', codec[format], # MP3 encoder
-                '-q:a', '4',              # Quality (0-9, 2=high)
+                '-q:a', '1',              # Quality (0-9, 2=high)
                 '-y',
                 f'out.{format}'
             ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -118,11 +120,13 @@ def video_to_audio_conwert(data,format):
             return "Ошибка обработки аудио"
         except Exception as e:
             logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+            if 'mes' in locals():
+                return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+            else: return f"error:Произошла ошибка: {str(e)}"
         finally:
             del data # очистка данных
             # Удаляем временные файлы
-            for f in ['save.mp4', 'out.mp3']:
+            for f in ['save.mp4', f'out.{format}']:
                 try:
                     if os.path.exists(f):
                         os.remove(f)
@@ -168,5 +172,6 @@ def video_meta_data(data:bytes):
         logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
         if 'mes' in locals():
             return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+        else: return f"error:Произошла ошибка: {str(e)}"
     finally:
         os.remove('save.mp4')
