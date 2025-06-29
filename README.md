@@ -51,6 +51,8 @@
 
 
 /ping - проверка задержки отклика по ссылке, аргументы: `/ping <ссылка>` для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки `/ping <ссылка>,<количество запросов>` , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки `/ping <ссылка>,<количество запросов>,<режим>`
+
+/message_info - выводит информацию о сообщении полезно для медиа
 </h4>
 имеет логирывание сообщений и других событий
 <h3> установка: </h3>
@@ -151,6 +153,18 @@ Command List:<br>
 
 /t -more translation of the Russian
 
+/download - Download stickers and voice messages. When downloading symbols, you must specify the file extension, example: `/download png`
+
+/ping - Check response latency for a URL. Arguments:  
+• Basic: `/ping <URL>` (default test URL: https://ya.ru)  
+• With attempts: `/ping <URL>,<number_of_requests>`  
+• Calculation mode:  
+  - `True`: Displays average statistical latency from all attempts  
+  - Default (when not specified): Shows latency for each individual attempt  
+Full format: `/ping <URL>,<number_of_requests>,<mode>`
+
+/message_info - Displays message metadata (particularly useful for media analysis)
+
 <h3>Installation:</h3>
 
 To run the application, <a href="https://www.python.org/">Python 3.12</a> or higher is required.
@@ -187,7 +201,7 @@ spam_timer - functionality described above<br>
 ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
 console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console :<terminal command>. Works only in the admin group and can be used solely by the group administrator.<br>
 (⚠️ This command can execute malicious commands as well—be cautious when enabling it.)<br>
-auto_translet - авто перевод сообщений в чате с иностранного на указанный в `laung` по умолчанию `"laung":"ru"` параметр активации `Activate` по умолчанию `"Activate":false`<br>
+auto_translate - Automatic chat message translation from foreign languages to the language specified in `laung` (default: `"laung":"ru"`). Activation parameter: `Activate` (default: `"Activate":false`).
 
 Supported formats:
 download voice messages and audio tracks:
