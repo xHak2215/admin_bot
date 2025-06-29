@@ -4,6 +4,7 @@ import traceback
 
 from loguru import logger
 import subprocess
+from typing import Dict, Union
 
 def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         """
@@ -147,31 +148,31 @@ def video_meta_data(data:bytes):
             ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
         else:
             ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-        
-        # Сохраняем временный файл
-        with open('save.mp4', 'wb') as f:
-            f.write(data)
                 
         if not os.path.exists(ffmpeg):
             logger.error(f'no file {ffmpeg} please download full asets file')
 
-        mes=subprocess.run([
+        cmd = [
             ffmpeg,
-            '-v', 'error',
-            '-show_format',
-            '-show_streams',
-            '-of', 'json',
-            '-i', 'pipe:0'
-            ],input=bytes(data), check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        os.remove('save.mp4')
-        return mes.stdout.decode('utf-8')
+            '-v', 'error',          # Только ошибки
+            '-i', 'pipe:0'          # Чтение из стандартного ввода
+        ]
+        # Запускаем процесс
+        process = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate(input=data)
+        return stdout, stderr
     except subprocess.CalledProcessError as e:
+        if 'mes' in locals():
+            return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{stdout + stderr}"
         logger.error(f"Ошибка извлечения мета данных: {e}")
         return "error:Ошибка извлечения мета данных"
     except Exception as e:
         logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
         if 'mes' in locals():
-            return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
+            return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{stdout + stderr}"
         else: return f"error:Произошла ошибка: {str(e)}"
-    finally:
-        os.remove('save.mp4')
