@@ -1220,19 +1220,18 @@ def unblaklist(message):
                 file_info = bot.get_file(media_id)
                 out_message+=f'ulr:https://api.telegram.org/file/bot{bot.token}/{file_info.file_path} \nвес: {round(len(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}').content),2)} байт\n'
         if message.reply_to_message.sticker: out_message+=f'sticker ID: {message.reply_to_message.sticker.file_id}\nemoji:{message.reply_to_message.sticker.emoji}\n'
-        if message.reply_to_message.video:
-            media_id = message.reply_to_message.video.file_id
-            file_info = bot.get_file(media_id)
-            out_message+=f'meta data:{asets.ffmpeg_tool.video_meta_data(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)}\n'
+        #if message.reply_to_message.video:
+            #media_id = message.reply_to_message.video.file_id
+            #file_info = bot.get_file(media_id)
+            #print(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)
+            #out_message+=f'meta data:{str(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)}\n'
         elif message.reply_to_message.photo:
             media_id = message.reply_to_message.photo[-1].file_id
             file_info = bot.get_file(media_id)
-            
             with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
                 out_message+=f'meta data (exif):{img.getexif()}\n'
             out_message+=f'width(высота): {message.reply_to_message.photo[-1].width}\n'
             out_message+=f'height(ширена): {message.reply_to_message.photo[-1].height}\n'
-        
         bot.reply_to(message,out_message)
         
 class DeleteData:
