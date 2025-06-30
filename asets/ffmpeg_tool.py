@@ -143,19 +143,20 @@ def video_meta_data(data:bytes):
     :return: meta data fila
     """
     try:
-        # Определяем путь к ffmpeg
+        # Определяем путь к ffprobe
         if sys.platform.startswith('win'):
-            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffprobe.exe') # для windows
         else:
-            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffprobe') # для Linux
                 
         if not os.path.exists(ffmpeg):
-            logger.error(f'no file {ffmpeg} please download full asets file')
-
+            logger.error(f'no file {ffmpeg}')
+        with open('seve.mp3','wb') as f:
+            f.write(data)
         cmd = [
             ffmpeg,
             '-v', 'error',          # Только ошибки
-            '-i', 'pipe:0'          # Чтение из стандартного ввода
+            '-show_format','-show_streams','-of json','seve.mp3'
         ]
         # Запускаем процесс
         process = subprocess.Popen(
