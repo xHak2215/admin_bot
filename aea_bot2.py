@@ -9,16 +9,19 @@ from datetime import timedelta
 from datetime import datetime
 import traceback
 from collections import Counter
-import threading
+#import threading
 import io
 import binascii
 
+import asets.ffmpeg_tool
+import asets.dictt
+
 try:
     from vosk import Model, KaldiRecognizer
-    import telebot
+    import telebot 
     from telebot import types
     from telebot.types import InlineKeyboardButton
-    from telebot import formatting
+    from telebot import formatting , util
     from collections import defaultdict
     import psutil
     import schedule
@@ -34,20 +37,24 @@ except ImportError:
     print('full error message>>\n'+traceback.format_exc())
     i=0
     if os.name == 'nt':
+        if not os.path.exists(os.path.join(os.getcwd(), 'virtual')):
+            print('\33[0m Created venv')
+            i=i+os.system('python -m venv virtual')
         print('\33[0m pip upgrade')
-        i=i+os.system('python3 -m pip install --upgrade pip')
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','Scripts','python')+'-m pip install --upgrade pip')
         print('\33[0m libs install')
-        i=i+os.system('pip install -r requirements.txt')
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','Scripts','pip3')+' -r requirements.txt')
         if i < 1:
-            print('\33[31m suppress (успешно)')
+            print('\33[32m suppress (успешно)')
         else:
             print('\33[31m error install (что то пошло не так )')
     else: 
-        i=i+os.system('python3 -m venv venv')
+        print('\33[0m Created venv')
+        i=i+os.system('python3 -m venv virtual')
         print('\33[0m pip upgrade')
-        i=i+os.system("./venv/bin/python3 -m pip install --upgrade pip")
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','bin','python3')+" -m pip install --upgrade pip")
         print('\33[0m libs install')
-        i=i+os.system('pip3 install -r requirements.txt') 
+        i=i+os.system(os.path.join(os.getcwd(), 'virtual','bin','pip3')+' install -r requirements.txt') 
         if i<1:
             print('\33[32m suppress (успешно)')
         else:
@@ -63,14 +70,15 @@ except FileNotFoundError:
     sys.exit(1)
     
 def umsettings():
-    global bambam,DELET_MESSADGE,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL
-    bambam=False
+    global BAMBAM,DELET_MESSADGE,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL,AUTO_TRANSLETE
+    BAMBAM=False
     DELET_MESSADGE=True
     admin_grops="-1002284704738"
     SPAM_LIMIT = 10 # Максимальное количество сообщений
     SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
     BAN_AND_MYTE_COMMAND = True
     CONSOLE_CONTROL = False
+    AUTO_TRANSLETE = {"laung":"ru","Activate":False}
 
 try:
     with open("settings.json", "r") as json_settings:
@@ -90,13 +98,14 @@ random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#со
 # Инициализация логирования
 logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
 try:
-    bambam=bool(settings['bambam'])
+    BAMBAM=bool(settings['bambam'])
     DELET_MESSADGE=bool(settings['delet_messadge'])
     admin_grops=str(settings['admin_grops'])
     SPAM_LIMIT=int(settings['spam_limit'])
     SPAM_TIMEFRAME=int(settings['spam_timer'])
     BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
     CONSOLE_CONTROL=bool(settings['console_control'])
+    AUTO_TRANSLETE=dict(settings['auto_translete'])
 except:
     umsettings()
     logger.debug('error settings init')
@@ -105,13 +114,16 @@ bot = telebot.TeleBot(TOKEN)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
-print(os.getcwd())
+print('\33[0m'+os.getcwd())
 
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
     print('gif OK')
 else:
     warn=warn+1
     print('error no hello.gif')
+if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'blacklist.json')):pass
+else:
+    warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
     print('settings.json OK')
 else:
@@ -277,6 +289,15 @@ def monitor_command(message):
         test=test+'cofig file OK\n'
     else:
         test=test+'error no config file \n'
+                # Определяем путь к ffmpeg
+    if sys.platform.startswith('win'):
+        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+    else:
+        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux    
+    if os.path.exists(ffmpeg):
+        test=test+'ffmpeg OK\n'
+    else:
+        test=test+'error no ffmpeg\n'
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
@@ -392,7 +413,7 @@ def configfile(message):
                 with open("settings.json", "r") as json_settings:
                     settings= json.load(json_settings)
                 try:
-                    bambam=bool(settings['bambam'])
+                    BAMBAM=bool(settings['BAMBAM'])
                     DELET_MESSADGE=bool(settings['delet_messadge'])
                     admin_grops=str(settings['admin_grops'])
                     SPAM_LIMIT=int(settings['spam_limit'])
@@ -437,7 +458,7 @@ def send_help(message):
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
         
-def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None):
+def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db', timeout=10)
     cursor = connection.cursor()
@@ -460,9 +481,14 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
         updates.append("num_message = ?")
         params.append(soob_num)
         
-    if soob_num is not None:
+    if day_message_num is not None:
         updates.append("day_message = ?")
         params.append(day_message_num)
+        
+    if reputation_time is not None:
+        updates.append("auto_reputation_data = ?")
+        params.append(reputation_time)
+        
 
     # Проверяем, были ли добавлены параметры
     if not updates:
@@ -513,8 +539,14 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     2-soob_num -- количество сообщений
     
     3-time_v -- дата входа если нет то возворощяет 0
+    
+    3-reputation_time -- дана изменения авто репутации содержит `dict` словарь
     '''
 
+    if ps_reputation_upt == 0:
+        reputation_time=None
+    else:
+        reputation_time=time.time()
     try:
         resperens = 5
         # Создаем подключение к базе данных
@@ -533,6 +565,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             num_message INTEGER NOT NULL,
             day_message INTEGER NOT NULL,
             auto_reputation INTEGER NOT NULL,
+            auto_reputation_data TEXT , 
             vhod_data INTEGER NOT NULL,
             temp REAL
         )
@@ -552,7 +585,9 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             ps_reputation = result[7]
             chat = result[1]  # id чата
             text = result[5] # кол.во сообщений
-
+            vhod_data = result[9]
+            day_message = result[6]
+            
             if text is None:
                 text=1
             if current_reputation is None:
@@ -562,23 +597,23 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
                 ps_reputation_new=ps_reputation+ps_reputation_upt
                 new_reputation = current_reputation - nfkaz
                 # Обновляем репутацию пользователя
-                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num)# Передаем id,chat и данные  пользователя для обновления
+                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num ,reputation_time)# Передаем id,chat и данные пользователя для обновления
                 connection.commit()
                 connection.close()
-                return [new_reputation,ps_reputation_new,int(text+soob_num),result[8]]# ,result[6]
+                return [new_reputation,ps_reputation_new,int(text+soob_num),vhod_data,reputation_time]# ,day_message
             else:
                 resperens = 5 - nfkaz
-                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message) VALUES (?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num))
+                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
                 connection.commit()
                 connection.close()
-                return [resperens,ps_reputation_new,int(text+soob_num),time_v]# ,result[6]
+                return [resperens,ps_reputation_new,int(text+soob_num),time_v,reputation_time]# ,day_message
         else:
             # Если пользователь не найден, добавляем его
             resperens = 5 - nfkaz
-            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message) VALUES (?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num))
+            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
             connection.commit()
             connection.close()
-            return [resperens,ps_reputation_new,int(soob_num),time_v]
+            return [resperens,ps_reputation_new,int(soob_num),time_v,reputation_time]
 
     except Exception as e:
         logger.error(f'Ошибка в операции с базой данных: {e}\n{traceback.format_exc()}')
@@ -669,7 +704,7 @@ def handle_warn(message):
             logger.info(f"Пользователь @{message.from_user.username} понизил репутацию @{message.reply_to_message.from_user.username} ") 
         
         # Проверяем, достаточно ли маленькая репутация для мута
-            if bambam==True:
+            if BAMBAM==True:
                 if reputation <= 0:
                     #Ограничиваем пользователя на 24 часа 
                     bot.restrict_chat_member(
@@ -745,8 +780,13 @@ def handle_warn(message):
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
     if time.time() - message.date <= 60:
-        bot.reply_to(message,['наш слон','ГООООООЛ','да будет же гойда','держи гойду'][random.randint(0,3)])
-
+        rand=random.randint(0,4)
+        if rand==0:bot.reply_to(message,'наш слон')
+        elif rand==1:bot.reply_to(message,'ГООООООЛ')
+        elif rand==2:bot.reply_to(message,'да будет же гойда')
+        elif rand==3:bot.reply_to(message,'держи гойду')
+        elif rand==4:bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://soski.tv/images/thumbnails/76828318.jpg').content),reply_to_message_id=message.message_id)
+        
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
     if time.time() - message.date >= 60:
@@ -876,7 +916,7 @@ def handle_warn(message):
     except:
         bot.reply_to(message,traceback.format_exc())
         
-@bot.message_handler(commands=['t','translate'])  
+@bot.message_handler(commands=['t','translate','перевод'])  
 def translitor(message):
     if message.reply_to_message:
         bin=str(message.reply_to_message.text).replace(' ','')
@@ -884,14 +924,18 @@ def translitor(message):
             bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
             bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
             return
-        elif bin[0:6] == '0a2e14':
+        elif bin[0:4] == '202e':
             bot.reply_to(message, bytes.fromhex(bin).decode('utf-8'))
             return
-            
+        elif len(message.text.split(' ')) > 1:
+            if str(message.text.split(' ')[1].replace(' ','')) == 'translit' or str(message.text.split(' ')[1]).replace(' ','') == 'транслит':
+                bot.reply_to(message,''.join(asets.dictt.translit_eng.get(c, c) for c in message.reply_to_message.text))
+                return
         translator = Translator()
         conf = translator.detect(message.reply_to_message.text)
         kont=f'Язык: {conf.lang}'
         result = translator.translate(message.reply_to_message.text, src=conf.lang, dest='ru')
+        
         bot.reply_to(message,kont+'\n'+str(result.text))
     else:
         if ':' in message.text:
@@ -901,141 +945,24 @@ def translitor(message):
                     hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
                     binary_str = ''.join([
                     format(int(hex_str[i:i+2], 16), '08b') 
-                    for i in range(0, len(hex_str), 2)
-                        ])
+                    for i in range(0, len(hex_str), 2)])
                     bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
                     return
                 elif text[1].lower()=="hex":
-                    bot.reply_to(message, '0a2e14'+(text[0].encode("utf-8").hex().replace("'",'')))
+                    bot.reply_to(message, '202e'+(text[0].encode("utf-8").hex().replace("'",'')))
                     return
+                elif text[1].lower()=="translit" or text[1].lower()=="транслит":
+                    bot.reply_to(message,''.join(asets.dictt.translit_ru.get(c, c) for c in text[0]))
                 translator = Translator()
                 conf = translator.detect(str(message.text))
                 result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
-
-def audio_conwert(data,format,inp_format='save.ogg'):
-        """
-        audio_conwert(data,format)
         
-        :param1: binaru music data
-        
-        :param2: convert format data `mp3`
-        
-        :return: binaru converts data or error
-        """
-        try:
-            # Определяем путь к ffmpeg
-            if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
-            else:
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-            # Сохраняем временный файл
-            with open('save.ogg', 'wb') as f:
-                f.write(data)
-                
-            if not os.path.exists(ffmpeg):
-                logger.error(f'no file {ffmpeg} please download full asets file')
-            # Конвертируем в WAV
-            mes=subprocess.run([
-                ffmpeg,
-                '-i', inp_format,
-                '-ar', '16000',  # частота дискретизации
-                '-ac', '1',      # моно-аудио
-                '-y',            # перезаписать если файл существует
-                f'out.{format}'
-            ], check=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # Читаем файл
-            if os.path.exists(f'out.{format}'):
-                with open(f'out.{format}', 'rb') as f:
-                    return f.read()
-            else:
-                logger.warning(f'no file out.{format}')
-                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
-            os.remove(f'out.{format}')
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Ошибка конвертации аудио: {e}")
-            return "Ошибка обработки аудио"
-        except Exception as e:
-            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
-        finally: 
-            # Удаляем временные файлы
-            for f in [inp_format, f'out.{format}']:
-                try:
-                    if os.path.exists(f):
-                        os.remove(f)
-                except:
-                    pass
-
-def video_to_audio_conwert(data,format):
-        """
-        audio_conwert(data,format)
-        
-        :param1: binaru music data
-        
-        :param2: video (`mp4`) convert to audio file 
-        
-        :return: binaru converts data or error
-        """
-        try:
-            # Определяем путь к ffmpeg
-            if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
-            else:
-                ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
-        
-            # Сохраняем временный файл
-            with open('save.mp4', 'wb') as f:
-                f.write(data)
-                
-            if not os.path.exists(ffmpeg):
-                logger.error(f'no file {ffmpeg} please download full asets file')
-            codec = {
-            "ogg": "libopus",
-            "mp3": "libmp3lame",
-            "wav": "pcm_s16le",
-            "aac": "aac",
-            "flac": "flac",
-            "m4a": "aac",}
-            # Конвертируем в WAV
-            mes=subprocess.run([
-                ffmpeg,
-                '-i', 'save.mp4',
-                '-vn',
-                '-acodec', codec[format], # MP3 encoder
-                '-q:a', '2',              # Quality (0-9, 2=high)
-                '-y',
-                f'out.{format}'
-            ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # Читаем файл
-            if os.path.exists(f'out.{format}'):
-                with open(f'out.{format}', 'rb') as f:
-                    return f.read()
-            else:
-                logger.warning(f'no file out.{format}')
-                raise EOFError(f'не удалось создать файл out.{format} его чтение не возможно')
-            os.remove(f'out.{format}')
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Ошибка конвертации аудио: {e}")
-            return "Ошибка обработки аудио"
-        except Exception as e:
-            logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-            return f"Произошла ошибка: {str(e)} выход ffmpeg>{mes.stdout + mes.stderr}"
-        finally:
-            del data # очистка данных
-            # Удаляем временные файлы
-            for f in ['save.mp4', 'out.mp3']:
-                try:
-                    if os.path.exists(f):
-                        os.remove(f)
-                except:
-                    pass
 
 @bot.message_handler(commands=['to_text'])
 def audio_to_text(message):
-    mes=None
     if message.reply_to_message :
         if message.reply_to_message.voice:
             try:
@@ -1043,14 +970,18 @@ def audio_to_text(message):
                 model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
                 if not os.path.exists(model_path):
                     logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
-        
+                    bot.reply_to(message,f'модель {model_path} не найдена сообщите разработчику/хосту о проблеме')
+                    return
+                else:
+                    msg=bot.reply_to(message,['выполняется','идет расшифровка','приодеться немного подождать...','Loading','загрузка'][random.randint(0,4)])
+                timers=time.time()
                 rec = KaldiRecognizer(Model(model_path), 16000)
                 file_info = bot.get_file(message.reply_to_message.voice.file_id)
                 ogg_data = bot.download_file(file_info.file_path)
                 # Распознавание
                 results = []
-                data_r=audio_conwert(ogg_data,'wav')
-                if type(data_r)!='bytes':
+                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data,'wav')
+                if type(data_r)!=bytes:
                     logger.error(data_r)
                 wav_buffer = io.BytesIO(data_r) # конвертирую в wav
                 while True:
@@ -1062,7 +993,11 @@ def audio_to_text(message):
         
                 final = json.loads(rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
-                bot.reply_to(message, f"Распознанный текст:\n{text}")
+                bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=msg.message_id,
+                text=f"Распознанный текст:\n{text}\nвремя исполнения:{timers-time.time()}"
+                )
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
@@ -1076,11 +1011,13 @@ def download(message):
     if '-help' in message.text:
         bot.reply_to(message,
             'потдерживает скачивание голосовых сообщений,стикеров и аудио дорожек видео(звук из видео)\n'
+            'придел веса файла 20 мб\n'
             "возможные форматы: <a href='https://github.com/xHak2215/admin_trlrgram_bot#format'>см. дакументацию</a>\n"
             'инструкция и примеры использования:\n'
-            'скачивание стикеров: <code>/download(или де /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
-            'скачивание голосовых сообщений: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
-            'скачивание аудио дорожек: <code>/download(или де /dow) mp3(любой доступный формат) </code>\n'
+            'скачивание стикеров: <code>/download(или же /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
+            'скачивание голосовых сообщений: <code>/download mp3 </code>\n'
+            'скачивание аудио дорожек: <code>/download mp3 </code>\n'
+            'скачивание фото: <code>/download png </code>'
         ,parse_mode='HTML',disable_web_page_preview=True) 
         return
     
@@ -1089,19 +1026,29 @@ def download(message):
                 if len(list(str(message.text).split(' ')))<2:
                     #bot.reply_to(message,"неверное использование команды пример: /download png ")
                     #return
-                    output_format='PNG'
+                    output_format='png'
                 else:
-                    output_format=str(message.text).split(' ')[1].upper()
+                    output_format=str(message.text).split(' ')[1].lower()
                 
                 if message.reply_to_message.sticker:
                     sticker_id = message.reply_to_message.sticker.file_id
-                    file_info = bot.get_file(sticker_id)
-                    # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
-                    # формируем ссылку и "загружаем" изображение открываем  из байтов 
-                    with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
-                    # Конвертируем в RGB для форматов, которые не поддерживают прозрачность
-                        if output_format in ('JPEG', 'JPG'):
-                            img = img.convert('RGB')
+                    try:
+                        file_info = bot.get_file(sticker_id)
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ')
+                        return
+                    if message.reply_to_message.sticker.is_animated or message.reply_to_message.sticker.is_video:
+                        otv='анимированные стикеры не поддерживаться'
+                        #' автор заебался реализовывать поддержку этой фигни 100 с лишнем строк кода было написано а затем удалено это ппц кокого хрена для того что бы скачать анимировный стикер нужно создовать и редактировать 3 промежуточных файла потому что видители загруженые байты кроме того что отличаються webm/tgs так еще хрен их конвертируеш без костылей в нормальное gif бл и да это сообщение редкое-' 
+                        bot.reply_to(message,otv)
+                        return
+                    else:
+                        # Нужно получить путь, где лежит файл стикера на Сервере Телеграмма
+                        # формируем ссылку и "загружаем" изображение открываем  из байтов 
+                        with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
+                        # Конвертируем в RGB для форматов, которые не поддерживают прозрачность
+                            if output_format in ('JPEG', 'JPG'):
+                                img = img.convert('RGB')
                             
                 elif message.reply_to_message.photo:# скачиваем фото
                     photo_id = message.reply_to_message.photo[-1].file_id
@@ -1115,7 +1062,6 @@ def download(message):
                 
                 if "resize:" in message.text:
                     rise=str(message.text).split('resize:')[1]
-                    # print(rise.split(',')[0],rise.split(',')[1])
                     img=img.resize((int(rise.split(',')[0]),int(rise.split(',')[1])))
                 try:
                     img.save(output_buffer, format=output_format)
@@ -1123,7 +1069,21 @@ def download(message):
                     bot.reply_to(message,f'ошибка с форматом {output_format} не определен')
                     del output_buffer # очищяем дабы осбободить память
                     return
-                bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                try:
+                        # Используем BytesIO как файлоподобный объект
+                    with io.BytesIO(output_buffer.getvalue()) as file_stream:
+                        file_stream.name = f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+            
+                     # Отправляем файл напрямую из памяти
+                        bot.send_document(
+                        chat_id=message.chat.id,
+                        document=file_stream,
+                        reply_to_message_id=message.message_id,
+                        timeout=30  # Увеличиваем таймаут для больших файлов
+                        )
+                except Exception as e:
+                    bot.reply_to(message, f"Ошибка отправки файла: {str(e)}")
+                #bot.send_document(message.chat.id, output_buffer.getvalue() ,reply_to_message_id=message.message_id,visible_file_name=f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
                 del output_buffer # очищяем дабы осбободить память
                 
             elif message.reply_to_message.voice:
@@ -1132,15 +1092,33 @@ def download(message):
                     return
                 output_format=str(message.text).split(' ')[1].lower()
                 if output_format in ['mp3','wav','aac','ogg','flac','wma','aiff','opus','alac','mp2']:
-                    file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                    downloaded_file = bot.download_file(file_info.file_path)
-                    
-                    data=audio_conwert(downloaded_file,output_format)
+                    try:
+                        file_info = bot.get_file(message.reply_to_message.video.file_id)
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ')
+                        return
+                    with requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', stream=True) as r:
+                        r.raise_for_status()
+                        total_size = int(r.headers.get('content-length', 0))
+                        chunk_size = 1024 * 1024  # 1MB chunks
+                        video_data = io.BytesIO()
+            
+                        for chunk in r.iter_content(chunk_size=chunk_size):
+                            video_data.write(chunk)
+                    data=asets.ffmpeg_tool.audio_conwert(video_data,output_format)
                     if type(data) !=bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} приняты параметры по умолчанию')
-                        data=downloaded_file
+                        data=video_data
                         output_format='ogg'
-                    bot.send_document(message.chat.id, data ,reply_to_message_id=message.message_id ,visible_file_name=f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}')
+                    with io.BytesIO(data) as file_stream:
+                        file_stream.name = f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+                            # Отправляем файл напрямую из памяти
+                        bot.send_document(
+                        chat_id=message.chat.id,
+                        document=file_stream,
+                        reply_to_message_id=message.message_id,
+                        timeout=30  # Увеличиваем таймаут для больших файлов
+                        )
                 else:
                     bot.reply_to(message,'такого формата нет или он не потдерживаеться')
                     return
@@ -1148,15 +1126,40 @@ def download(message):
                 if len(list(str(message.text).split(' ')))<2:
                     bot.reply_to(message,"неверное использование команды пример: /download mp3 ")
                     return
-                oformat=list(str(message.text).split(' '))[1]
-                file_info = bot.get_file(message.reply_to_message.video.file_id)
-                downloaded_file = bot.download_file(file_info.file_path)
-                if oformat in ["ogg","mp3","wav","aac","flac","m4a"]:
-                    data=video_to_audio_conwert(downloaded_file,'mp3')
+                oformat=list(str(message.text).split(' '))[1].lower()
+                try:
+                    file_info = bot.get_file(message.reply_to_message.video.file_id)
+                except telebot.apihelper.ApiTelegramException:
+                    bot.reply_to(message,f'файл слишком большой ')
+                    return
+                with requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', stream=True) as r:
+                    r.raise_for_status()
+                    total_size = int(r.headers.get('content-length', 0))
+                    chunk_size = 1024 * 1024  # 1MB chunks
+                    video_data = io.BytesIO()
+            
+                    for chunk in r.iter_content(chunk_size=chunk_size):
+                        video_data.write(chunk)
+                    
+                if oformat in ["ogg","mp3","wav","aac","flac","m4a","webm","ac3","wma"]:
+                    data=asets.ffmpeg_tool.video_to_audio_conwert(video_data.getvalue() ,oformat)
                     if type(data) != bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} ')
                         return
-                    bot.send_document(message.chat.id, data ,reply_to_message_id=message.message_id ,visible_file_name=f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}')
+                    try:
+                        with io.BytesIO(data) as file_stream:
+                            file_stream.name = f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}'
+            
+                            # Отправляем файл напрямую из памяти
+                            bot.send_document(
+                            chat_id=message.chat.id,
+                            document=file_stream,
+                            reply_to_message_id=message.message_id,
+                            timeout=30  # Увеличиваем таймаут для больших файлов
+                            )
+                    except telebot.apihelper.ApiTelegramException:
+                        bot.reply_to(message,f'файл слишком большой ({len(data)} байт) ')
+                        return
                 else:
                     bot.reply_to(message,'такого формата нет или он не потдерживаеться')
             else:
@@ -1166,46 +1169,83 @@ def download(message):
         
 @bot.message_handler(commands=['blaklist'])
 def blaklist(message):
-    if message.reply_to_message.sticker and message.reply_to_message:
-        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
-            logger.warning('no file blacklist.json')
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+        if message.reply_to_message.sticker and message.reply_to_message:
+            if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+                logger.warning('no file blacklist.json')
+                with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                    json.dump({'stiker':[1]}, f)
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+                blist = json.load(f)['stiker']
+    
+            sticker_id = message.reply_to_message.sticker.file_id
+            if sticker_id not in blist:
+                blist.append(sticker_id)
+    
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump({'stiker':[1]}, f)
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-            blist = json.load(f)['stiker']
+                json.dump({'stiker':blist}, f)
+            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
     
-        sticker_id = message.reply_to_message.sticker.file_id
-        if sticker_id not in blist:
-            blist.append(sticker_id)
-    
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-            json.dump({'stiker':blist}, f)
-        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
-    
+        else:
+            bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
-        bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
+        if message.date - time.time()<=60:
+            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
     
 @bot.message_handler(commands=['unblaklist'])
 def unblaklist(message):
-    if message.reply_to_message.sticker and message.reply_to_message:
-        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
-            logger.warning('no file blacklist.json')
-            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump([], f)
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-            blist = json.load(f)['stiker']
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+        if message.reply_to_message.sticker and message.reply_to_message:
+            if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+                logger.warning('no file blacklist.json')
+                with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                    json.dump([], f)
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+                blist = json.load(f)['stiker']
     
-        blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
+            blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
 
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-            if len(blist)<1:
-                blist=[0]
-            json.dump({'stiker':blist}, f)
-        bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
-    
+            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+                if len(blist)<1:
+                    blist=[0]
+                json.dump({'stiker':blist}, f)
+            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
+        else:
+            bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
     else:
-        bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
+        if message.date - time.time()<=60:
+            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
             
+@bot.message_handler(commands=['message_info'])
+def unblaklist(message):
+    if message.reply_to_message:
+        out_message=' '
+        out_message+=f'тип: {message.reply_to_message.content_type}\n'
+        out_message+=f'message id:{message.message_id}\n'
+        if str(message.reply_to_message.content_type) in ['video','photo','animation','sticker']:
+            if message.reply_to_message.sticker: media_id = message.reply_to_message.sticker.file_id
+            elif message.reply_to_message.video: media_id = message.reply_to_message.video.file_id
+            elif message.reply_to_message.photo:
+                media_id = message.reply_to_message.photo[-1].file_id
+            elif message.reply_to_message.animation: media_id = message.reply_to_message.animation.file_id
+            if 'media_id' in locals():
+                file_info = bot.get_file(media_id)
+                out_message+=f'ulr:https://api.telegram.org/file/bot{bot.token}/{file_info.file_path} \nвес: {round(len(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}').content),2)} байт\n'
+        if message.reply_to_message.sticker: out_message+=f'sticker ID: {message.reply_to_message.sticker.file_id}\nemoji:{message.reply_to_message.sticker.emoji}\n'
+        #if message.reply_to_message.video:
+            #media_id = message.reply_to_message.video.file_id
+            #file_info = bot.get_file(media_id)
+            #print(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)
+            #out_message+=f'meta data:{str(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)}\n'
+        elif message.reply_to_message.photo:
+            media_id = message.reply_to_message.photo[-1].file_id
+            file_info = bot.get_file(media_id)
+            with Image.open(io.BytesIO(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}', file_info.file_path.split('/')[1], allow_redirects=True).content)) as img:
+                out_message+=f'meta data (exif):{img.getexif()}\n'
+            out_message+=f'width(высота): {message.reply_to_message.photo[-1].width}\n'
+            out_message+=f'height(ширена): {message.reply_to_message.photo[-1].height}\n'
+        bot.reply_to(message,out_message)
+        
 class DeleteData:
     def __init__(self):
         self.message_l = []
@@ -1218,7 +1258,7 @@ def nacase(message, delete_message=None):
         user_messages[message.from_user.id] = []
         the_message = str(message.chat.id).replace("-100", "")
         
-        if bool(bambam): 
+        if bool(BAMBAM): 
             # Ограничиваем пользователя на 24 часа
             bot.restrict_chat_member(
                 chat_id=message.chat.id,
@@ -1289,10 +1329,10 @@ def handle_spam_deletion(call):
         # Ответ пользователю
         bot.answer_callback_query(call.id, f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений")
     except Exception as e:
-        bot.answer_callback_query(call.id,f"Ошибка при удалении: {str(e)}")
+        bot.send_message(admin_grops,f"Ошибка при удалении: {str(e)}")
         logger.error(f"Ошибка в handle_spam_deletion: {str(e)}")
         
-@bot.message_handler(commands=['ping'])
+@bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
     if '-help' in message.text:
         bot.reply_to(message, 'аргументы: /ping ссылка для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки')
@@ -1376,7 +1416,7 @@ def anti_spam(message):
     
     emoji=''
     if message.content_type=='sticker':
-        emoji='( '+message.sticker.emoji+' )'
+        emoji=f'( {message.sticker.emoji} )'
     logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.debug(logs)
@@ -1430,11 +1470,11 @@ def anti_spam(message):
                     text = str(list_mess[a])[cours:cours + paket_num]
                     list_povt_slov.append(text)
                     cours += paket_num
-                bambamSpamerBlat=0
+                BAMBAMSpamerBlat=0
                 for b in range(len(list_povt_slov)):
                     if list_povt_slov[b]==list_povt_slov[0]:
-                        bambamSpamerBlat=bambamSpamerBlat+1
-                if bambamSpamerBlat>SPAM_LIMIT:
+                        BAMBAMSpamerBlat=BAMBAMSpamerBlat+1
+                if BAMBAMSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message,[message.message.id])
         #print(list_povt_slov)# debug
@@ -1492,11 +1532,17 @@ def message_handler(message):
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
         data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
-        
+        return
     elif message.forward_from:
         anti_spam_forward(message)
     else:
         anti_spam(message)
+        if AUTO_TRANSLETE['Activate']:
+            translator = Translator()
+            conf = translator.detect(str(message.text))
+            if conf.lang != AUTO_TRANSLETE['laung']:
+                result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
+                bot.reply_to(message,result.text)
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
@@ -1504,6 +1550,19 @@ def message_handler(message):
         return
     else:
         anti_spam(message)
+@bot.message_handler(content_types=['voice'])
+def message_voice(message):
+    if time.time() - message.date >= SPAM_TIMEFRAME:
+        data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
+        return
+    elif message.forward_from:
+        anti_spam_forward(message)
+        if message.voice.duration>=1800:
+            bot.reply_to(message,'скока бл ...ужас')
+    else:
+        anti_spam(message)
+        if message.voice.duration>=1800:
+            bot.reply_to(message,'скока бл ...ужас')
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
@@ -1517,49 +1576,49 @@ def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f'new member in chat | user name> {message.from_user.username}')
         data_base(message.chat.id,new_member.id,time_v=time.time())
-        try:
-            input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
-            output_gif_path = 'output.gif'
-            # Открываем изображение
-            gif = Image.open(input_gif_path)
-            # Создаем список для хранения кадров с текстом
-            frames_with_text = []
-            # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+        if message.date - time.time()<=300:
             try:
-                font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
-            except IOError:
-                font = ImageFont.load_default(size=35)
-            # Добавляем текст на каждый кадр
-            for frame in range(gif.n_frames):
-                gif.seek(frame)
-                # Копируем текущий кадр
-                new_frame = gif.copy()
-            #    Преобразуем в rgba 
-                new_frame = new_frame.convert('RGBA')
-                draw = ImageDraw.Draw(new_frame)
-                # Определяем текст и его позицию
-                usernameh=message.from_user.first_name
-                ot=26-len(usernameh)
-                otstup=' '*ot
-                text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
-                text_position =(60, 300) # Позиция (x, y) для текста        
-                # Добавляем текст на кадр
-                draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
-                frames_with_text.append(new_frame)# Добавляем новый кадр в список
-                # Сохраняем новый GIF с текстом
-            frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
-            try:
-                with open('output.gif', 'rb') as gif_file:
-                    bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
-                os.remove('output.gif') 
+                input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
+                output_gif_path = 'output.gif'
+                # Открываем изображение
+                gif = Image.open(input_gif_path)
+                # Создаем список для хранения кадров с текстом
+                frames_with_text = []
+                # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+                try:
+                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
+                except IOError:
+                    font = ImageFont.load_default(size=35)
+                # Добавляем текст на каждый кадр
+                for frame in range(gif.n_frames):
+                    gif.seek(frame)
+                    # Копируем текущий кадр
+                    new_frame = gif.copy()
+                #    Преобразуем в rgba 
+                    new_frame = new_frame.convert('RGBA')
+                    draw = ImageDraw.Draw(new_frame)
+                    # Определяем текст и его позицию
+                    usernameh=message.from_user.first_name
+                    ot=26-len(usernameh)
+                    otstup=' '*ot
+                    text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
+                    text_position =(60, 300) # Позиция (x, y) для текста        
+                    # Добавляем текст на кадр
+                    draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
+                    frames_with_text.append(new_frame)# Добавляем новый кадр в список
+                    # Сохраняем новый GIF с текстом
+                frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
+                try:
+                    with open('output.gif', 'rb') as gif_file:
+                        bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
+                    os.remove('output.gif') 
+                except Exception as e:
+                    bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
             except Exception as e:
-                bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
-        except Exception as e:
-            logger.error(f'error hello message >>{e}')
-            username = '@'+new_member.username if new_member.username else "пользователь"
-            welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат! \n/help для справки",f"~новенький скинь ножки~\nПривет, @{username}! Добро пожаловать в наш чат! \n/help для справки"][random.randint(0,1)]
-            bot.reply_to(message , welcome_message, parse_mode='MarkdownV2')
-            
+                logger.error(f'error hello message >>{e}')
+                username = '@'+new_member.username if new_member.username else new_member.first_name 
+                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
+                bot.reply_to(message , welcome_message, parse_mode="HTML")
 # Основной цикл
 def main():
     try:
@@ -1576,10 +1635,10 @@ def main():
                 except requests.exceptions.ReadTimeout:
                     print("time out")
             except Exception as e:
-                logger.error(f"Ошибка: {e} , {traceback.format_exc()}")
+                logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")
                 time.sleep(3)
     except Exception as e:
-        bot.send_message(admin_grops,'ошибка при старте\n'+e)
+        bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
 if __name__ == '__main__':
     main()
     
