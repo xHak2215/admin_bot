@@ -386,6 +386,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
     # Создаем подключение к базе данных
     connection = sqlite3.connect('Users_base.db')
     cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
     try:
         # Выполняем запрос для получения данных из указанного столбца по индексу строки
         query = f'SELECT {column_name} FROM Users LIMIT 1 OFFSET ?'
@@ -440,23 +441,31 @@ def send_help(message):
     datas=''
     try:
         #проверка на админа
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
             connection = sqlite3.connect('Users_base.db')
             cursor = connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL;")
             # Получаем информацию о столбцах в таблице Users
             cursor.execute('SELECT * FROM Users')
             rows = cursor.fetchall() 
+            cursor.execute('PRAGMA table_info(Users);')
+            data = cursor.fetchall() 
             # Печатаем информацию о столбцах
+            info=''
             for column in rows:
                 datas += str(column)+'\n'
+            for i in data:
+                info+=' '+str(list(i)[1])
             connection.close()
-            bot.send_message(message.chat.id,f"data base>>\n№ | chat id |r| user id|num_message|ar|data\n----------------------------------------\n{datas}")
+            bot.send_message(message.chat.id,f"data base>>\n{info}\n----------------------------------------------------------\n{datas}")
             logger.debug(f"база данных :\n{datas}")
         else:
             bot.reply_to(message,f"ты не достоин \nты не админ")
     except Exception as e:
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
+    finally:
+        connection.close()
         
 def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
@@ -990,13 +999,13 @@ def audio_to_text(message):
                         break
                     if rec.AcceptWaveform(data):
                         results.append(json.loads(rec.Result()))
-        
+                print('выполнено')
                 final = json.loads(rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
                 bot.edit_message_text(
                 chat_id=message.chat.id,
                 message_id=msg.message_id,
-                text=f"Распознанный текст:\n{text}\nвремя исполнения:{timers-time.time()}"
+                text=f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}"
                 )
                 
             except Exception as e:
