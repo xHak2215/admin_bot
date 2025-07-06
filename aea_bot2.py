@@ -1010,10 +1010,12 @@ def audio_to_text(message):
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-        elif message.reply_to_message.photo:
-            pass # распознование текста на фото не реализовал(спиздил код) из за необходимости использования нескольких тяжелых библиотек   
+        else:
+            bot.reply_to(message, "это не ГС; Пожалуйста, ответьте командой на голосовое сообщение чтобы распознать текст в нем")
+        #elif message.reply_to_message.photo:
+        #    pass # распознование текста на фото не реализовал(спиздил код) из за необходимости использования нескольких тяжелых библиотек   
     else:
-        bot.reply_to_message(message, "Пожалуйста, ответьте командой /to_text на голосовое сообщение")
+        bot.reply_to(message, "Пожалуйста, ответьте командой на голосовое сообщение чтобы распознать текст в нем")
         
 @bot.message_handler(commands=['download','dow'])
 def download(message):
