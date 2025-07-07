@@ -924,17 +924,23 @@ def handle_warn(message):
                 bot.reply_to(message,'отключено в настройках(settings.json) парамитер console_control')
     except:
         bot.reply_to(message,traceback.format_exc())
-        
+
+def scan_hex_in_text(text:list)->bool:
+    for i in text:
+        if i not in asets.dictt.hex_sinvol:
+            return False
+    return True
+
 @bot.message_handler(commands=['t','translate','перевод'])  
 def translitor(message):
     if message.reply_to_message:
-        bin=str(message.reply_to_message.text).replace(' ','')
-        if set(bin) == {'0', '1'} :
-            bytes_list = [int(bin[i:i+8], 2) for i in range(0, len(bin), 8)]
+        bins=str(message.reply_to_message.text).replace(' ','').lower()
+        if set(bins) == {'0', '1'} :
+            bytes_list = [int(bins[i:i+8], 2) for i in range(0, len(bins), 8)]
             bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
             return
-        elif bin[0:4] == '202e':
-            bot.reply_to(message, bytes.fromhex(bin).decode('utf-8'))
+        elif bins[0:4] == '202e' or scan_hex_in_text(bins):
+            bot.reply_to(message, bytes.fromhex(bins).decode('utf-8', errors='replace'))
             return
         elif len(message.text.split(' ')) > 1:
             if str(message.text.split(' ')[1].replace(' ','')) == 'translit' or str(message.text.split(' ')[1]).replace(' ','') == 'транслит':
