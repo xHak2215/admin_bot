@@ -1526,8 +1526,8 @@ def message_handler(message):
                 try:
                     bot.delete_message(message.chat.id,message.message_id)
                     bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
-                except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
+                except telebot.apihelper.ApiTelegramException as e:
+                    bot.send_message(admin_grops,f'error>>{e}\nвероятно у бота недостаточно прав')
     teg=''
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:     
