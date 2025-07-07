@@ -1352,7 +1352,8 @@ def handle_spam_deletion(call):
 @bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
     if '-help' in message.text:
-        bot.reply_to(message, 'аргументы: /ping ссылка для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки')
+        bot.reply_to(message, 'аргументы: /ping ссылка для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки\nпример:<code>/ping example.com 5 True</code>',parse_mode='HTML',disable_web_page_preview=True)
+        return
     data=str(message.text).split(' ')
     if len(data)>1:
         command=data[1]
@@ -1434,7 +1435,7 @@ def anti_spam(message):
     emoji=''
     if message.content_type=='sticker':
         emoji=f'( {message.sticker.emoji} )'
-    logs = f"chat>>{message.chat.id} user >> tg://user?id={message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
+    logs = f"chat>> {message.chat.id} user >> id>> {message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.debug(logs)
    # Проверка на спам
