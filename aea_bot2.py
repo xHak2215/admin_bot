@@ -9,7 +9,7 @@ from datetime import timedelta
 from datetime import datetime
 import traceback
 from collections import Counter
-#import threading
+import threading
 import io
 import binascii
 
@@ -62,7 +62,7 @@ except ImportError:
 
 try:
     with open("TOKEN", "r") as t:
-        TOKEN=t.read().replace(' ','')
+        TOKEN=t.readlines()[0].replace(' ','').replace('\n','')
 except FileNotFoundError:
     print('\33[31m error no file TOKEN ,the file auto creat please write you token to file TOKEN \33[0m')
     with open(os.path.join(os.getcwd(), 'TOKEN'), 'w') as f:
@@ -183,7 +183,7 @@ def handle_warn(message):
     
 # Команда /log
 @bot.message_handler(commands=['log'])
-def send_help(message):
+def send_log(message):
     try:
         bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
     except Exception as e:
@@ -192,7 +192,7 @@ def send_help(message):
         
 #очищение логов /null_log
 @bot.message_handler(commands=['null_log'])
-def send_help(message):
+def null_log(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
         try:
         #проверка на админа
@@ -763,7 +763,7 @@ def handle_warn(message):
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
         if '-all' in str(message.text).lower():
-            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')}')
+            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")}')
             return
         if str(data[3]) != str(0):
             if data[3]>=86400:
@@ -779,7 +779,7 @@ def handle_warn(message):
                     c='часов назад' 
                 i=str(round((time.time()-data[3])/3600))+ c
             else:
-                data_v=f'\nзащел в чат {datetime.fromtimestamp(data[3]).strftime('%Y-%m-%d %H:%M:%S')} ({i})'
+                data_v=f'\nзащел в чат {datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")} ({i})'
         bot.reply_to(message,f'текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}') # \nза день:{data[4]}{data_v}
     else: 
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
@@ -989,24 +989,42 @@ def audio_to_text(message):
                     return
                 else:
                     msg=bot.reply_to(message,['выполняется','идет расшифровка','приодеться немного подождать...','Loading','загрузка'][random.randint(0,4)])
+                class Bufer_data:
+                    def __init__(self,rec='',ogg_data='') -> str:
+                        self.rec = rec
+                        self.ogg_data = ogg_data
                 timers=time.time()
-                rec = KaldiRecognizer(Model(model_path), 16000)
-                file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                ogg_data = bot.download_file(file_info.file_path)
+                temp=Bufer_data()
+                def init_ai():
+                    temp.rec = KaldiRecognizer(Model(model_path), 16000)
+
+                def download():
+                    file_info = bot.get_file(message.reply_to_message.voice.file_id)
+                    temp.ogg_data = bot.download_file(file_info.file_path)
+                ai_stream= threading.Thread(target=init_ai)
+                ai_stream.daemon = True
+
+                downl_stream= threading.Thread(target=download)
+                downl_stream.daemon = True
+
+                downl_stream.start()
+                ai_stream.start()
                 # Распознавание
                 results = []
-                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data,'wav')
+                downl_stream.join()
+                data_r=asets.ffmpeg_tool.audio_conwert(temp.ogg_data,'wav') # конвертирую в wav
                 if type(data_r)!=bytes:
                     logger.error(data_r)
-                wav_buffer = io.BytesIO(data_r) # конвертирую в wav
+                wav_buffer = io.BytesIO(data_r)
+                ai_stream.join()
                 while True:
                     data = wav_buffer.read(4000)
                     if not data:
                         break
-                    if rec.AcceptWaveform(data):
-                        results.append(json.loads(rec.Result()))
+                    if temp.rec.AcceptWaveform(data):
+                        results.append(json.loads(temp.rec.Result()))
                 print('выполнено')
-                final = json.loads(rec.FinalResult())
+                final = json.loads(temp.rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
                 bot.edit_message_text(
                 chat_id=message.chat.id,
@@ -1089,7 +1107,7 @@ def download(message):
                 try:
                         # Используем BytesIO как файлоподобный объект
                     with io.BytesIO(output_buffer.getvalue()) as file_stream:
-                        file_stream.name = f'sticker_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+                        file_stream.name = f'sticker_{datetime.fromtimestamp(time.time()).strftime(r"%Y-%m-%d %H:%M")}.{output_format}'
             
                      # Отправляем файл напрямую из памяти
                         bot.send_document(
@@ -1110,7 +1128,7 @@ def download(message):
                 output_format=str(message.text).split(' ')[1].lower()
                 if output_format in ['mp3','wav','aac','ogg','flac','wma','aiff','opus','alac','mp2']:
                     try:
-                        file_info = bot.get_file(message.reply_to_message.video.file_id)
+                        file_info = bot.get_file(message.reply_to_message.voice.file_id)
                     except telebot.apihelper.ApiTelegramException:
                         bot.reply_to(message,f'файл слишком большой ')
                         return
@@ -1122,13 +1140,13 @@ def download(message):
             
                         for chunk in r.iter_content(chunk_size=chunk_size):
                             video_data.write(chunk)
-                    data=asets.ffmpeg_tool.audio_conwert(video_data,output_format)
+                    data=asets.ffmpeg_tool.audio_conwert(video_data.getvalue(),output_format)
                     if type(data) !=bytes:#если ошибка задаем пораметры по умолчанию
                         bot.reply_to(message,f'случилась ошибка>{data} приняты параметры по умолчанию')
                         data=video_data
                         output_format='ogg'
                     with io.BytesIO(data) as file_stream:
-                        file_stream.name = f'voice_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{output_format}'
+                        file_stream.name = f'voice_{datetime.fromtimestamp(time.time()).strftime(r"%Y-%m-%d %H:%M")}.{output_format}'
                             # Отправляем файл напрямую из памяти
                         bot.send_document(
                         chat_id=message.chat.id,
@@ -1165,7 +1183,7 @@ def download(message):
                         return
                     try:
                         with io.BytesIO(data) as file_stream:
-                            file_stream.name = f'music_{datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M')}.{oformat}'
+                            file_stream.name = f'music_{datetime.fromtimestamp(time.time()).strftime(r"%Y-%m-%d %H:%M")}.{oformat}'
             
                             # Отправляем файл напрямую из памяти
                             bot.send_document(
@@ -1247,7 +1265,7 @@ def unblaklist(message):
             elif message.reply_to_message.animation: media_id = message.reply_to_message.animation.file_id
             if 'media_id' in locals():
                 file_info = bot.get_file(media_id)
-                out_message+=f'ulr:https://api.telegram.org/file/bot{bot.token}/{file_info.file_path} \nвес: {round(len(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}').content),2)} байт\n'
+                out_message+=f"ulr:https://api.telegram.org/file/bot{bot.token}/{file_info.file_path} \nвес: {round(len(requests.get(f'https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}').content),2)} байт\n"
         if message.reply_to_message.sticker: out_message+=f'sticker ID: {message.reply_to_message.sticker.file_id}\nemoji:{message.reply_to_message.sticker.emoji}\n'
         #if message.reply_to_message.video:
             #media_id = message.reply_to_message.video.file_id
@@ -1360,13 +1378,19 @@ def ping_command(message):
     else:
         url='https://ya.ru'
         start_time = time.time()
-        response=requests.get(url)
+        if 'http://' not in url:
+            url='http://'+url
+        try:
+            response=requests.get(url, timeout=20)
+        except requests.exceptions.ReadTimeout:
+            bot.reply_to(message,'превышена задержка (20s) возможно сайт недоступен')
+            return
         if response.status_code==200:
             scode= ''
         else:
             scode=f'\nerror conect\nstatus code {response.status_code}'
         p_time=time.time() - start_time
-        bot.reply_to(message,'ping:'+p_time+scode)
+        bot.reply_to(message,'ping:'+str(p_time)+str(scode))
         return
     parm=command.split(',')
     regim=False
@@ -1382,7 +1406,15 @@ def ping_command(message):
         p_time=[]
     for i in range(povt):
         start_time = time.time()
-        response=requests.get(parm[0])
+        if 'http://' not in parm[0]:
+            url='http://'+parm[0]
+        else:
+            url=parm[0]
+        try:
+            response=requests.get(url, timeout=20)
+        except requests.exceptions.ReadTimeout:
+            bot.reply_to(message,'превышена задержка (20s) возможно сайт недоступен')
+            return
         if response.status_code==200:
             scode= ''
         else:
