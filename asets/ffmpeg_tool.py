@@ -21,7 +21,7 @@ def audio_conwert(data:bytes,format,inp_format='save.ogg'):
             if sys.platform.startswith('win'):
                 ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
             else:
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linux64-lgpl','bin','ffmpeg') # для Linux
             # Сохраняем временный файл
             with open('save.ogg', 'wb') as f:
                 f.write(data)
@@ -78,7 +78,7 @@ def video_to_audio_conwert(data:bytes,format:str):
             if sys.platform.startswith('win'):
                 ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
             else:
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux
+                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linux64-lgpl','bin','ffmpeg') # для Linux
         
             # Сохраняем временный файл
             with open('save.mp4', 'wb') as f:
@@ -147,7 +147,7 @@ def video_meta_data(data:bytes):
         if sys.platform.startswith('win'):
             ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffprobe.exe') # для windows
         else:
-            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffprobe') # для Linux
+            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linux64-lgpl','bin','ffprobe') # для Linux
                 
         if not os.path.exists(ffmpeg):
             logger.error(f'no file {ffmpeg}')
@@ -168,12 +168,12 @@ def video_meta_data(data:bytes):
         stdout, stderr = process.communicate(input=data)
         return stdout, stderr
     except subprocess.CalledProcessError as e:
-        if 'mes' in locals():
+        if 'stdout' in locals() and 'stderr' in locals():
             return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{stdout + stderr}"
         logger.error(f"Ошибка извлечения мета данных: {e}")
         return "error:Ошибка извлечения мета данных"
     except Exception as e:
         logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
-        if 'mes' in locals():
+        if 'stdout' in locals() and 'stderr' in locals():
             return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{stdout + stderr}"
         else: return f"error:Произошла ошибка: {str(e)}"
