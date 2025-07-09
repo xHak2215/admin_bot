@@ -1256,8 +1256,10 @@ def blaklist(message):
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
                 json.dump({'stiker':bklist.blist}, f)
             bot.send_message(admin_grops,f'@{message.from_user.username} добавил стикер (id:{message.reply_to_message.sticker.file_id}) в черный список')
-    
         else:
+            if len(message.text.split(' '))>1:
+                if message.text.split(' ')[1].lower() =='-info':
+                    bot.reply_to(message,f"количество:{bklist.slen}")
             bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
         if message.date - time.time()<=60:
