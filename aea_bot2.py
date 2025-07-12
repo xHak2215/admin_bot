@@ -351,12 +351,25 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
+    pass
+    """
     if message.date - time.time()<=60:
-        pass
-    #    markup = types.InlineKeyboardMarkup()
-    #    button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
-    #    markup.add(button1)
-    #    bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
+        try:
+            markup = types.InlineKeyboardMarkup()
+            button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
+            markup.add(button1)
+            msg=bot.reply_to(message, 'правила перенесены на web страницу\n(будет удалено через 15)', reply_markup=markup)
+            for tim in range(1,15):
+                bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=msg.message_id,
+                text=f"правила перенесены на web страницу\n(будет удалено через {15-tim})",
+                reply_markup=markup
+                )
+                time.sleep(1)
+        finally:
+            bot.delete_message(message.chat.id, msg.message_id)
+    """   
     
 # Хранение данных о репортах
 report_data =  {}
