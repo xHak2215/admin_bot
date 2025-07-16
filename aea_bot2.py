@@ -351,12 +351,26 @@ def time_server_command(message):
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
+    pass
+    """
     if message.date - time.time()<=60:
-        pass
-    #    markup = types.InlineKeyboardMarkup()
-    #    button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
-    #    markup.add(button1)
-    #    bot.reply_to(message, 'правила перенесены на web страницу', reply_markup=markup)
+        try:
+            markup = types.InlineKeyboardMarkup()
+            button1 = types.InlineKeyboardButton("правила", url='https://xhak2215.github.io/aea_rules.github.io/')
+            markup.add(button1)
+            msg=bot.reply_to(message, 'правила перенесены на web страницу\n(будет удалено через 15)', reply_markup=markup)
+            for tim in range(1,15):
+                bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=msg.message_id,
+                text=f"правила перенесены на web страницу\n(будет удалено через {15-tim})",
+                reply_markup=markup
+                )
+                time.sleep(1)
+        finally:
+            bot.delete_message(message.chat.id, msg.message_id)
+    """   
+            
     
 # Хранение данных о репортах
 report_data =  {}
@@ -1256,8 +1270,10 @@ def blaklist(message):
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
                 json.dump({'stiker':bklist.blist}, f)
             bot.send_message(admin_grops,f'@{message.from_user.username} добавил стикер (id:{message.reply_to_message.sticker.file_id}) в черный список')
-    
         else:
+            if len(message.text.split(' '))>1:
+                if message.text.split(' ')[1].lower() =='-info':
+                    bot.reply_to(message,f"количество:{bklist.slen}")
             bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
         if message.date - time.time()<=60:

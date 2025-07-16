@@ -1,0 +1,10 @@
+[project]
+name = "senbot"
+version = "2.1"
+authors = [{name = "HITHELL"}]
+requires-python = ">=3.13" 
+description = "много функциональной Телеграм бот администратор"  
+readme = "README.md"
+
+[build-system]  
+requires = ["setuptools", "setuptools-scm"]

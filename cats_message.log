@@ -1,0 +1,526 @@
+2025-07-05 21:05:22.580 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 11:40:19.388 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 11:40:27.417 | ERROR    | __main__:send_help:463 - error >> no such table: Users
+2025-07-06 11:41:13.848 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 11:41:20.147 | ERROR    | __main__:send_help:463 - error >> no such table: Users
+2025-07-06 11:55:38.330 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 11:55:56.994 | DEBUG    | __main__:send_help:458 - база данных :
+(1, 5194033781, 5, 5194033781, None, 1, 1, 0, None, 0, None)
+
+2025-07-06 14:03:04.012 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 14:03:08.750 | ERROR    | __main__:send_help:465 - error >> cannot access local variable 'info' where it is not associated with a value
+2025-07-06 14:03:30.985 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 14:03:38.221 | ERROR    | __main__:send_help:466 - error >> unsupported operand type(s) for +=: 'int' and 'str'
+2025-07-06 14:04:29.049 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 14:04:35.004 | DEBUG    | __main__:send_help:461 - база данных :
+(1, 5194033781, 5, 5194033781, None, 1, 1, 0, None, 0, None)
+
+2025-07-06 14:06:02.641 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 14:06:06.653 | DEBUG    | __main__:send_help:461 - база данных :
+(1, 5194033781, 5, 5194033781, None, 1, 1, 0, None, 0, None)
+
+2025-07-06 14:07:03.941 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 14:07:08.218 | DEBUG    | __main__:send_help:461 - база данных :
+(1, 5194033781, 5, 5194033781, None, 1, 1, 0, None, 0, None)
+
+2025-07-06 14:17:15.223 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 15:17:35.906 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-06 15:21:38.739 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 18:37:31.615 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 18:37:42.149 | DEBUG    | __main__:anti_spam:1439 - chat>>5194033781 user >> tg://user?id=5194033781, @HITHELL | сообщение >>
+61737667e0e1e2e3e4e53132333435365f 
+2025-07-07 18:37:46.286 | ERROR    | __main__:main:1655 - Ошибка: 'utf-8' codec can't decode byte 0xe0 in position 4: invalid continuation byte 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1646, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 943, in translitor
+    bot.reply_to(message, bytes.fromhex(bins).decode('utf-8'))
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe0 in position 4: invalid continuation byte
+
+2025-07-07 18:42:10.597 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 18:42:22.213 | DEBUG    | __main__:anti_spam:1439 - chat>>5194033781 user >> tg://user?id=5194033781, @HITHELL | сообщение >>
+61737667e0e1e2e3e4e53132333435365f 
+2025-07-07 19:07:15.084 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 19:08:31.440 | DEBUG    | __main__:anti_spam:1439 - chat>>5194033781 user >> tg://user?id=5194033781, @HITHELL | сообщение >>
+20616276676420d0b0d0b1d0b2d0b3d0b420313233 
+2025-07-07 19:14:46.152 | DEBUG    | __main__:anti_spam:1439 - chat>>5194033781 user >> tg://user?id=5194033781, @HITHELL | сообщение >>
+jajsdjsagkjasgkldjlkasdgjlsjadgljhsdohjasdohsaoeghoishdohsccxhgsydghwetyweyytupasodjfkljnxclm vbkjxb k jfosdjoigs4644654654676876767 
+2025-07-07 20:16:06.076 | ERROR    | __main__:main:1655 - Ошибка: Invalid URL '-help': No schema supplied. Perhaps you meant http://-help? 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1646, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1384, in ping_command
+    response=requests.get(parm[0])
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 76, in get
+    return request('get', url, params=params, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 528, in request
+    prep = self.prepare_request(req)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 456, in prepare_request
+    p.prepare(
+    ~~~~~~~~~^
+        method=request.method.upper(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        hooks=merge_hooks(request.hooks, self.hooks),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\models.py", line 316, in prepare
+    self.prepare_url(url, params)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\models.py", line 390, in prepare_url
+    raise MissingSchema(error)
+requests.exceptions.MissingSchema: Invalid URL '-help': No schema supplied. Perhaps you meant http://-help?
+
+2025-07-07 20:22:08.385 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 21:00:35.781 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 21:00:44.089 | ERROR    | __main__:main:1658 - Ошибка: Invalid URL 'example.com': No schema supplied. Perhaps you meant http://example.com? 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1649, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1387, in ping_command
+    response=requests.get(parm[0])
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 76, in get
+    return request('get', url, params=params, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 528, in request
+    prep = self.prepare_request(req)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 456, in prepare_request
+    p.prepare(
+    ~~~~~~~~~^
+        method=request.method.upper(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        hooks=merge_hooks(request.hooks, self.hooks),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\models.py", line 316, in prepare
+    self.prepare_url(url, params)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\models.py", line 390, in prepare_url
+    raise MissingSchema(error)
+requests.exceptions.MissingSchema: Invalid URL 'example.com': No schema supplied. Perhaps you meant http://example.com?
+
+2025-07-07 21:02:25.413 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 21:03:11.878 | ERROR    | __main__:main:1660 - Ошибка: cannot access local variable 'url' where it is not associated with a value 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1651, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1388, in ping_command
+    url='http://'+parm[0]
+                  ^^^
+UnboundLocalError: cannot access local variable 'url' where it is not associated with a value
+
+2025-07-07 21:03:53.225 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 21:13:18.662 | INFO     | __main__:<module>:145 - бот запущен
+2025-07-07 21:13:38.970 | ERROR    | __main__:main:1670 - Ошибка: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C529EF0E0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')) 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 169, in _new_conn
+    conn = connection.create_connection(
+        (self._dns_host, self.port), self.timeout, **extra_kw
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 699, in urlopen
+    httplib_response = self._make_request(
+        conn,
+    ...<5 lines>...
+        chunked=chunked,
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 394, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 234, in request
+    super(HTTPConnection, self).request(method, url, body=body, headers=headers)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1384, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 200, in connect
+    conn = self._new_conn()
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 181, in _new_conn
+    raise NewConnectionError(
+        self, "Failed to establish a new connection: %s" % e
+    )
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x0000012C529EF0E0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 439, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<8 lines>...
+        timeout=timeout
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 755, in urlopen
+    retries = retries.increment(
+        method, url, error=e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\retry.py", line 574, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C529EF0E0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1661, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1366, in ping_command
+    response=requests.get(url, timeout=20)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 76, in get
+    return request('get', url, params=params, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 542, in request
+    resp = self.send(prep, **send_kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 655, in send
+    r = adapter.send(request, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C529EF0E0>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+2025-07-07 21:14:57.211 | ERROR    | __main__:main:1670 - Ошибка: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6B610>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')) 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 169, in _new_conn
+    conn = connection.create_connection(
+        (self._dns_host, self.port), self.timeout, **extra_kw
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 699, in urlopen
+    httplib_response = self._make_request(
+        conn,
+    ...<5 lines>...
+        chunked=chunked,
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 394, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 234, in request
+    super(HTTPConnection, self).request(method, url, body=body, headers=headers)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1384, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 200, in connect
+    conn = self._new_conn()
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 181, in _new_conn
+    raise NewConnectionError(
+        self, "Failed to establish a new connection: %s" % e
+    )
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x0000012C52A6B610>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 439, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<8 lines>...
+        timeout=timeout
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 755, in urlopen
+    retries = retries.increment(
+        method, url, error=e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\retry.py", line 574, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6B610>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1661, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1396, in ping_command
+    response=requests.get(url, timeout=20)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 76, in get
+    return request('get', url, params=params, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 542, in request
+    resp = self.send(prep, **send_kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 655, in send
+    r = adapter.send(request, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6B610>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+2025-07-07 21:15:31.021 | ERROR    | __main__:main:1670 - Ошибка: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6BC50>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed')) 
+-----------------------------
+ Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 169, in _new_conn
+    conn = connection.create_connection(
+        (self._dns_host, self.port), self.timeout, **extra_kw
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 699, in urlopen
+    httplib_response = self._make_request(
+        conn,
+    ...<5 lines>...
+        chunked=chunked,
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 394, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 234, in request
+    super(HTTPConnection, self).request(method, url, body=body, headers=headers)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1384, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1333, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1093, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "C:\Python313\Lib\http\client.py", line 1037, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 200, in connect
+    conn = self._new_conn()
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connection.py", line 181, in _new_conn
+    raise NewConnectionError(
+        self, "Failed to establish a new connection: %s" % e
+    )
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x0000012C52A6BC50>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 439, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<8 lines>...
+        timeout=timeout
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\connectionpool.py", line 755, in urlopen
+    retries = retries.increment(
+        method, url, error=e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\urllib3\util\retry.py", line 574, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6BC50>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1661, in main
+    bot.polling(none_stop=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1198, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            logger_level=logger_level, allowed_updates=allowed_updates)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1273, in __threaded_polling
+    raise e
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 1235, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 150, in raise_exceptions
+    raise self.exception_info
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\telebot\__init__.py", line 9759, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\aea_bot2.py", line 1396, in ping_command
+    response=requests.get(url, timeout=20)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 76, in get
+    return request('get', url, params=params, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\api.py", line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 542, in request
+    resp = self.send(prep, **send_kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\sessions.py", line 655, in send
+    r = adapter.send(request, **kwargs)
+  File "c:\Users\User\Desktop\Projekte\AEA_bot\admin_trlrgram_bot\admin_trlrgram_bot\virtual\Lib\site-packages\requests\adapters.py", line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='https', port=80): Max retries exceeded with url: //ya.ru (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000012C52A6BC50>: Failed to establish a new connection: [Errno 11001] getaddrinfo failed'))
+
+2025-07-12 11:52:13.895 | INFO     | __main__:<module>:183 - бот запущен
+2025-07-12 11:54:13.071 | INFO     | __main__:<module>:183 - бот запущен
+2025-07-12 12:13:58.235 | INFO     | __main__:<module>:183 - бот запущен
+2025-07-12 12:16:58.562 | INFO     | __main__:<module>:183 - бот запущен
