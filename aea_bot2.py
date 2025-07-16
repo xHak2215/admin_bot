@@ -32,6 +32,7 @@ try:
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
+    import wikipedia
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -60,6 +61,9 @@ except ImportError:
         else:
             print('\33[32m error install (что то пошло не так )')
 
+if not os.path.exists(os.path.join(os.getcwd(), 'asets')):
+    os.mkdir('asets')
+
 try:
     with open("TOKEN", "r") as t:
         TOKEN=t.readlines()[0].replace(' ','').replace('\n','')
@@ -87,7 +91,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code> \n/to_text — перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -95,6 +99,41 @@ i=0
 admin_list=["@HITHELL","@mggxst"]
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
 
+class Blak_stiket_list:
+    """
+    **хранит запрещенные стикеры**
+
+    :param: None
+    """
+    def __init__(self,blist=[0]):
+        self.blist=blist
+    
+    def add(self, sticker_id):
+        """Добавляет стикер в черный список, если его там нет."""
+        if sticker_id not in self.blist:
+            self.blist.append(sticker_id)
+
+    def removes(self, sticker_id):
+        """Удаляет стикер из черного списка, если он там есть."""
+        if sticker_id in self.blist:
+            self.blist.remove(sticker_id)
+
+    def slen(self):
+        """Возвращает количество запрещенных стикеров."""
+        return len(self.blist)
+
+bklist=Blak_stiket_list()
+
+if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
+    logger.warning('no file blacklist.json')
+    with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+            json.dump({'stiker':[0]}, f)
+with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
+    try:
+        bklist.add(json.load(f)['stiker'])
+    except json.decoder.JSONDecodeError: 
+        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
+            json.dump({'stiker':[0]}, f)
 # Инициализация логирования
 logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
 try:
@@ -469,7 +508,7 @@ def send_help(message):
         
 def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db', timeout=10)
+    connection = sqlite3.connect('Users_base.db', timeout=5000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
 
@@ -537,7 +576,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     
     :param6: дата входа задаеться при входе
     
-    return
+    ## return
     
     list
     
@@ -559,7 +598,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     try:
         resperens = 5
         # Создаем подключение к базе данных
-        connection = sqlite3.connect('Users_base.db',timeout=10)
+        connection = sqlite3.connect('Users_base.db',timeout=5000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
 
@@ -1209,17 +1248,15 @@ def blaklist(message):
             if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
                 logger.warning('no file blacklist.json')
                 with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                    json.dump({'stiker':[1]}, f)
+                    json.dump({'stiker':[0]}, f)
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-                blist = json.load(f)['stiker']
+                bklist.blist = json.load(f)['stiker']
     
-            sticker_id = message.reply_to_message.sticker.file_id
-            if sticker_id not in blist:
-                blist.append(sticker_id)
+            bklist.add(message.reply_to_message.sticker.file_id)
     
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump({'stiker':blist}, f)
-            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) добавлен в черный список')
+                json.dump({'stiker':bklist.blist}, f)
+            bot.send_message(admin_grops,f'@{message.from_user.username} добавил стикер (id:{message.reply_to_message.sticker.file_id}) в черный список')
     
         else:
             bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
@@ -1236,15 +1273,18 @@ def unblaklist(message):
                 with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
                     json.dump([], f)
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-                blist = json.load(f)['stiker']
-    
-            blist=list(blist).remove(message.reply_to_message.sticker.file_id)# удаление стикера из списка 
-
+                bklist.blist = json.load(f)['stiker']
+            file_id = str(message.reply_to_message.sticker.file_id)
+            if file_id in bklist.blist :
+                bklist.removes(file_id) # удаление стикера из списка
+            else:
+                bot.reply_to(message,['такого стикера в списке нет','стикера и так нет в списке'][random.randint(0,1)])
+                return
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                if len(blist)<1:
-                    blist=[0]
-                json.dump({'stiker':blist}, f)
-            bot.send_message(admin_grops,f'стикер (id:{message.reply_to_message.sticker.file_id}) убран из черного списка')
+                if len(list(bklist.blist))<1:
+                    bklist.add([0])
+                json.dump({'stiker':bklist.blist}, f)
+            bot.send_message(admin_grops,f'@{message.from_user.username} убрал стикер (id:{message.reply_to_message.sticker.file_id}) из черного списка')
         else:
             bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
     else:
@@ -1369,8 +1409,8 @@ def handle_spam_deletion(call):
         
 @bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
-    if '-help' in message.text:
-        bot.reply_to(message, 'аргументы: /ping ссылка для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки\nпример:<code>/ping example.com 5 True</code>',parse_mode='HTML',disable_web_page_preview=True)
+    if '-help' in message.text or '-h' in message.text:
+        bot.reply_to(message, 'аргументы: /ping <ссылка для тестирования по умолчанию https://ya.ru> <количество повторов замера задержки>  <режим расчета>.\nрежимы расчета: 1 - вычисление средни статистической задержки из всех попыток. по умолчанию (не указывая значение) 2 - отображение задержки каждой попытки\nпример:<code>/ping example.com 5 1</code>',parse_mode='HTML',disable_web_page_preview=True)
         return
     data=str(message.text).split(' ')
     if len(data)>1:
@@ -1378,8 +1418,6 @@ def ping_command(message):
     else:
         url='https://ya.ru'
         start_time = time.time()
-        if 'http://' not in url:
-            url='http://'+url
         try:
             response=requests.get(url, timeout=20)
         except requests.exceptions.ReadTimeout:
@@ -1399,15 +1437,15 @@ def ping_command(message):
     else:
         povt = 1
     if len(parm) >= 3:
-        regim=parm[2]
-    if bool(regim):
+        regim=parm[2].replace(' ','').lower()
+    if regim==1:
         p_time=0
-    else:
+    elif regim==2:
         p_time=[]
     for i in range(povt):
         start_time = time.time()
-        if 'http://' not in parm[0]:
-            url='http://'+parm[0]
+        if 'https://' not in parm[0]:
+            url='https://'+parm[0]
         else:
             url=parm[0]
         try:
@@ -1419,18 +1457,38 @@ def ping_command(message):
             scode= ''
         else:
             scode=f'\nerror conect\nstatus code {response.status_code}'
-        if bool(regim):
-            p_time+=time.time() - start_time
-        else:
+        if regim==1:
+            p_time+=time.time() - start_time 
+        elif regim==2:
             p_time.append(time.time() - start_time)
-    if bool(regim):
+    if regim==1:
         bot.reply_to(message,f'ping:{round(p_time/povt,4)}s{scode}')
-    else:
+    elif regim==2:
         out=''
         for i in range((len(p_time))):
             out+=f'[{i}] ping: {round(p_time[i],5)}s\n' 
         bot.reply_to(message,out+scode)
         
+@bot.message_handler(commands=['serh','поиск','searh'])
+def searh_network(message): 
+    if '-ping' in message.text:
+        timer=time.time()
+        try:
+            esp=requests.get('https://ru.wikipedia.org',timeout=20).status_code
+        except requests.exceptions.ReadTimeout:
+            bot.reply_to(message,'превышена задержка (20s) возможноресурс недоступен')
+            return
+        timer=time.time()-timer
+        bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
+        return
+    promt=message.text.split(':')[1]
+    wikipedia.set_lang(AUTO_TRANSLETE['laung'])
+    out_wiki=wikipedia.summary(promt, sentences=6)
+    if out_wiki !=None:
+        bot.reply_to(message,out_wiki)
+    else:
+        bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
+
         
 user_messages = {}#инициализация словарей и тп
 user_text = {}
@@ -1449,8 +1507,6 @@ def anti_spam(message):
     tekst_m.append({message.text:message.message_id})
     user_text[user_id] = tekst_m  # Сохраняем текст сообщения и id
     keys_to_delete=[]
-    
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение 
    
     # Удаление старых временных меток
     if user_id not in user_messages:
@@ -1550,17 +1606,14 @@ def anti_spam_forward(message,text=text,warn=warn):
         text={}
     if time.time()-message.date>=30:
         text={}
-
+processing = False
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+
+    '''
     if message.sticker:
-        if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
-            logger.warning('no file blacklist.json')
-            with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                json.dump([], f)
-        with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
-            blist = json.load(f)['stiker']
-        if message.sticker.file_id in blist:
+        if message.sticker.file_id in bklist.blist:
             if bool(DELET_MESSADGE):
                 try:
                     bot.delete_message(message.chat.id,message.message_id)
@@ -1571,12 +1624,13 @@ def message_handler(message):
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:     
         id_help_hat=str(message.chat.id).replace("-100", "")
-        for i in range(len(admin_list)):
-            if i >0:
-                teg+=f",{admin_list[i]}"
-            else:
-                teg+=f"{admin_list[i]}"
-        bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
+        if time.time()-message.date<=86400: 
+            for i in range(len(admin_list)):
+                if i >0:
+                    teg+=f",{admin_list[i]}"
+                else:
+                    teg+=f"{admin_list[i]}"
+            bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
     if commad=='!я' and message.reply_to_message != True:
         send_statbstic(message)
         
@@ -1593,29 +1647,39 @@ def message_handler(message):
             if conf.lang != AUTO_TRANSLETE['laung']:
                 result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
                 bot.reply_to(message,result.text)
-
+    '''
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None:
         return
     else:
         anti_spam(message)
+
 @bot.message_handler(content_types=['voice'])
 def message_voice(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+
     if time.time() - message.date >= SPAM_TIMEFRAME:
         data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
         return
     elif message.forward_from:
         anti_spam_forward(message)
-        if message.voice.duration>=1800:
+        if message.voice.duration>=1800 and time.time()-message.date>=60:
             bot.reply_to(message,'скока бл ...ужас')
     else:
         anti_spam(message)
-        if message.voice.duration>=1800:
+        if message.voice.duration>=1800 and time.time()-message.date>=60:
             bot.reply_to(message,'скока бл ...ужас')
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
+    global processing
+    processing=True
+    try:
+        data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    finally:
+        processing=False
     if time.time() - message.date >= SPAM_TIMEFRAME or message.forward_date and message.forward_from and message.forward_from_chat:
         return
     anti_spam(message)
