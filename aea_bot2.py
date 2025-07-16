@@ -32,6 +32,7 @@ try:
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
+    import wikipedia
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -90,7 +91,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code> \n/to_text — перевод ГС в текст\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh: запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -521,7 +522,7 @@ def send_help(message):
         
 def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db', timeout=10)
+    connection = sqlite3.connect('Users_base.db', timeout=5000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
 
@@ -589,7 +590,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     
     :param6: дата входа задаеться при входе
     
-    return
+    ## return
     
     list
     
@@ -611,7 +612,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     try:
         resperens = 5
         # Создаем подключение к базе данных
-        connection = sqlite3.connect('Users_base.db',timeout=10)
+        connection = sqlite3.connect('Users_base.db',timeout=5000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
 
@@ -1484,6 +1485,26 @@ def ping_command(message):
             out+=f'[{i}] ping: {round(p_time[i],5)}s\n' 
         bot.reply_to(message,out+scode)
         
+@bot.message_handler(commands=['serh','поиск','searh'])
+def searh_network(message): 
+    if '-ping' in message.text:
+        timer=time.time()
+        try:
+            esp=requests.get('https://ru.wikipedia.org',timeout=20).status_code
+        except requests.exceptions.ReadTimeout:
+            bot.reply_to(message,'превышена задержка (20s) возможноресурс недоступен')
+            return
+        timer=time.time()-timer
+        bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
+        return
+    promt=message.text.split(':')[1]
+    wikipedia.set_lang(AUTO_TRANSLETE['laung'])
+    out_wiki=wikipedia.summary(promt, sentences=6)
+    if out_wiki !=None:
+        bot.reply_to(message,out_wiki)
+    else:
+        bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
+
         
 user_messages = {}#инициализация словарей и тп
 user_text = {}
@@ -1502,8 +1523,6 @@ def anti_spam(message):
     tekst_m.append({message.text:message.message_id})
     user_text[user_id] = tekst_m  # Сохраняем текст сообщения и id
     keys_to_delete=[]
-    
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение 
    
     # Удаление старых временных меток
     if user_id not in user_messages:
@@ -1603,9 +1622,12 @@ def anti_spam_forward(message,text=text,warn=warn):
         text={}
     if time.time()-message.date>=30:
         text={}
-
+processing = False
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+
+    '''
     if message.sticker:
         if message.sticker.file_id in bklist.blist:
             if bool(DELET_MESSADGE):
@@ -1618,12 +1640,13 @@ def message_handler(message):
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:     
         id_help_hat=str(message.chat.id).replace("-100", "")
-        for i in range(len(admin_list)):
-            if i >0:
-                teg+=f",{admin_list[i]}"
-            else:
-                teg+=f"{admin_list[i]}"
-        bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
+        if time.time()-message.date<=86400: 
+            for i in range(len(admin_list)):
+                if i >0:
+                    teg+=f",{admin_list[i]}"
+                else:
+                    teg+=f"{admin_list[i]}"
+            bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
     if commad=='!я' and message.reply_to_message != True:
         send_statbstic(message)
         
@@ -1640,29 +1663,39 @@ def message_handler(message):
             if conf.lang != AUTO_TRANSLETE['laung']:
                 result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
                 bot.reply_to(message,result.text)
-
+    '''
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None:
         return
     else:
         anti_spam(message)
+
 @bot.message_handler(content_types=['voice'])
 def message_voice(message):
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+
     if time.time() - message.date >= SPAM_TIMEFRAME:
         data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
         return
     elif message.forward_from:
         anti_spam_forward(message)
-        if message.voice.duration>=1800:
+        if message.voice.duration>=1800 and time.time()-message.date>=60:
             bot.reply_to(message,'скока бл ...ужас')
     else:
         anti_spam(message)
-        if message.voice.duration>=1800:
+        if message.voice.duration>=1800 and time.time()-message.date>=60:
             bot.reply_to(message,'скока бл ...ужас')
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
+    global processing
+    processing=True
+    try:
+        data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    finally:
+        processing=False
     if time.time() - message.date >= SPAM_TIMEFRAME or message.forward_date and message.forward_from and message.forward_from_chat:
         return
     anti_spam(message)

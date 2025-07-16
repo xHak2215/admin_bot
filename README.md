@@ -19,6 +19,7 @@
 </details>
 <a id="readme-top"></a>
 -->
+<a id="top"></a>
 <h2>информация </h2>
 
 <h3>бот адменистратор с оповешением о спаме репортах</h3>
@@ -55,6 +56,8 @@
 /message_info - выводит информацию о сообщении полезно для медиа<br>
 
 /log - отправка файла логов <br>
+
+/serh - поиск статей на википедии пример: `serh:<promt>` ,язык статей зависит от настройки `settings.json` парамитра `auto_translete`:`laung` аргументы: `-ping` - проверка задержки сйта wikipedia.org
 
 </h4>
 имеет логирывание сообщений и других событий
@@ -231,5 +234,5 @@ download sticker/photo:
 - .ICO	Иконки Windows	RGBA
 
 The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
-<h1><p align="right"><a href="#readme-top">↑</a></p></h1>
+<h1><p align="right"><a href="#top">↑</a></p></h1>
 <h3><input type="button" name="↑" value="#readme-top"/></h3>
