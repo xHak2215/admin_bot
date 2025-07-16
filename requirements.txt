@@ -13,7 +13,7 @@ httpx==0.13.3
 hyperframe==5.2.0
 idna==2.10
 loguru==0.7.2
-pillow==11.1.0
+pillow
 psutil==6.0.0
 pycparser==2.22
 pyTelegramBotAPI==4.27.0
@@ -30,3 +30,4 @@ websockets==15.0.1
 win32_setctime==1.2.0
 urllib3==1.26.5
 legacy-cgi==2.6.3
+wikipedia == 1.4.0
