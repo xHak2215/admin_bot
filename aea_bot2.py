@@ -1626,8 +1626,6 @@ processing = False
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
     data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
-
-    '''
     if message.sticker:
         if message.sticker.file_id in bklist.blist:
             if bool(DELET_MESSADGE):
@@ -1636,9 +1634,10 @@ def message_handler(message):
                     bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
                 except telebot.apihelper.ApiTelegramException as e:
                     bot.send_message(admin_grops,f'error>>{e}\nвероятно у бота недостаточно прав')
-    teg=''
+    
     commad=str(message.text).lower()
-    if "[help]" in commad or "[Help]" in commad:     
+    if "[help]" in commad or "[Help]" in commad:
+        teg=''
         id_help_hat=str(message.chat.id).replace("-100", "")
         if time.time()-message.date<=86400: 
             for i in range(len(admin_list)):
@@ -1651,7 +1650,6 @@ def message_handler(message):
         send_statbstic(message)
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
-        data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
         return
     elif message.forward_from:
         anti_spam_forward(message)
@@ -1663,7 +1661,7 @@ def message_handler(message):
             if conf.lang != AUTO_TRANSLETE['laung']:
                 result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
                 bot.reply_to(message,result.text)
-    '''
+
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
     data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
@@ -1677,7 +1675,6 @@ def message_voice(message):
     data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
 
     if time.time() - message.date >= SPAM_TIMEFRAME:
-        data_base(message.chat.id,message.from_user.id,soob_num=1)# для того что бы все сообщения подсчитывались
         return
     elif message.forward_from:
         anti_spam_forward(message)
@@ -1690,12 +1687,8 @@ def message_voice(message):
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
-    global processing
-    processing=True
-    try:
-        data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
-    finally:
-        processing=False
+    
+    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.forward_date and message.forward_from and message.forward_from_chat:
         return
     anti_spam(message)
