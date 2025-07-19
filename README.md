@@ -149,8 +149,6 @@ auto_translete - авто перевод сообщений в чате с ин�
 
 ## English
 
----
-
 ## Information
 
 ### Administrator Bot with Spam Report Notifications  
