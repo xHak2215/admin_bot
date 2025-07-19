@@ -1,5 +1,4 @@
-  <h3 align="center">Telegram бот админестратор</h3>
-
+<h3 align="center">Telegram бот админестратор</h3>
 
 <!--
 <details>
@@ -20,7 +19,10 @@
 <a id="readme-top"></a>
 -->
 <a id="top"></a>
-<h2>информация </h2>
+<a id="ru"></a>
+
+## информация
+
 
 <h3>бот адменистратор с оповешением о спаме репортах</h3>
 <h3>для запуска бота вставите свой токен в файл TOKEN без пробелов или каких либо других символов!</h3>
@@ -44,24 +46,28 @@
 
 /мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и время.<br>
 
-/настройки - отображает настройки(файл конфигурации `settings.json` ) имеет парамитер -r который перезагружает настройки если они были изменены без необходимости перезапуска бота пример :`/настройки -r` <br>
+/настройки - отображает настройки(файл конфигурации `settings.json` ) имеет парамитер -r который перезагружает настройки если они были изменены без необходимости перезапуска бота пример :`/настройки -r`.<br>
 
-/t - перевод сообщения на русский или другой язык (дополнительно потдерживает перевод в bin , hex и транслит кодеровки)пример:`/t любой текст:en` <br>
+/t - перевод сообщения на русский или другой язык (дополнительно потдерживает перевод в bin , hex и транслит кодеровки)пример:`/t любой текст:en`.<br>
 
-/download - загруска стикеров и голосовых сообщений , при загруске синволов нужно указать расширение пример:`/download png`
+/download - загруска стикеров и голосовых сообщений , при загруске синволов нужно указать расширение пример:`/download png`.
 
+/ping - проверка задержки отклика по ссылке, аргументы:
 
-/ping - проверка задержки отклика по ссылке, аргументы: `/ping <ссылка>` для тестирования по умолчанию https://ya.ru ,количество повторов замера задержки `/ping <ссылка>,<количество запросов>` , режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки `/ping <ссылка>,<количество запросов>,<режим>`
+- `/ping <ссылка>` для тестирования по умолчанию https://ya.ru 
+- количество повторов замера задержки `/ping <ссылка>,<количество запросов>`
+- режим расчета True - вычисление средни статисчической задержки из всех попыток. по умолчанию (не указывая значение) отоброжение зажержки каждой попытки `/ping <ссылка>,<количество запросов>,<режим>`.
 
-/message_info - выводит информацию о сообщении полезно для медиа<br>
+/message_info - выводит информацию о сообщении полезно для медиа.<br>
 
-/log - отправка файла логов <br>
+/log - отправка файла логов. <br>
 
-/serh - поиск статей на википедии пример: `serh:<promt>` ,язык статей зависит от настройки `settings.json` парамитра `auto_translete`:`laung` аргументы: `-ping` - проверка задержки сйта wikipedia.org
+/serh - поиск статей на википедии пример: `serh:<promt>` ,язык статей зависит от настройки `settings.json` парамитра `auto_translete`:`laung` аргументы: `-ping` - проверка задержки сйта wikipedia.org.
 
 </h4>
 имеет логирывание сообщений и других событий
-<h3> установка: </h3>
+
+### установка:
 
 для работы приложения необходим <a href="https://www.python.org/"> python 3.12v</a> или выше  
 
@@ -75,13 +81,13 @@ pip install -r requirements.txt
 python aea_bot.py
 ```
 
-<h3> настройка: </h3>
+### настройка:
 
 ```json
 {
     "bambam":false,
     "delet_messadge":true,
-    "admin_grops":"-1002428028295",
+    "admin_grops":"-1001234567890",
     "spam_limit":10,
     "spam_timer":4,
     "ban_and_myte_command":true,
@@ -90,20 +96,30 @@ python aea_bot.py
 
 }
 ```
+
 true - включено , false - выключено  
-bambam - автоматичиские муты/баны<br>
-delet_messadge - автоматическое удаление сообщений (в частности при 5 репортах на одном сообщении оно будет удаляться)<br>
-admin_grops - группа администрации (впишите ее ID)<br>
-spam_limit - количество сообщений от одного пользователя которое будет считаться спамом (за отрезок времени указанный в spam_timer)<br>
-spam_timer - функционал описан выше <br>
-ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено <br>
-console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console :<команда терминала> работает только в группе администрации администратором группы<br>
-(⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением)<br>
-auto_translet - авто перевод сообщений в чате с иностранного на указанный в `laung` по умолчанию `"laung":"ru"` параметр активации `Activate` по умолчанию `"Activate":false`<br>
+bambam - автоматичиские муты/баны.<br>
+
+delet_messadge - автоматическое удаление сообщений (в частности при 5 репортах на одном сообщении оно будет удаляться).<br>
+
+admin_grops - группа администрации (впишите ее ID).<br>
+
+spam_limit - количество сообщений от одного пользователя которое будет считаться спамом (за отрезок времени указанный в spam_timer).<br>
+
+spam_timer - функционал описан выше. <br>
+
+ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено. <br>
+
+console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console :<команда терминала> работает только в группе администрации администратором группы.<br>
+(⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением).<br>
+
+auto_translete - авто перевод сообщений в чате с иностранного на указанный в `laung` по умолчанию `"laung":"ru"` параметр активации `Activate` по умолчанию `"Activate":false`.
+
 <a id="format"></a>
 
 поддерживаемые форматы:<br>
 загрузка голосовых сообщений и аудио дорожек:
+
 - .mp3 (MPEG Audio Layer III)
 - .ogg (Opus/Vorbis)
 - .m4a (AAC в MP4-контейнере)
@@ -116,6 +132,7 @@ auto_translet - авто перевод сообщений в чате с ино
 - .mkv (Любой кодек, включая FLAC)<br>
 
 загрузка стикеров/фото :
+
 - .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
 - .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
 - .JPEG	Joint Photographic Experts Group	L, RGB
@@ -128,111 +145,107 @@ auto_translet - авто перевод сообщений в чате с ино
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
 ---
+<a id="en"></a>
 
-<h3>eng</h3>
-This is a bot designed to detect spam and notify chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.<br>
-<h3>To launch the bot, insert your token into the TOKIN file without spaces or any others!</h3>
-Key Functions:<br>
-Spam detection with instant admin notifications<br>
-Adjustable anti-spam thresholds and penalty settings<br>
-Admin group hierarchy support<br>
+## English
 
-Command List:<br>
+---
 
-/help - Displays help information<br>
+## Information
 
-/report - Reports rule violations<br>
+### Administrator Bot with Spam Report Notifications  
 
-/monitor - Tracks system metrics of PC/hosting<br>
+**To launch the bot, insert your token into the `TOKEN` file without spaces or any additional characters!**  
 
-/warn - Decreases user reputation<br>
+### Description
 
-/reput - Increases user reputation<br>
+This is a bot with spam detection and notifications for chat administrators. It includes configurable anti-spam settings, punishment options, and admin groups.  
 
-/me - Checks your own reputation<br>
+It has numerous commands, such as:
 
-/ban - Bans user with reason logging<br>
+- `/help` — Help guide.  
+- `/report` — Report a violation.  
+- `/monitor` — Track system metrics of a PC/hosting.  
+- `/warn` — Lower a user's reputation.  
+- `/reput` — Increase a user's reputation.  
+- `/me` — Check your own reputation.  
+- `/ban` — Ban (block) a user while saving the reason.  
+- `/mute` — Temporarily mute a user with a specified reason and duration.  
+- `/settings` — Displays the configuration (from `settings.json`). The `-r` parameter reloads settings if they were modified without needing to restart the bot (e.g., `/settings -r`).  
+- `/t` — Translate a message into Russian or another language (also supports encoding into binary, hex, and translit). Example: `/t any text:en`.  
+- `/download` — Download stickers and voice messages. For symbols, specify the extension (e.g., `/download png`).  
+- `/ping` — Check response latency for a URL. Arguments:  
+  - `/ping <URL>` (default: `https://ya.ru`).  
+  - `/ping <URL>,<number of requests>` — Number of latency checks.  
+  - `/ping <URL>,<number of requests>,<mode>` — `True` calculates average latency; default shows each attempt.  
+- `/message_info` — Displays message metadata (useful for media).  
+- `/log` — Sends the log file.  
+- `/search` — Searches for Wikipedia articles (e.g., `search:<query>`). Article language depends on `settings.json` (`auto_translate: "lang"`). Arguments: `-ping` checks latency of `wikipedia.org`.  
 
-/mute - Temporarily mutes user with specified duration and reason<br>
+It also logs messages and other events.  
 
-/config - displays the current settings (from the configuration file `settings.json` ), Parameter: -r - reloads the settings if they have been modified, eliminating the need to restart the bot using: `/config -r`
+### Installation:
 
-/t -more translation of the Russian
+Requires [Python 3.12+](https://www.python.org/) or higher.  
 
-/download - Download stickers and voice messages. When downloading symbols, you must specify the file extension, example: `/download png`
-
-/ping - Check response latency for a URL. Arguments:  
-• Basic: `/ping <URL>` (default test URL: https://ya.ru)  
-• With attempts: `/ping <URL>,<number_of_requests>`  
-• Calculation mode:  
-  - `True`: Displays average statistical latency from all attempts  
-  - Default (when not specified): Shows latency for each individual attempt  
-Full format: `/ping <URL>,<number_of_requests>,<mode>`
-
-/message_info - Displays message metadata (particularly useful for media analysis)
-
-<h3>Installation:</h3>
-
-To run the application, <a href="https://www.python.org/">Python 3.12</a> or higher is required.
 ```sh
-git clone https://github.com/xHak2215/admin_telegram_bot
+git clone https://github.com/xHak2215/admin_telegram_bot  
+cd admin_telegram_bot  
+pip install -r requirements.txt  
+python aea_bot.py  
+```  
 
-cd admin_telegram_bot
-
-pip install -r requirements.txt
-
-python aea_bot.py
-```
-<h3> settings: </h3>
+### Configuration:
 
 ```json
 {
-    "bambam":false,
-    "delet_messadge":true,
-    "admin_grops":"-1002428028295",
-    "spam_limit":10,
-    "spam_timer":4,
-    "ban_and_myte_command":true,
-    "console_control":true,
-    "auto_translete":{"laung":"ru","Activate":false}
-
+    "bambam": false,
+    "delete_message": true,
+    "admin_groups": "-1001234567890",
+    "spam_limit": 10,
+    "spam_timer": 4,
+    "ban_and_mute_command": true,
+    "console_control": true,
+    "auto_translate": {"lang": "ru", "Activate": false}
 }
-```
-true - enabled, false - disabled  
-bambam - automatic mutes/bans<br>
-delet_messadge - automatic message deletion (specifically, a message will be deleted after 5 reports)<br>
-admin_grops - admin group (enter its ID)<br>
-spam_limit - number of messages from a single user that will be considered spam (within the time frame specified in spam_timer)<br>
-spam_timer - functionality described above<br>
-ban_and_myte_command - enables the /ban and /mute commands for bans and mutes, respectively<br>
-console_control - permissions for remote execution of terminal commands via the /console command. Syntax: /console :<terminal command>. Works only in the admin group and can be used solely by the group administrator.<br>
-(⚠️ This command can execute malicious commands as well—be cautious when enabling it.)<br>
-auto_translate - Automatic chat message translation from foreign languages to the language specified in `laung` (default: `"laung":"ru"`). Activation parameter: `Activate` (default: `"Activate":false`).
+```  
 
-Supported formats:
-download voice messages and audio tracks:
-- .mp3 (MPEG Audio Layer III)
-- .ogg (Opus/Vorbis)
-- .m4a (AAC в MP4-контейнере)
-- .flac (Free Lossless Audio Codec)
-- .wav (PCM/WAVE)
-- .aac (Raw AAC-поток)
-- .webm (Opus/Vorbis)
-- .ac3 (Dolby Digital)
-- .wma (Windows Media Audio)
-- .mp4 (AAC/ALAC)
-- .mkv (Любой кодек, включая FLAC)<br>
+- `true` = enabled, `false` = disabled.  
+- `bambam` — Automatic mutes/bans.  
+- `delete_message` — Auto-deletion of messages (e.g., if a message receives 5 reports, it will be deleted).  
+- `admin_groups` — Admin group ID (insert yours).  
+- `spam_limit` — Number of messages from one user considered spam (within the time set in `spam_timer`).  
+- `spam_timer` — Timeframe for spam detection (see above).  
+- `ban_and_mute_command` — Enables `/ban` and `/mute` commands.  
+- `console_control` — Allows remote terminal command execution via `/console`. Syntax: `/console :<terminal command>`. Works only in the admin group by the group admin.  
+⚠️ **This command can execute malicious code—use with caution!**  
+- `auto_translate` — Auto-translates messages to the language specified in `"lang"` (default: `"ru"`). Activation parameter: `"Activate": false`.  
 
-download sticker/photo:
-- .BMP	BitMaP (без сжатия)	1, L, P, RGB, RGBA
-- .PNG	Portable Network Graphics	L, LA, P, RGB, RGBA
-- .JPEG	Joint Photographic Experts Group	L, RGB
-- .GIF	Graphics Interchange Format	L, P
-- .TIFF	Tagged Image File Format	L, LA, P, RGB, RGBA
-- .WebP	Современный формат от Google	RGB, RGBA
-- .PPM	Portable Pixmap	RGB
-- .ICO	Иконки Windows	RGBA
+### Supported Formats:  
 
-The bot was developed for the <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> chat :3
+**Voice messages & audio tracks:**  
+
+- `.mp3` (MPEG Audio Layer III)  
+- `.ogg` (Opus/Vorbis)  
+- `.m4a` (AAC in MP4 container)  
+- `.flac` (Free Lossless Audio Codec)  
+- `.wav` (PCM/WAVE)  
+- `.aac` (Raw AAC stream)  
+- `.webm` (Opus/Vorbis)  
+- `.ac3` (Dolby Digital)  
+- `.wma` (Windows Media Audio)  
+- `.mkv` (Any codec, including FLAC)  
+
+**Stickers/photos:**  
+
+- `.BMP` — BitMaP (uncompressed)  
+- `.PNG` — Portable Network Graphics  
+- `.JPEG` — Joint Photographic Experts Group  
+- `.GIF` — Graphics Interchange Format  
+- `.TIFF` — Tagged Image File Format  
+- `.WebP` — Google's modern format  
+- `.PPM` — Portable Pixmap  
+- `.ICO` — Windows Icons  
+
+Bot created for the group [AEA+](https://t.me/+P5wR2FyxnSQzMjIy) :3  
 <h1><p align="right"><a href="#top">↑</a></p></h1>
-<h3><input type="button" name="↑" value="#readme-top"/></h3>
