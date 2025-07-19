@@ -144,10 +144,11 @@ auto_translete - авто перевод сообщений в чате с ин�
 
 бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
 
----
 <a id="en"></a>
 
-## English
+<h3 align="center">English</h3>
+
+---
 
 ## Information
 
