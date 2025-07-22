@@ -225,18 +225,20 @@ def handle_warn(message):
 @bot.message_handler(commands=['log'])
 def send_log(message):
     try:
-        bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
+        data=data_base(message.chat.id, message.from_user.id)
+        if data[1]<10 and data[0]>=3 or bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
+            bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
     except Exception as e:
         bot.send_message(admin_grops,f"error logs file>> {e} ")
         logger.error(f"log error >> {e}")
         
 #очищение логов /null_log
-@bot.message_handler(commands=['null_log'])
+@bot.message_handler(commands=['null_log','clear_log'])
 def null_log(message):
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
         try:
         #проверка на админа
-            if message.chat.id==admin_grops or message.from_user.id =='5194033781':
+            if str(message.chat.id)==str(admin_grops) or str(message.from_user.id) =='5194033781':
                 if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
                     bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
                     file = open('cats_message.log', "w")
@@ -251,7 +253,7 @@ def null_log(message):
                 bot.reply_to(message,'команда доступна только из группы администрации')
         except Exception as e:
             bot.send_message(admin_grops,f"error logs file>> {e} ")
-            logger.error(f"log null error >> {e}")
+            logger.error(f"clear log  error >> {e}")
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 #очищение списка репортов  /null_report
@@ -396,7 +398,7 @@ def handle_report(message):
     
         message_to_report=str(report_chat).replace("-100", "")
         if len(report['responses'])>1:
-            data_base(chat_id,message.reply_to_message,ps_reputation_upt=1)
+            data_base(chat_id, message.reply_to_message.from_user.id, ps_reputation_upt=1)
         coment_message=''
         coment=message.text.replacce('/репорт','').replacce('/report','').replacce('/fufufu','').split(' ')
         if len(coment)>1:
@@ -593,17 +595,17 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     
     ## return
     
-    list
+    ### list
     
-    0-resperens -- количество репутации
+    - 0-resperens — количество репутации
     
-    1-ps_reputation_new -- количество авто репутации 
+    - 1-ps_reputation_new — количество авто репутации 
     
-    2-soob_num -- количество сообщений
+    - 2-soob_num — количество сообщений
     
-    3-time_v -- дата входа если нет то возворощяет 0
+    - 3-time_v — дата входа если нет то возворощяет 0
     
-    3-reputation_time -- дана изменения авто репутации содержит `dict` словарь
+    - 3-reputation_time — дана изменения авто репутации содержит `dict` словарь
     '''
 
     if ps_reputation_upt == 0:
@@ -742,7 +744,7 @@ def status(rec):
         status=["😐",'ну норм','нейтральный','не без греха'][random.randint(0,3)]
     return status
 
-@bot.message_handler(commands=['я', 'me'])
+@bot.message_handler(commands=['я', 'me' , 'Я'])
 def send_statbstic(message):
     if message.date - time.time()<=60:
         data=data_base(message.chat.id,message.from_user.id,soob_num=1)
