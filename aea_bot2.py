@@ -13,6 +13,7 @@ import threading
 import io
 import binascii
 
+
 import asets.ffmpeg_tool
 import asets.dictt
 
@@ -91,7 +92,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh: запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n/creat - позволяет создавать скрипты является простейшим "командным языком программирования" \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh: запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -726,7 +727,7 @@ def set_day_message():#я не смог это реализовать я пох�
     
 def status(rec):
     if rec >= 1000:
-        status=["читы вырубай ! ",'как то многовато ,читы ?'][random.randint(0,1)]
+        status=["читы вырубай ! ","как то многовато ,читы ?","уважаемо уважаемо"][random.randint(0,2)]
     elif rec <=1:
         status=["ты плохой исправляйся 😡",'ай ай ай нарушаем','фу таким быть','а ну не нарушай ','зачем нарушал правил что ли не знаешь'][random.randint(0,4)]
     elif rec>=5:
@@ -1287,7 +1288,7 @@ def unblaklist(message):
             if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
                 logger.warning('no file blacklist.json')
                 with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
-                    json.dump([], f)
+                    json.dump([0], f)
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
                 bklist.blist = json.load(f)['stiker']
             file_id = str(message.reply_to_message.sticker.file_id)
@@ -1505,8 +1506,157 @@ def searh_network(message):
     else:
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
 
+def ext_arg_scob(arg:str):
+    if '{' not in arg:
+        return
+    bufer=[]
+    for con in arg.split('{'):
+        if '}' in con:
+            bufer.append(con.split('}')[0])
+    return bufer
+
+def evaluate_condition(condition):#презнаю спижено
+
+    # Проверяем шаблон "число оператор число"
+    match = re.match(r'(-?\d+\.?\d*)\s*([+\-*/%]|\*\*)\s*(-?\d+\.?\d*)', condition)
+    if  match:
+        a, op, b = match.groups()
+        if op != "==":
+            a, b = int(a), int(b)
+    
+    comparison_match = re.match(r'^(-?\d+\.?\d*)(==?|!=|<=?|>=?)(-?\d+\.?\d*)$', condition)
+    if comparison_match:
+        left, op, right = comparison_match.groups()
+        left_val, right_val = float(left), float(right)
+
         
-user_messages = {}#инициализация словарей и тп
+    if op == "+": return a + b
+    elif op == "-": return a - b
+    elif op == "*": return a * b
+    elif op == "/":
+        if a == 0:
+            return '-0'
+        return a / b
+    elif op == "**": return a ** b
+    elif op == "%": return a % b
+    elif op == '==': return left_val == right_val
+    elif op == '!=': return left_val != right_val
+    elif op == '<': return left_val < right_val
+    elif op == '<=': return left_val <= right_val
+    elif op == '>': return left_val > right_val
+    elif op == '>=': return left_val >= right_val
+    else:return None
+
+@bot.message_handler(commands=['creat'])
+def create_logic(message):
+    send_num=0
+    send_bufer=[]
+    
+    value={}
+    program_line=[]
+    
+    program=message.text.split('creat',1)[1].replace('/creat','')
+    program_line=str(program).split('\n')
+    for line in range(len(program_line)):
+        command=program_line[line]
+        if command.startswith('send'):
+            arg=command.split(' ',1)[1]
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            send_bufer.append(arg)
+            send_num+=1
+            
+        elif command.startswith('var'):
+            data=command.split(' ',1)[1]
+            arg=data.split('=',1)[1]
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            value[data.split('=')[0].replace(' ','')]=arg
+
+        elif command.startswith('send_value'):
+            send_bufer.append(str(value))
+            send_num=+1
+        
+        elif command.replace(' ','')[:1]=='#':pass
+        
+        elif command.startswith('calc'):
+            args=command.split(' ',1)[1]
+            val=args.split('=',1)[0]
+            arg=str(args.split('=',1)[1]).replace(' ','')
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
+                       
+            if "or" in arg.lower() or "and" in arg.lower() or "not" in arg.lower():
+                expr = str(arg).replace(" ", "").lower()
+                # Обрабатываем логическое NOT
+                if expr.startswith("not"):
+                    arg = evaluate_condition(expr[3:])
+                    out= not arg
+    
+                # Обрабатываем OR и AND (разделяем по операторам)
+                for op in ["or", "and"]:
+                    if op in expr:
+                        parts = expr.split(op)
+                        if len(parts) == 2:
+                            left = evaluate_condition(parts[0])
+                            right = evaluate_condition(parts[1])
+                            out= left or right if op == "or" else left and right
+            else:
+                out=evaluate_condition(arg)
+            if out!=None:
+                if out != '-0':
+                    value[val]=str(out)
+                else:
+                    bot.reply_to(message,f"error division by zero \nline:{line}")
+            else:
+                bot.reply_to(message,f'не коректное условие \nстрока:{line}')
+                
+        elif command.startswith('.end'):return
+        
+        elif command.startswith('random'):
+            cont=command.split(' ',1)[1]
+            val=cont.split('=')
+            a=val[1].split('-',1)[0]
+            b=val[1].split('-',1)[1]
+            try:
+                a,b=int(a),int(b)
+            except ValueError:bot.reply_to(message,f"error invalid literal for num \nline:{line}")
+            if a == b+1 or a>b:
+                if a+1 == b:
+                    b=+1
+                else:
+                    a=+1
+            try:
+                value[val[0]]=random.randint(a,b)
+            except:
+                bot.reply_to(message,f"error not correct arg\nline:{line}")
+        
+        elif command.startswith(' ') or command.startswith(''):pass
+        else:
+            bot.reply_to(message,f"syntax error no command \nline:{line}")
+        
+    for send_text in send_bufer:
+        if send_num >=60:
+            bot.reply_to(message, 'провощено количество отправляемых сообщений')
+            return
+        else:
+            try:
+                bot.send_message(message.chat.id, send_text,parse_mode='HTML')
+            except telebot.apihelper.ApiTelegramException as e:
+                bot.reply_to(message,f"error: {e}\nA request to the Telegram API was unsuccessful\nline:{line}")
+            except Exception as e:
+                bot.reply_to(message,f"{e}\nline:{line}")
+            
+user_messages = {}#инициализация слова+рей и тп
 user_text = {}
 message_text=[]
 #SPAM_LIMIT = 8 # Максимальное количество сообщений
@@ -1538,8 +1688,8 @@ def anti_spam(message):
     
     emoji=''
     if message.content_type=='sticker':
-        emoji=f'( {message.sticker.emoji} )'
-    logs = f"chat>> {message.chat.id} user >> id>> {message.from_user.id}, @{message.from_user.username} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
+        emoji=f"( {message.sticker.emoji} )"
+    logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.debug(logs)
    # Проверка на спам
