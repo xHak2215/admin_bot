@@ -33,7 +33,7 @@ try:
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
-    import wikipedia
+    import wikipediaapi
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -92,7 +92,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n/creat - позволяет создавать скрипты является простейшим "командным языком программирования" подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh: запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n/creat - позволяет создавать скрипты является простейшим "командным языком программирования" подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh : запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -1488,6 +1488,13 @@ def ping_command(message):
             out+=f'[{i}] ping: {round(p_time[i],5)}s\n' 
         bot.reply_to(message,out+scode)
         
+class SearhData():
+    def __init__(self):
+        self.title=[]
+        self.message_id=-1
+        self.wiki_object=''
+        
+data_wiki_serh=SearhData()
 @bot.message_handler(commands=['serh','поиск','searh'])
 def searh_network(message): 
     if '-ping' in message.text:
@@ -1495,18 +1502,56 @@ def searh_network(message):
         try:
             esp=requests.get('https://ru.wikipedia.org',timeout=20).status_code
         except requests.exceptions.ReadTimeout:
-            bot.reply_to(message,'превышена задержка (20s) возможноресурс недоступен')
+            bot.reply_to(message,'превышена задержка (20s) возможно ресурс недоступен')
             return
         timer=time.time()-timer
         bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
         return
-    promt=message.text.split(':')[1]
-    wikipedia.set_lang(AUTO_TRANSLETE['laung'])
-    out_wiki=wikipedia.summary(promt, sentences=6)
+    promt=message.text.split(' ',1)[1]
+    wiki = wikipediaapi.Wikipedia(
+    language=AUTO_TRANSLETE['laung'],
+    user_agent="Mozilla/5.0",  # Маскируемся под браузер
+    timeout=20
+    )
+    data_wiki_serh.wiki_object=wiki
+    for i in range(4):
+        try:
+            out_wiki = wiki.page(promt)
+            #out_wiki = wikipedia.search(promt, results = 4)
+        except Exception as e:
+            bot.reply_to(message,e)
+    print(out_wiki)
+    markup = types.InlineKeyboardMarkup() 
+    for content in out_wiki:
+        button = types.InlineKeyboardButton(
+            content, 
+            callback_data=f"title_wiki_resurse{message.id}"
+            )
+        markup.add(button)
+    data_wiki_serh.title = out_wiki
+    data_wiki_serh.message_id = message.id
     if out_wiki !=None:
-        bot.reply_to(message,out_wiki)
+        bot.reply_to(message,out_wiki,reply_markup=markup)
     else:
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
+
+@bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse'))
+def handle_wiki_searh(call):
+    try:
+        for title in data_wiki_serh.title:
+            print(call.data ,title)
+            if title == call.data:
+                content=data_wiki_serh.wiki_object.page(title)
+                
+                bot.edit_message_text(
+                chat_id=call.chat.id,
+                message_id=data_wiki_serh.message_id,
+                text=f"{content.title}\n{content.content}"
+                )
+        #bot.answer_callback_query(call.id, f"")
+    except Exception as e:
+        bot.send_message(admin_grops,f"Ошибка : {str(e)}")
+        logger.error(f"Ошибка в : {str(e)}")
 
 def ext_arg_scob(arg:str):
     if '{' not in arg:
@@ -1517,37 +1562,51 @@ def ext_arg_scob(arg:str):
             bufer.append(con.split('}')[0])
     return bufer
 
-def evaluate_condition(condition):#презнаю спижено
-
-    # Проверяем шаблон "число оператор число"
-    match = re.match(r'(-?\d+\.?\d*)\s*([+\-*/%]|\*\*)\s*(-?\d+\.?\d*)', condition)
-    if  match:
-        a, op, b = match.groups()
-        if op != "==":
-            a, b = int(a), int(b)
+def evaluate_condition(condition:str):
+    """## функция исполнения логических и математических операций 
+    Args:
+        condition (_str_): логическое или маткематическое вырожение
+    Returns:
+        bool or int
+    """
     
-    comparison_match = re.match(r'^(-?\d+\.?\d*)(==?|!=|<=?|>=?)(-?\d+\.?\d*)$', condition)
-    if comparison_match:
-        left, op, right = comparison_match.groups()
-        left_val, right_val = float(left), float(right)
-    if not match and not comparison_match:
-        return None
+    b,a,op='','',''
+    for ops in ["+","-","*","/","**","%",'==','!=','<','<=','>','>=']:
+        if ops in condition:
+            data=str(condition).split(ops)
+            op=ops
+            a=data[0]
+            b=data[1]
+    try:
+        try:
+            a = int(a)
+        except ValueError:    
+            a = float(a)
+    except ValueError:
+        a = str(a)
+    try:
+        try:
+            b = int(b)
+        except ValueError:       
+            b = float(b)
+    except ValueError:
+        b = str(b)
         
     if op == "+": return a + b
     elif op == "-": return a - b
     elif op == "*": return a * b
     elif op == "/":
         if a == 0:
-            return '-0'
+            return "-0"
         return a / b
     elif op == "**": return a ** b
     elif op == "%": return a % b
-    elif op == '==': return left_val == right_val
-    elif op == '!=': return left_val != right_val
-    elif op == '<': return left_val < right_val
-    elif op == '<=': return left_val <= right_val
-    elif op == '>': return left_val > right_val
-    elif op == '>=': return left_val >= right_val
+    elif op == '==': return a == b
+    elif op == '!=': return a != b
+    elif op == '<': return a < b
+    elif op == '<=': return a <= b
+    elif op == '>': return a > b
+    elif op == '>=': return a >= b
     else:return None
 
 @bot.message_handler(commands=['creat'])
@@ -1557,18 +1616,26 @@ def create_logic(message):
     
     value={}
     program_line=[]
-    
+    line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
     program_line=str(program).split('\n')
-    for line in range(len(program_line)):
-        command=program_line[line]
+    while True:
+        if line>len(program_line):
+            break
+        try:
+            command=program_line[line]
+        except IndexError:
+            break
         if command.startswith('send'):
-            arg=command.split(' ',1)[1]
+            try:
+                arg=command.split(' ',1)[1]
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
                     if var in list(value.keys()):
-                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
             send_bufer.append(arg)
             send_num+=1
             
@@ -1579,32 +1646,35 @@ def create_logic(message):
                 vars=ext_arg_scob(arg)
                 for var in vars:
                     if var in list(value.keys()):
-                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
             value[data.split('=')[0].replace(' ','')]=arg
 
-        elif command.startswith('send_value'):
+        elif command.startswith('value'):
             send_bufer.append(str(value))
             send_num=+1
         
         elif command.replace(' ','')[:1]=='#':pass
         
         elif command.startswith('calc'):
-            args=command.split(' ',1)[1]
+            try:
+                args=command.split(' ',1)[1]
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
             val=args.split('=',1)[0]
             arg=str(args.split('=',1)[1]).replace(' ','')
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
                     if var in list(value.keys()):
-                       arg=arg.replace('{'+str(var)+'}',str(value[var]))
-                       
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
+                        
             if "or" in arg.lower() or "and" in arg.lower() or "not" in arg.lower():
                 expr = str(arg).replace(" ", "").lower()
                 # Обрабатываем логическое NOT
                 if expr.startswith("not"):
                     arg = evaluate_condition(expr[3:])
                     out= not arg
-    
+
                 # Обрабатываем OR и AND (разделяем по операторам)
                 for op in ["or", "and"]:
                     if op in expr:
@@ -1620,16 +1690,28 @@ def create_logic(message):
                     value[val]=str(out)
                 else:
                     bot.reply_to(message,f"error division by zero \nline:{line}")
+                    return
             else:
                 bot.reply_to(message,f'не коректное условие \nстрока:{line}')
+                return
                 
         elif command.startswith('.end'):return
         
         elif command.startswith('random'):
-            cont=command.split(' ',1)[1]
-            val=cont.split('=')
-            a=val[1].split('-',1)[0]
-            b=val[1].split('-',1)[1]
+            try:
+                cont=command.split(' ',1)[1]
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
+                return
+            arg=cont.split('=')
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            a=arg[1].split('-',1)[0]
+            b=arg[1].split('-',1)[1]
+            
             try:
                 a,b=int(a),int(b)
             except ValueError:bot.reply_to(message,f"error invalid literal for num \nline:{line}")
@@ -1639,14 +1721,76 @@ def create_logic(message):
                 else:
                     a=+1
             try:
-                value[val[0]]=random.randint(a,b)
+                value[arg[0]]=random.randint(a,b)
             except:
                 bot.reply_to(message,f"error not correct arg\nline:{line}")
+                return
         
+        elif command.startswith('if'):
+            try:
+                arg=command.split(' ',1)[1].split(':',1)[0]
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            if "or" in arg.lower() or "and" in arg.lower() or "not" in arg.lower():
+                expr = str(arg).replace(" ", "").lower()
+                # Обрабатываем логическое NOT
+                if expr.startswith("not"):
+                    arg = evaluate_condition(expr[3:])
+                    out= not arg
+
+                # Обрабатываем OR и AND (разделяем по операторам)
+                for op in ["or", "and"]:
+                    if op in expr:
+                        parts = expr.split(op)
+                        if len(parts) == 2:
+                            left = evaluate_condition(parts[0])
+                            right = evaluate_condition(parts[1])
+                            out= left or right if op == "or" else left and right
+            else:
+                out=evaluate_condition(arg)
+            if out==None:
+                bot.reply_to(message,f'не коректное условие \nстрока:{line}')
+                return
+            if out == '-0':
+                bot.reply_to(message,f"error division by zero \nline:{line}")
+                return
+            if out == 'True' or out:
+                new_code = command.split(':', 1)[1]
+                program_line.append(new_code)
+            
+        elif command.startswith('timeout'):
+            try:
+                arg=command.split(' ',1)[1]
+                if '{' in arg and '}' in arg:
+                    vars=ext_arg_scob(arg)
+                    for var in vars:
+                        if var in list(value.keys()):
+                            arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
+                return
+            time.sleep(int(arg))
+            
+        elif command.startswith('len'):
+            if '{' in command and '}' in command:
+                vars=ext_arg_scob(command)
+                for var in vars:
+                    if var in list(value.keys()):
+                        command=command.replace('{'+str(var)+'}',str(value[var]))
+            arg=command.split(' ',1)[1]
+            value[arg.split('=',1)[0]]=len(arg.split('=',1)[1])
+        
+            
         elif command.startswith(' ') or command.startswith(''):pass
         else:
             bot.reply_to(message,f"syntax error no command \nline:{line}")
-        
+            return
+        line=line+1
     for send_text in send_bufer:
         if send_num >=60:
             bot.reply_to(message, 'провощено количество отправляемых сообщений')
@@ -1658,6 +1802,7 @@ def create_logic(message):
                 bot.reply_to(message,f"error: {e}\nA request to the Telegram API was unsuccessful\nline:{line}")
             except Exception as e:
                 bot.reply_to(message,f"{e}\nline:{line}")
+
             
 user_messages = {}#инициализация слова+рей и тп
 user_text = {}
