@@ -20,9 +20,8 @@ import asets.dictt
 try:
     from vosk import Model, KaldiRecognizer
     import telebot 
-    from telebot import types
+    from telebot import types ,formatting , util ,apihelper
     from telebot.types import InlineKeyboardButton
-    from telebot import formatting , util
     from collections import defaultdict
     import psutil
     import schedule
@@ -150,7 +149,9 @@ except:
     umsettings()
     logger.debug('error settings init')
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN )
+
+apihelper.MAX_THREADS = 5  # Ограничиваем количество потоков
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
@@ -501,6 +502,7 @@ def send_help(message):
             connection = sqlite3.connect('Users_base.db')
             cursor = connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL;")
+            cursor.execute("PRAGMA synchronous=NORMAL")
             # Получаем информацию о столбцах в таблице Users
             cursor.execute('SELECT * FROM Users')
             rows = cursor.fetchall() 
@@ -528,6 +530,7 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
     connection = sqlite3.connect('Users_base.db', timeout=5000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
 
     # Формируем запрос для обновления
     query = "UPDATE Users SET "
@@ -615,9 +618,12 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     try:
         resperens = 5
         # Создаем подключение к базе данных
-        connection = sqlite3.connect('Users_base.db',timeout=5000)
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
 
         # Создаем таблицу (если она еще не существует)
         cursor.execute('''
@@ -1761,7 +1767,11 @@ def create_logic(message):
                 return
             if out == 'True' or out:
                 new_code = command.split(':', 1)[1]
-                program_line.append(new_code)
+                if ';' in new_code:
+                    for  nc in new_code.split(';'):
+                        program_line.append(nc)
+                else:
+                    program_line.append(new_code)
             
         elif command.startswith('timeout'):
             try:
@@ -1784,7 +1794,27 @@ def create_logic(message):
                         command=command.replace('{'+str(var)+'}',str(value[var]))
             arg=command.split(' ',1)[1]
             value[arg.split('=',1)[0]]=len(arg.split('=',1)[1])
-        
+            
+        elif command.startswith('list'):
+            if '{' in command and '}' in command:
+                vars=ext_arg_scob(command)
+                for var in vars:
+                    if var in list(value.keys()):
+                        command=command.replace('{'+str(var)+'}',str(value[var]))
+            arg=command.split(' ',1)[1]
+            num_list=arg.split(':',1)[1]
+            lis=arg.split('=',1)[1].split(':',1)[0]
+            var=arg.split('=',1)[0]
+            try:
+                num_list=int(num_list)
+            except ValueError:
+                bot.reply_to(message,f"error invalid literal for num \nline:{line}")
+                return
+            if ',' in arg:
+                try:
+                   value[var] = lis.split(',')[num_list]
+                except IndexError:
+                    bot.reply_to(message,f"list index out of range\nline:{line}")
             
         elif command.startswith(' ') or command.startswith(''):pass
         else:
