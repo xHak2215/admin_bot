@@ -68,6 +68,7 @@
 
 <details><summary>синтаксис и аргументы</summary><p>
 <a id="creat_program_info"></a>
+
 ## синтаксис:
 
 ### общий синтаксис команды:
