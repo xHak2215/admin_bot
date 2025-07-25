@@ -65,9 +65,9 @@
 /serh - поиск статей на википедии пример: `serh :<promt>` ,язык статей зависит от настройки `settings.json` парамитра `auto_translete`:`laung` аргументы: `-ping` - проверка задержки сйта wikipedia.org. <br>
 
 /creat - позволяет создавать скрипты является простейшим "командным языком программирования"
-<a id="creat_program_info"></a>
-<details><summary>синтаксис и аргументы</summary><p>
 
+<details><summary>синтаксис и аргументы</summary><p>
+<a id="creat_program_info"></a>
 ## синтаксис:
 
 ### общий синтаксис команды:
