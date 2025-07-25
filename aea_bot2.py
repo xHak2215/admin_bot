@@ -1514,8 +1514,10 @@ def searh_network(message):
         bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
         return
     promt=message.text.split(' ',1)[1]
+    translator = Translator()
+    conf = translator.detect(str(promt))
     wiki = wikipediaapi.Wikipedia(
-    language=AUTO_TRANSLETE['laung'],
+    language=conf.lang,
     user_agent="Mozilla/5.0",  # Маскируемся под браузер
     timeout=20
     )
@@ -1526,7 +1528,8 @@ def searh_network(message):
             #out_wiki = wikipedia.search(promt, results = 4)
         except Exception as e:
             bot.reply_to(message,e)
-    print(out_wiki)
+    #out_wiki.summary
+    '''
     markup = types.InlineKeyboardMarkup() 
     for content in out_wiki:
         button = types.InlineKeyboardButton(
@@ -1536,9 +1539,17 @@ def searh_network(message):
         markup.add(button)
     data_wiki_serh.title = out_wiki
     data_wiki_serh.message_id = message.id
-    if out_wiki !=None:
-        bot.reply_to(message,out_wiki,reply_markup=markup)
+    '''
+    if out_wiki !=None or out_wiki.text !='' or out_wiki.text!=None:
+        stext=str(out_wiki.text)
+        stext= translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung'])
+        bot.reply_to(message,f"•{out_wiki.title}\n\n{stext.text}")#,reply_markup=markup
+        #print(out_wiki.links)
     else:
+        #translator = Translator()
+        #conf = translator.detect(str(message.text))
+        #result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
+        #result.text
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse'))
@@ -1617,7 +1628,6 @@ def evaluate_condition(condition:str):
 
 @bot.message_handler(commands=['creat'])
 def create_logic(message):
-    send_num=0
     send_bufer=[]
     
     value={}
@@ -1643,7 +1653,7 @@ def create_logic(message):
                     if var in list(value.keys()):
                         arg=arg.replace('{'+str(var)+'}',str(value[var]))
             send_bufer.append(arg)
-            send_num+=1
+
             
         elif command.startswith('var'):
             data=command.split(' ',1)[1]
@@ -1657,7 +1667,7 @@ def create_logic(message):
 
         elif command.startswith('value'):
             send_bufer.append(str(value))
-            send_num=+1
+
         
         elif command.replace(' ','')[:1]=='#':pass
         
@@ -1772,6 +1782,29 @@ def create_logic(message):
                         program_line.append(nc)
                 else:
                     program_line.append(new_code)
+                    
+        elif command.startswith('for'):
+            try:
+                arg=command.split(' ',1)[1].split(':',1)[0]
+            except IndexError:
+                bot.reply_to(message,f"error no args \nline:{line}")
+            if '{' in arg and '}' in arg:
+                vars=ext_arg_scob(arg)
+                for var in vars:
+                    if var in list(value.keys()):
+                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
+            new_code = command.split(':', 1)[1]
+            try:
+                arg=int(arg)
+            except ValueError:
+                bot.reply_to(message,f"error invalid literal for num \nline:{line}")
+                return
+            for i in range(arg):
+                if ';' in new_code:
+                    for nc in new_code.split(';'):
+                        program_line.append(nc)
+                else:
+                    program_line.append(new_code)
             
         elif command.startswith('timeout'):
             try:
@@ -1822,7 +1855,7 @@ def create_logic(message):
             return
         line=line+1
     for send_text in send_bufer:
-        if send_num >=60:
+        if len(send_bufer) >=60:
             bot.reply_to(message, 'провощено количество отправляемых сообщений')
             return
         else:
