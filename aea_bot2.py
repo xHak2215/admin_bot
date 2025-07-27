@@ -1515,19 +1515,18 @@ def searh_network(message):
         return
     promt=message.text.split(' ',1)[1]
     translator = Translator()
-    conf = translator.detect(str(promt))
     wiki = wikipediaapi.Wikipedia(
-    language=conf.lang,
+    language=translator.detect(str(promt)).lang, #AUTO_TRANSLETE['laung']
     user_agent="Mozilla/5.0",  # Маскируемся под браузер
     timeout=20
     )
     data_wiki_serh.wiki_object=wiki
-    for i in range(4):
+    for i in range(3):
         try:
             out_wiki = wiki.page(promt)
             #out_wiki = wikipedia.search(promt, results = 4)
         except Exception as e:
-            bot.reply_to(message,e)
+            logger.error(e)
     #out_wiki.summary
     '''
     markup = types.InlineKeyboardMarkup() 
@@ -1540,17 +1539,23 @@ def searh_network(message):
     data_wiki_serh.title = out_wiki
     data_wiki_serh.message_id = message.id
     '''
-    if out_wiki !=None or out_wiki.text !='' or out_wiki.text!=None:
-        stext=str(out_wiki.text)
-        stext= translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung'])
-        bot.reply_to(message,f"•{out_wiki.title}\n\n{stext.text}")#,reply_markup=markup
-        #print(out_wiki.links)
-    else:
-        #translator = Translator()
-        #conf = translator.detect(str(message.text))
-        #result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
-        #result.text
+    
+    if out_wiki == None or out_wiki.text == '' or out_wiki.text == None:
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
+    else:
+        stext=str(out_wiki.text)
+        stext_translit=''
+        conf = translator.detect(str(promt))
+        if conf.lang != AUTO_TRANSLETE['laung']:
+            if len(stext)>1000:
+                for i in range(int(round(len(stext)/1000,0))):
+                    print(stext[1000*i:1000])
+                    stext_translit=stext_translit+translator.translate(stext[1000*i:1000], src='auto', dest=AUTO_TRANSLETE['laung']).text
+            else:
+                stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung'])
+
+        bot.reply_to(message,f"•{out_wiki.title}\n\n{stext_translit}")#,reply_markup=markup
+        #print(out_wiki.links)
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse'))
 def handle_wiki_searh(call):
