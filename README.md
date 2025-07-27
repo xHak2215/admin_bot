@@ -116,8 +116,8 @@
 - timeout - задержка исполнения пример:`timeout 5`
 - if - исполнение команды если условие верно пример: `if 1>0:send True` для запуска нескольких команд пишите их через `;`
 - len - cщитает количество символов в строке/переменной пример:`len a=abv`
-- list - альтернативный список отсчет видеться от 0 пример:`list a=1,2,3:1`
-- for - выполняет команды заданое количество раз, для запуска нескольких команд пишите их через `;` пример:`for 5:send hello!`
+- list - альтернативный список отсчет видеться от 0 пример:`list a=1,2,3[1]`, так же можно присвоить данные по id элементу списка пример:`list a=1,2,3[1]=0`
+- for - выполняет команды заданое количество раз считая от 0 при этом лжит цифру отсчета в переменную , для запуска нескольких команд пишите их через `;` пример:`for i in 5:send num:{i}`
 </p></details>
 </h4>
 имеет логирывание сообщений и других событий
@@ -205,101 +205,124 @@ auto_translete - авто перевод сообщений в чате с ин�
 
 ---
 
+Here’s the English translation while preserving the original meaning and structure:
+
+---
+
 ## Information
 
-### Administrator Bot with Spam Report Notifications  
+### Admin Bot with Spam Report Alerts
 
-**To launch the bot, insert your token into the `TOKEN` file without spaces or any additional characters!**  
+**To launch the bot**, insert your token into the `TOKEN` file without spaces or any extra characters!  
 
-### Description
+### Description  
+This bot detects spam and notifies chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.  
 
-This is a bot with spam detection and notifications for chat administrators. It includes configurable anti-spam settings, punishment options, and admin groups.  
-
-It has numerous commands, such as:
-
+#### Available Commands:  
 - `/help` — Help guide.  
-- `/report` — Report a violation.  
-- `/monitor` — Track system metrics of a PC/hosting.  
-- `/warn` — Lower a user's reputation.  
-- `/reput` — Increase a user's reputation.  
+- `/report` — Report a rule violation.  
+- `/monitor` — Track system metrics of your PC/hosting.  
+- `/warn` — Reduce a user’s reputation.  
+- `/reput` — Increase a user’s reputation.  
 - `/me` — Check your own reputation.  
-- `/ban` — Ban (block) a user while saving the reason.  
-- `/mute` — Temporarily mute a user with a specified reason and duration.  
-- `/settings` — Displays the configuration (from `settings.json`). The `-r` parameter reloads settings if they were modified without needing to restart the bot (e.g., `/settings -r`).  
-- `/t` — Translate a message into Russian or another language (also supports encoding into binary, hex, and translit). Example: `/t any text:en`.  
-- `/download` — Download stickers and voice messages. For symbols, specify the extension (e.g., `/download png`).  
-- `/ping` — Check response latency for a URL. Arguments:  
+- `/ban` — Ban (block) a user with reason logging.  
+- `/mute` — Temporarily mute a user (prevent messaging) with reason and duration.  
+- `/settings` — Display settings (from `settings.json`).  
+  - Use `-r` to reload settings without restarting the bot (e.g., `/settings -r`).  
+- `/t` — Translate text to Russian or other languages (supports binary, hex, and transliteration encoding).  
+  - Example: `/t any text:en`.  
+- `/download` — Download stickers/voice messages. Specify the extension (e.g., `/download png`).  
+- `/ping` — Check latency to a URL. Arguments:  
   - `/ping <URL>` (default: `https://ya.ru`).  
-  - `/ping <URL>,<number of requests>` — Number of latency checks.  
-  - `/ping <URL>,<number of requests>,<mode>` — `True` calculates average latency; default shows each attempt.  
-- `/message_info` — Displays message metadata (useful for media).  
-- `/log` — Sends the log file.  
-- `/search` — Searches for Wikipedia articles (e.g., `search:<query>`). Article language depends on `settings.json` (`auto_translate: "lang"`). Arguments: `-ping` checks latency of `wikipedia.org`.  
+  - `/ping <URL>,<number of requests>`.  
+  - `/ping <URL>,<requests>,<mode>`:  
+    - `True` = average latency (default: per-attempt results).  
+- `/message_info` — Show message metadata (useful for media).  
+- `/log` — Send log files.  
+- `/search` — Find Wikipedia articles (e.g., `/search :<query>`).  
+  - Language depends on `settings.json` (`auto_translate.laung`).  
+  - Arguments: `-ping` — Test Wikipedia.org latency.  
+- `/creat` — A simple scripting language for creating scripts.  
+  <details><summary>Syntax and Arguments</summary>  
 
-It also logs messages and other events.  
+  #### Syntax:  
+  
+  ```script
+  /creat
+  # Create a variable
+  var a=a
+  # Send variables
+  send a equals: {a}
+  ```  
+  - No indentation! Comments start with `#`.  
+  - Variables are wrapped in `{}`.  
 
-### Installation:
+  #### Commands:  
+  - `send` — Send messages (supports HTML formatting).  
+  - `var` — Create variables (e.g., `var a=1`).  
+  - `value` — Output all variables as a dictionary.  
+  - `calc` — Execute math/logic operations (`+`, `-`, `*`, `/`, `**`, `%`, `==`, `!=`, `<`, `<=`, `>`, `>=`).  
+  - `.end` — Terminate the program.  
+  - `random` — Generate a random number (e.g., `random a=1-5`).  
+  - `timeout` — Delay execution (e.g., `timeout 5`).  
+  - `if` — Conditional execution (e.g., `if 1>0:send True`).  
+  - `len` — Count characters in a string/variable (e.g., `len a=abc`).  
+  - `list` — Array-like lists (zero-indexed; e.g., `list a=1,2,3[1]`).  
+  - `for` — Loop (e.g., `for i in 5:send num:{i}`).  
+  </details>  
 
-Requires [Python 3.12+](https://www.python.org/) or higher.  
+The bot logs messages and events.  
+
+---
+
+### Installation  
+Requires [Python 3.12+](https://www.python.org/).  
 
 ```sh
-git clone https://github.com/xHak2215/admin_telegram_bot  
-cd admin_telegram_bot  
-pip install -r requirements.txt  
-python aea_bot.py  
-```  
+git clone https://github.com/xHak2215/admin_telegram_bot
+cd admin_telegram_bot
+pip install -r requirements.txt
+python aea_bot.py
+```
 
-### Configuration:
+---
+
+### Configuration/settings (`settings.json`)  
 
 ```json
 {
-    "bambam": false,
-    "delete_message": true,
-    "admin_groups": "-1001234567890",
-    "spam_limit": 10,
-    "spam_timer": 4,
-    "ban_and_mute_command": true,
-    "console_control": true,
-    "auto_translate": {"lang": "ru", "Activate": false}
+  "bambam": false,
+  "delete_message": true,
+  "admin_groups": "-1001234567890",
+  "spam_limit": 10,
+  "spam_timer": 4,
+  "ban_and_mute_command": true,
+  "console_control": true,
+  "auto_translate": {"laung": "ru", "Activate": false}
 }
-```  
+```
 
-- `true` = enabled, `false` = disabled.  
-- `bambam` — Automatic mutes/bans.  
-- `delete_message` — Auto-deletion of messages (e.g., if a message receives 5 reports, it will be deleted).  
-- `admin_groups` — Admin group ID (insert yours).  
-- `spam_limit` — Number of messages from one user considered spam (within the time set in `spam_timer`).  
-- `spam_timer` — Timeframe for spam detection (see above).  
-- `ban_and_mute_command` — Enables `/ban` and `/mute` commands.  
-- `console_control` — Allows remote terminal command execution via `/console`. Syntax: `/console :<terminal command>`. Works only in the admin group by the group admin.  
-⚠️ **This command can execute malicious code—use with caution!**  
-- `auto_translate` — Auto-translates messages to the language specified in `"lang"` (default: `"ru"`). Activation parameter: `"Activate": false`.  
+- **`true`/`false`**: Toggle features.  
+- **`bambam`**: Auto-mute/ban.  
+- **`delete_message`**: Auto-delete messages (e.g., after 5 reports).  
+- **`admin_groups`**: Admin group ID.  
+- **`spam_limit`**: Messages per user to trigger spam detection (within `spam_timer` seconds).  
+- **`ban_and_mute_command`**: Enable `/ban` and `/mute`.  
+- **`console_control`**: Remote terminal commands via `/console` (⚠️ **Risky!**).  
+- **`auto_translate`**: Auto-translate messages to `laung` (default: `ru`).  
 
-### Supported Formats:  
+---
 
-**Voice messages & audio tracks:**  
+### Supported Formats  
+#### Audio/Voice Messages:  
+- `.mp3`, `.ogg`, `.m4a`, `.flac`, `.wav`, `.aac`, `.webm`, `.ac3`, `.wma`, `.mkv`.  
 
-- `.mp3` (MPEG Audio Layer III)  
-- `.ogg` (Opus/Vorbis)  
-- `.m4a` (AAC in MP4 container)  
-- `.flac` (Free Lossless Audio Codec)  
-- `.wav` (PCM/WAVE)  
-- `.aac` (Raw AAC stream)  
-- `.webm` (Opus/Vorbis)  
-- `.ac3` (Dolby Digital)  
-- `.wma` (Windows Media Audio)  
-- `.mkv` (Any codec, including FLAC)  
+#### Stickers/Images:  
+- `.BMP`, `.PNG`, `.JPEG`, `.GIF`, `.TIFF`, `.WebP`, `.PPM`, `.ICO`.  
 
-**Stickers/photos:**  
+---
 
-- `.BMP` — BitMaP (uncompressed)  
-- `.PNG` — Portable Network Graphics  
-- `.JPEG` — Joint Photographic Experts Group  
-- `.GIF` — Graphics Interchange Format  
-- `.TIFF` — Tagged Image File Format  
-- `.WebP` — Google's modern format  
-- `.PPM` — Portable Pixmap  
-- `.ICO` — Windows Icons  
+Developed for [AEA+ Group](https://t.me/+P5wR2FyxnSQzMjIy) :3  
 
-Bot created for the group [AEA+](https://t.me/+P5wR2FyxnSQzMjIy) :3  
+
 <h1><p align="right"><a href="#top">↑</a></p></h1>
