@@ -1788,7 +1788,7 @@ def create_logic(message):
                 else:
                     program_line.append(new_code)
                     
-        elif command.startswith('for'):
+        elif command.startswith('for'): # for i in 5: 
             try:
                 arg=command.split(' ',1)[1].split(':',1)[0]
             except IndexError:
@@ -1799,17 +1799,31 @@ def create_logic(message):
                     if var in list(value.keys()):
                         arg=arg.replace('{'+str(var)+'}',str(value[var]))
             new_code = command.split(':', 1)[1]
+
+            match = re.search(r"(.*)\bin\b(.*)", arg)
+            if match:
+                var = match.group(1).strip()  
+                num = match.group(2).strip() 
+            else:
+                bot.reply_to(message,f"error no args \n{arg}\n{'^'*len(arg)} \nline:{line}")
+                return
             try:
-                arg=int(arg)
+                num=int(num)
             except ValueError:
                 bot.reply_to(message,f"error invalid literal for num \nline:{line}")
                 return
-            for i in range(arg):
-                if ';' in new_code:
-                    for nc in new_code.split(';'):
+            for i in range(num):
+                value[var]=i
+                if '{' in new_code and '}' in new_code:
+                    vars=ext_arg_scob(new_code)
+                    for var in vars:
+                        if var in list(value.keys()):
+                            new_code_v=new_code.replace('{'+str(var)+'}',str(value[var]))
+                if ';' in new_code_v:
+                    for nc in new_code_v.split(';'):
                         program_line.append(nc)
                 else:
-                    program_line.append(new_code)
+                    program_line.append(new_code_v)
             
         elif command.startswith('timeout'):
             try:
@@ -1839,18 +1853,29 @@ def create_logic(message):
                 for var in vars:
                     if var in list(value.keys()):
                         command=command.replace('{'+str(var)+'}',str(value[var]))
-            arg=command.split(' ',1)[1]
-            num_list=arg.split(':',1)[1]
-            lis=arg.split('=',1)[1].split(':',1)[0]
-            var=arg.split('=',1)[0]
+            try:
+                arg=command.split(' ',1)[1]
+                num_list=arg.split('[',1)[1].split(']',1)[0]
+                lis=arg.split('=',1)[1].split('[',1)[0]
+                var=arg.split('=',1)[0]
+                content=arg.split('=',2)#находим аргумент присваивания элемента
+                if len(content)>2:
+                    content=str(content[2])#если есть то вытягиваем его из списка
+            except IndexError:
+                bot.reply_to(message,f"syntax error \nline:{line}")
+                return
             try:
                 num_list=int(num_list)
             except ValueError:
-                bot.reply_to(message,f"error invalid literal for num \nline:{line}")
+                bot.reply_to(message,f"error ({num_list}) invalid literal for num \nline:{line}")
                 return
             if ',' in arg:
                 try:
-                   value[var] = lis.split(',')[num_list]
+                    lis_temp=lis.split(',')
+                    if type(content) != list :# если аргумент есть и его вытянули из списка то присваемаем его 
+                        lis_temp[num_list]=content
+                        value[var] = lis_temp[num_list]
+                    else:value[var] = lis_temp[num_list]
                 except IndexError:
                     bot.reply_to(message,f"list index out of range\nline:{line}")
             
