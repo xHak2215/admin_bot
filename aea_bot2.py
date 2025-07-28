@@ -149,9 +149,9 @@ except:
     umsettings()
     logger.debug('error settings init')
 
-bot = telebot.TeleBot(TOKEN )
+bot = telebot.TeleBot(TOKEN, threaded=False)
 
-apihelper.MAX_THREADS = 5  # Ограничиваем количество потоков
+#apihelper.MAX_THREADS = 5  # Ограничиваем количество потоков
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
@@ -1314,7 +1314,7 @@ def unblaklist(message):
             bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
     else:
         if message.date - time.time()<=60:
-            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
+            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт','Для этого нужно быть админом'][random.randint(0,5)])
             
 @bot.message_handler(commands=['message_info'])
 def unblaklist(message):
@@ -1788,7 +1788,7 @@ def create_logic(message):
                 else:
                     program_line.append(new_code)
                     
-        elif command.startswith('for'): # for i in 5: 
+        elif command.startswith('for'): # for i in 5: ...
             try:
                 arg=command.split(' ',1)[1].split(':',1)[0]
             except IndexError:
