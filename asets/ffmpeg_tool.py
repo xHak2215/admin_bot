@@ -7,7 +7,7 @@ import subprocess
 from typing import Dict, Union
 
 linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_linux_X64','ffmpeg') 
-windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe')
+windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_windows_X64','bin','ffmpeg.exe')
 
 def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         """
