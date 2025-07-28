@@ -1,6 +1,6 @@
 [project]
 name = "senbot"
-version = "2.1"
+version = "2.3"
 authors = [{name = "HITHELL"}]
 requires-python = ">=3.13" 
 description = "много функциональной Телеграм бот администратор"  
