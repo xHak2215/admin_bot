@@ -840,9 +840,8 @@ def handle_warn(message):
                 else:
                     c='часов назад' 
                 i=str(round((time.time()-data[3])/3600))+ c
-            else:
-                data_v=f'\nзащел в чат {datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")} ({i})'
-        bot.reply_to(message,f'текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}') # \nза день:{data[4]}{data_v}
+            data_v=f"\nзащел в чат: {datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")} ({i})"
+        bot.reply_to(message,f"текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}{data_v}") # \nза день:{data[4]}{data_v}
     else: 
         bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
 #    else:
@@ -1096,6 +1095,11 @@ def audio_to_text(message):
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
+                bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=msg.message_id,
+                text=f"случилась ошибка :(\n{e}"
+                )
         else:
             bot.reply_to(message, "это не ГС; Пожалуйста, ответьте командой на голосовое сообщение чтобы распознать текст в нем")
         #elif message.reply_to_message.photo:
@@ -1105,7 +1109,7 @@ def audio_to_text(message):
         
 @bot.message_handler(commands=['download','dow'])
 def download(message):
-    if '-help' in message.text:
+    if '-help' in message.text or '-h' in message.text:
         bot.reply_to(message,
             'потдерживает скачивание голосовых сообщений,стикеров и аудио дорожек видео(звук из видео)\n'
             'придел веса файла 20 мб\n'
@@ -1521,13 +1525,8 @@ def searh_network(message):
     timeout=20
     )
     data_wiki_serh.wiki_object=wiki
-    for i in range(3):
-        try:
-            out_wiki = wiki.page(promt)
-            #out_wiki = wikipedia.search(promt, results = 4)
-        except Exception as e:
-            logger.error(e)
-    #out_wiki.summary
+
+    out_wiki = wiki.page(promt)
     '''
     markup = types.InlineKeyboardMarkup() 
     for content in out_wiki:
@@ -1543,7 +1542,7 @@ def searh_network(message):
     if out_wiki == None or out_wiki.text == '' or out_wiki.text == None:
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
     else:
-        stext=str(out_wiki.text)
+        stext=str(out_wiki.summary)
         stext_translit=''
         conf = translator.detect(str(promt))
         if conf.lang != AUTO_TRANSLETE['laung']:
@@ -1552,9 +1551,10 @@ def searh_network(message):
                     print(stext[1000*i:1000])
                     stext_translit=stext_translit+translator.translate(stext[1000*i:1000], src='auto', dest=AUTO_TRANSLETE['laung']).text
             else:
-                stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung'])
-
-        bot.reply_to(message,f"•{out_wiki.title}\n\n{stext_translit}")#,reply_markup=markup
+                stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung']).text
+        else:
+            stext_translit=stext
+        bot.reply_to(message,f"•{out_wiki.title}\n{stext_translit}")#,reply_markup=markup
         #print(out_wiki.links)
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse'))
@@ -2100,7 +2100,7 @@ def welcome_new_member(message):
                 frames_with_text = []
                 # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
                 try:
-                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 35)
+                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 42)
                 except IOError:
                     font = ImageFont.load_default(size=35)
                 # Добавляем текст на каждый кадр
