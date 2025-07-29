@@ -1135,6 +1135,7 @@ def download(message):
                 
                 if message.reply_to_message.sticker:
                     sticker_id = message.reply_to_message.sticker.file_id
+                    
                     try:
                         file_info = bot.get_file(sticker_id)
                     except telebot.apihelper.ApiTelegramException:
@@ -1514,7 +1515,7 @@ def searh_network(message):
         try:
             esp=requests.get('https://ru.wikipedia.org',timeout=20).status_code
         except requests.exceptions.ReadTimeout:
-            bot.reply_to(message,'превышена задержка (20s) возможно ресурс недоступен')
+            bot.reply_to(message,f"превышена задержка (20s) возможно ресурс недоступен\nstatus code:{esp}")
             return
         timer=time.time()-timer
         bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
@@ -1541,7 +1542,7 @@ def searh_network(message):
     data_wiki_serh.message_id = message.id
     '''
     
-    if out_wiki == None or out_wiki.text == '' or out_wiki.text == None:
+    if out_wiki.text == '' or out_wiki.text == None and out_wiki.summary == '' or out_wiki.summary == None:
         bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
     else:
         stext=str(out_wiki.summary)
@@ -1566,7 +1567,6 @@ def handle_wiki_searh(call):
             print(call.data ,title)
             if title == call.data:
                 content=data_wiki_serh.wiki_object.page(title)
-                
                 bot.edit_message_text(
                 chat_id=call.chat.id,
                 message_id=data_wiki_serh.message_id,
@@ -1637,7 +1637,7 @@ def evaluate_condition(condition:str):
 def create_logic(message):
     send_bufer=[]
     
-    value={}
+    value={"$pi":3.1415926535 ,"$reply_to":message.reply_to_message.text}
     program_line=[]
     line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
