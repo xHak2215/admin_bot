@@ -6,7 +6,7 @@ from loguru import logger
 import subprocess
 from typing import Dict, Union
 
-linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_linux_x64','ffmpeg') 
+linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') 
 windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_windows_X64','bin','ffmpeg.exe')
 
 def audio_conwert(data:bytes,format,inp_format='save.ogg'):
