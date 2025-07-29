@@ -91,7 +91,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n/я — узнать свою репутацию и количество сообщений\n/info — узнать информацию о пользователе\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n/creat - позволяет создавать скрипты является простейшим "командным языком программирования" подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a> \n/to_text — перевод ГС в текст\n/serh - поиск статей на википедии пример:<code>/serh : запрос</code>\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -401,7 +401,7 @@ def handle_report(message):
         if len(report['responses'])>1:
             data_base(chat_id, message.reply_to_message.from_user.id, ps_reputation_upt=1)
         coment_message=''
-        coment=message.text.replacce('/репорт','').replacce('/report','').replacce('/fufufu','').split(' ')
+        coment=str(message.text).replace('/репорт','').replace('/report','').replace('/fufufu','').split(' ')
         if len(coment)>1:
             if len(coment[1])>2 and coment[1]!='':
                 coment_message=f'| комментарий:{coment[1]}'
