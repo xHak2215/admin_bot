@@ -6,6 +6,9 @@ from loguru import logger
 import subprocess
 from typing import Dict, Union
 
+linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_linux_x64','ffmpeg') 
+windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_windows_X64','bin','ffmpeg.exe')
+
 def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         """
         audio_conwert(data,format)
@@ -19,9 +22,9 @@ def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         try:
             # Определяем путь к ffmpeg
             if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+                ffmpeg=windows_path_ffmpeg # для windows
             else:
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','ffmpeg') # для Linux
+                ffmpeg=linux_path_ffmpeg # для Linux
             # Сохраняем временный файл
             with open('save.ogg', 'wb') as f:
                 f.write(data)
@@ -76,9 +79,9 @@ def video_to_audio_conwert(data:bytes,format:str):
         try:
             # Определяем путь к ffmpeg
             if sys.platform.startswith('win'):
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+                ffmpeg=windows_path_ffmpeg # для windows
             else:
-                ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','ffmpeg') # для Linux
+                ffmpeg=linux_path_ffmpeg # для Linux
         
             # Сохраняем временный файл
             with open('save.mp4', 'wb') as f:
@@ -145,9 +148,9 @@ def video_meta_data(data:bytes):
     try:
         # Определяем путь к ffprobe
         if sys.platform.startswith('win'):
-            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffprobe.exe') # для windows
+            ffmpeg=windows_path_ffmpeg# для windows
         else:
-            ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','ffmpeg') # для Linux
+            ffmpeg=linux_path_ffmpeg# для Linux
                 
         if not os.path.exists(ffmpeg):
             logger.error(f'no file {ffmpeg}')
@@ -177,3 +180,16 @@ def video_meta_data(data:bytes):
         if 'stdout' in locals() and 'stderr' in locals():
             return f"error:Произошла ошибка: {str(e)} выход ffmpeg>{stdout + stderr}"
         else: return f"error:Произошла ошибка: {str(e)}"
+
+def test_ffmpeg():
+    if sys.platform.startswith('win'):
+        ffmpeg=windows_path_ffmpeg # для windows
+    else:
+        ffmpeg=linux_path_ffmpeg # для Linux 
+    if os.path.exists(ffmpeg):
+        try:
+            subprocess.Popen(ffmpeg, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception as e:
+            return e
+    else:return False
+    return True
