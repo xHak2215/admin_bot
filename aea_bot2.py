@@ -149,13 +149,13 @@ except:
     umsettings()
     logger.debug('error settings init')
 
-bot = telebot.TeleBot(TOKEN, threaded=False)
+bot = telebot.TeleBot(TOKEN)
 
 #apihelper.MAX_THREADS = 5  # Ограничиваем количество потоков
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
-print('\33[0m'+os.getcwd())
+print('\n','\33[0m'+os.getcwd())
 
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
     print('gif OK')
@@ -332,15 +332,15 @@ def monitor_command(message):
         test=test+'cofig file OK\n'
     else:
         test=test+'error no config file \n'
-                # Определяем путь к ffmpeg
-    if sys.platform.startswith('win'):
-        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe') # для windows
+    buff=''
+    ffpg=asets.ffmpeg_tool.test_ffmpeg()
+    if type(ffpg)==str:
+        buff =f"(error start:{ffpg})"
     else:
-        ffmpeg=os.path.join(os.getcwd(), 'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') # для Linux    
-    if os.path.exists(ffmpeg):
-        test=test+'ffmpeg OK\n'
-    else:
-        test=test+'error no ffmpeg\n'
+        if ffpg:
+            test=test+'ffmpeg OK\n'
+        else:
+            test=test+f"error no ffmpeg {buff}\n"
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
@@ -752,7 +752,7 @@ def status(rec):
 
 @bot.message_handler(commands=['я', 'me' , 'Я'])
 def send_statbstic(message):
-    if message.date - time.time()<=60:
+    if time.time()-message.date <=65:
         data=data_base(message.chat.id,message.from_user.id,soob_num=1)
         bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}")
 
@@ -841,9 +841,11 @@ def handle_warn(message):
                     c='часов назад' 
                 i=str(round((time.time()-data[3])/3600))+ c
             data_v=f"\nзащел в чат: {datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")} ({i})"
-        bot.reply_to(message,f"текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}{data_v}") # \nза день:{data[4]}{data_v}
+        if time.time()-message.date <=65:
+            bot.reply_to(message,f"текущая репутация пользователя:{data[0]}\nсообщения:{data[2]}{data_v}") # \nза день:{data[4]}{data_v}
     else: 
-        bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
+        if time.time()-message.date <=65:
+            bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы узнать репутацию и количество сообщений")  
 #    else:
 #        bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
@@ -1885,7 +1887,7 @@ def create_logic(message):
             return
         line=line+1
     for send_text in send_bufer:
-        if len(send_bufer) >=60:
+        if len(send_bufer) >=25:
             bot.reply_to(message, 'провощено количество отправляемых сообщений')
             return
         else:
@@ -1932,7 +1934,7 @@ def anti_spam(message):
         emoji=f"( {message.sticker.emoji} )"
     logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
-    logger.debug(logs)
+    logger.info(logs)
    # Проверка на спам
     if len(user_messages[user_id]) > SPAM_LIMIT:
         for i in user_messages[user_id]:
@@ -2069,12 +2071,11 @@ def message_voice(message):
         return
     elif message.forward_from:
         anti_spam_forward(message)
-        if message.voice.duration>=1800 and time.time()-message.date>=60:
-            bot.reply_to(message,'скока бл ...ужас')
+    
     else:
         anti_spam(message)
-        if message.voice.duration>=1800 and time.time()-message.date>=60:
-            bot.reply_to(message,'скока бл ...ужас')
+    #    if message.voice.duration>=1800 and time.time()-message.date>=60:
+    #        bot.reply_to(message,'скока бл ...ужас')
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
@@ -2090,7 +2091,7 @@ def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f'new member in chat | user name> {message.from_user.username}')
         data_base(message.chat.id,new_member.id,time_v=time.time())
-        if message.date - time.time()<=300:
+        if time.time()-message.date <=300:
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
                 output_gif_path = 'output.gif'
