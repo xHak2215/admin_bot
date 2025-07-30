@@ -239,7 +239,7 @@ def null_log(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
         try:
         #проверка на админа
-            if str(message.chat.id)==str(admin_grops) or str(message.from_user.id) =='5194033781':
+            if str(message.chat.id)==str(admin_grops) or str(message.from_user.id) ==5194033781:
                 if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
                     bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
                     file = open('cats_message.log', "w")
@@ -259,10 +259,10 @@ def null_log(message):
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 #очищение списка репортов  /null_report
 @bot.message_handler(commands=['null_report'])
-def send_help(message):
+def null_report(message):
     try:
         #проверка на админа
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
             try:
                 del report_data
             except:
@@ -277,10 +277,10 @@ def send_help(message):
         
 #report data список с кол.во. репортами /report_data 
 @bot.message_handler(commands=['report_data'])
-def send_help(message):
+def report_data(message):
     try:
         #проверка на админа
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781':
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
             bot.send_message(message.chat.id,f"report data: {report_data}")
             logger.debug(f"report data: {report_data}")
         else:
@@ -290,12 +290,12 @@ def send_help(message):
         logger.error(f"error >> {e}")
 # очистка консоли /cler 
 @bot.message_handler(commands=['cls','clear'])
-def send_help(message):
+def clear_console(message):
     #проверка на админа
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id =='5194033781': 
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781: 
             bot.send_message(admin_grops,f"экран очищен, очистил : @{message.from_user.username}")
             os.system('clear')
-            logger.debug(f"экран очищен очистил:  @{message.from_user.username}")
+            logger.info(f"экран очищен очистил:  @{message.from_user.username}")
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
@@ -494,8 +494,7 @@ def configfile(message):
         logger.error(f"config error >> {e}")
 
 @bot.message_handler(commands=['data_base'])
-def send_help(message):
-    datas=''
+def send_data_base(message):
     try:
         #проверка на админа
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
@@ -509,19 +508,20 @@ def send_help(message):
             cursor.execute('PRAGMA table_info(Users);')
             data = cursor.fetchall() 
             # Печатаем информацию о столбцах
+            datas=''
             info=''
             for column in rows:
                 datas += str(column)+'\n'
             for i in data:
                 info+=' '+str(list(i)[1])
             connection.close()
-            bot.send_message(message.chat.id,f"data base>>\n{info}\n----------------------------------------------------------\n{datas}")
-            logger.debug(f"база данных :\n{datas}")
+            bot.reply_to(message,f"data base>>\n{info}\n----------------------------------------------------------\n{datas}")
+            logger.info(f"база данных :\n{datas}")
         else:
-            bot.reply_to(message,f"ты не достоин \nты не админ")
+            bot.reply_to(message,f"тебе такое смотреть не дам")
     except Exception as e:
-        bot.send_message(admin_grops,f"error >> {e} ")
-        logger.error(f"error >> {e}")
+        bot.send_message(admin_grops,f"error send_data_base >> {e} ")
+        logger.error(f"error send_data_base >> {e}")
     finally:
         connection.close()
         
@@ -1299,7 +1299,7 @@ def blaklist(message):
 @bot.message_handler(commands=['unblaklist'])
 def unblaklist(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-        if message.reply_to_message.sticker and message.reply_to_message:
+        if message.reply_to_message and message.reply_to_message.sticker:
             if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
                 logger.warning('no file blacklist.json')
                 with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
@@ -1310,7 +1310,7 @@ def unblaklist(message):
             if file_id in bklist.blist :
                 bklist.removes(file_id) # удаление стикера из списка
             else:
-                bot.reply_to(message,['такого стикера в списке нет','стикера и так нет в списке'][random.randint(0,1)])
+                bot.reply_to(message,['такого стикера в списке нет','стикера и так нет в списке','такого не нашел такого не знаю'][random.randint(0,1)])
                 return
             with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
                 if len(list(bklist.blist))<1:
@@ -1324,7 +1324,7 @@ def unblaklist(message):
             bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт','Для этого нужно быть админом'][random.randint(0,5)])
             
 @bot.message_handler(commands=['message_info'])
-def unblaklist(message):
+def send_message_info(message):
     if message.reply_to_message:
         out_message=' '
         out_message+=f'тип: {message.reply_to_message.content_type}\n'
@@ -1520,7 +1520,10 @@ def searh_network(message):
         timer=time.time()-timer
         bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
         return
-    promt=message.text.split(' ',1)[1]
+    if len(message.text.split(' ',1))>1:
+        promt=message.text.split(' ',1)[1]
+    else:
+        bot.reply_to(message,f"укажите аргумент")
     translator = Translator()
     wiki = wikipediaapi.Wikipedia(
     language=translator.detect(str(promt)).lang, #AUTO_TRANSLETE['laung']
@@ -1551,10 +1554,18 @@ def searh_network(message):
         if conf.lang != AUTO_TRANSLETE['laung']:
             if len(stext)>1000:
                 for i in range(int(round(len(stext)/1000,0))):
-                    print(stext[1000*i:1000])
-                    stext_translit=stext_translit+translator.translate(stext[1000*i:1000], src='auto', dest=AUTO_TRANSLETE['laung']).text
+                    #print(stext[1000*i:1000])
+                    try:
+                        stext_translit=stext_translit+translator.translate(stext[1000*i:1000], src='auto', dest=AUTO_TRANSLETE['laung']).text
+                    except TypeError:
+                        bot.reply_to(message,f"(не удалось перевести на русский,ориг:{conf.lang})\n{stext}")
+                        return
             else:
-                stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung']).text
+                try:
+                    stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung']).text
+                except TypeError:
+                    bot.reply_to(message,f"(не удалось перевести на русский,ориг:{conf.lang})\n{stext}")
+                    return
         else:
             stext_translit=stext
         bot.reply_to(message,f"•{out_wiki.title}\n{stext_translit}")#,reply_markup=markup
@@ -1636,8 +1647,10 @@ def evaluate_condition(condition:str):
 @bot.message_handler(commands=['creat'])
 def create_logic(message):
     send_bufer=[]
-    
-    value={"$pi":3.1415926535 ,"$reply_to":message.reply_to_message.text}
+    if message.reply_to_message:
+        reply_to=message.reply_to_message.text
+    else:reply_to='$none'
+    value={"$pi":3.1415926535 ,"$reply_to":reply_to}
     program_line=[]
     line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
@@ -1645,6 +1658,7 @@ def create_logic(message):
     while True:
         if line>len(program_line):
             break
+        if line >300:break
         try:
             command=program_line[line]
         except IndexError:
@@ -1786,9 +1800,12 @@ def create_logic(message):
                 new_code = command.split(':', 1)[1]
                 if ';' in new_code:
                     for  nc in new_code.split(';'):
-                        program_line.append(nc)
+                        print(program_line)
+                        ine=1
+                        program_line.insert(line+ine,nc)
+                        ine=+1
                 else:
-                    program_line.append(new_code)
+                    program_line.insert(line+1,new_code)
                     
         elif command.startswith('for'): # for i in 5: ...
             try:
@@ -1807,7 +1824,7 @@ def create_logic(message):
                 var = match.group(1).strip()  
                 num = match.group(2).strip() 
             else:
-                bot.reply_to(message,f"error no args \n{arg}\n{'^'*len(arg)} \nline:{line}")
+                bot.reply_to(message,f"error no args \nfor{arg}\n{"   "+"^"*len(arg)} \nline:{line}")
                 return
             try:
                 num=int(num)
@@ -1816,6 +1833,7 @@ def create_logic(message):
                 return
             for i in range(num):
                 value[var]=i
+                new_code_v=new_code
                 if '{' in new_code and '}' in new_code:
                     vars=ext_arg_scob(new_code)
                     for var in vars:
@@ -1823,9 +1841,11 @@ def create_logic(message):
                             new_code_v=new_code.replace('{'+str(var)+'}',str(value[var]))
                 if ';' in new_code_v:
                     for nc in new_code_v.split(';'):
-                        program_line.append(nc)
+                        ine=1
+                        program_line.insert(line+ine,nc)
+                        ine=+1
                 else:
-                    program_line.append(new_code_v)
+                    program_line.insert(line+1,new_code_v)
             
         elif command.startswith('timeout'):
             try:
@@ -2015,7 +2035,7 @@ def anti_spam_forward(message,text=text,warn=warn):
         text={}
     if time.time()-message.date>=30:
         text={}
-processing = False
+
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
     data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
@@ -2089,7 +2109,7 @@ def other_message_handler(message):
 @bot.message_handler(content_types=['new_chat_members'])
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
-        logger.info(f'new member in chat | user name> {message.from_user.username}')
+        logger.info(f"new member in chat | user name> {message.from_user.username}")
         data_base(message.chat.id,new_member.id,time_v=time.time())
         if time.time()-message.date <=300:
             try:
