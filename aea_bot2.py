@@ -189,6 +189,7 @@ logger.info("бот запущен")
 def monitor_resources():
     response_time,response_time,cpu_percent,ram_percent,disk_percent=0,0,0,0,0
     popitki=5
+    popitka1=0
     #пинг в среднем 5 (можно изменять в popitki )попыток
     for i in range(popitki):
         start_time = time.time()
@@ -198,6 +199,8 @@ def monitor_resources():
             pass
         else:
             scode=f' status code {response.status_code}'
+        if i == 1:
+            popitka1= time.time() - start_time
         response_time+= time.time() - start_time
         cpu_percent += float(psutil.cpu_percent())
         ram_percent +=float(psutil.virtual_memory().percent)
@@ -207,9 +210,9 @@ def monitor_resources():
             disk_percent +=float(psutil.disk_usage('/').percent)
     shutka=' '
     if cpu_percent==round(cpu_percent/popitki,1):
-        shutka='процессор шя рванет 🤯'
-    print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {response_time} \n{shutka}")
-    return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+f'\n{shutka}')
+        shutka='\nпроцессор шя рванет 🤯'
+    print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {popitka1} \n{shutka}")
+    return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+shutka),round(popitka1,3)
 
 # Команда /help
 @bot.message_handler(commands=['help','помощь','sos'])
@@ -303,7 +306,7 @@ def clear_console(message):
 @bot.message_handler(commands=['monitor','монитор'])
 def monitor_command(message):
     if message.date - time.time() <= 60:
-        cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
+        cpu_percent, ram_percent, disk_percent, response_time ,p = monitor_resources()
         bot.reply_to(message, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}")
 
 # Команда /test 
@@ -344,8 +347,8 @@ def monitor_command(message):
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
-    cpu_percent, ram_percent, disk_percent, response_time = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+    cpu_percent, ram_percent, disk_percent, response_time, ping1 = monitor_resources()
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -1274,7 +1277,7 @@ def download(message):
 @bot.message_handler(commands=['blaklist'])
 def blaklist(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-        if message.reply_to_message.sticker and message.reply_to_message:
+        if message.reply_to_message and message.reply_to_message.sticker:
             if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
                 logger.warning('no file blacklist.json')
                 with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
