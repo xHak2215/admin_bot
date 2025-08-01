@@ -12,6 +12,7 @@ from collections import Counter
 import threading
 import io
 import binascii
+import gc
 
 
 import asets.ffmpeg_tool
@@ -98,6 +99,9 @@ logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
+
+gc.enable()
+gc.set_debug(2)
 
 class Blak_stiket_list:
     """
@@ -382,7 +386,7 @@ def pravilo(message):
     
 # Хранение данных о репортах
 report_data =  {}
-report_user=[]
+report_user = []
 # Обработка ответа на сообщение с /report
 @bot.message_handler(commands=['report','репорт','fufufu'])
 def handle_report(message):
@@ -404,18 +408,21 @@ def handle_report(message):
         if len(report['responses'])>1:
             data_base(chat_id, message.reply_to_message.from_user.id, ps_reputation_upt=1)
         coment_message=''
-        coment=str(message.text).replace('/репорт','').replace('/report','').replace('/fufufu','').split(' ')
+        coment=str(message.text).replace('/репорт','').replace('/report','').replace('/fufufu','').split(' ',1)
         if len(coment)>1:
-            if len(coment[1])>2 and coment[1]!='':
-                coment_message=f'| комментарий:{coment[1]}'
+            if len(coment[1])>2 and coment[1]!='' or coment[1]!=' ':
+                coment_message=f"\nкомментарий:{coment[1]} |\n"
 
         if message.reply_to_message.content_type == 'sticker':
-            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | ↓стикер↓")
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} |{coment_message} ↓стикер↓")
             logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} стикер id > {message.reply_to_message.sticker.file_id}")
             bot.send_sticker(admin_grops, message.reply_to_message.sticker.file_id)
         else:
-            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} | сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
-            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} {coment_message}| https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} сообщение>> {reported_message_text if message.content_type == 'text' else message.content_type}")
+            if message.content_type == 'text':
+                content=reported_message_text
+            else: content=message.content_type
+            bot.send_message(admin_grops,f"послали репорт на >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} |{coment_message} сообщение>> {content}")
+            logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} |{coment_message} сообщение>> {content}")
         bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ','записал ...'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
         reput=data_base(message.chat.id,ban_ded)[1]
@@ -2057,10 +2064,8 @@ def message_handler(message):
         id_help_hat=str(message.chat.id).replace("-100", "")
         if time.time()-message.date<=86400: 
             for i in range(len(admin_list)):
-                if i >0:
-                    teg+=f",{admin_list[i]}"
-                else:
-                    teg+=f"{admin_list[i]}"
+                if i >0: teg+=f",{admin_list[i]}"
+                else: teg+=f"{admin_list[i]}"
             bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
     if commad=='!я' and message.reply_to_message != True:
         send_statbstic(message)
