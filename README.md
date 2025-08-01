@@ -213,10 +213,6 @@ auto_translete - авто перевод сообщений в чате с ин�
 
 ---
 
-Here’s the English translation while preserving the original meaning and structure:
-
----
-
 ## Information
 
 ### Admin Bot with Spam Report Alerts
