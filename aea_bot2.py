@@ -128,6 +128,23 @@ class Blak_stiket_list:
 
 bklist=Blak_stiket_list()
 
+def get_telegram_api()->dict:
+    """
+    ## return
+    ### key: 
+    - ping :get ping type:float | None
+    - status :status code type:int | None
+    - respone :respone telegram api (getMe) type:dict | None
+    - error :errors no errors to None type:str | None
+    """
+    timer=time.time()
+    try:
+        respone=requests.get(f"https://api.telegram.org/bot{TOKEN}/getMe",timeout=20)
+    except Exception as e:
+        return {"ping":None,"status":None,"respone":None,"error":e}
+    ping=time.time()-timer
+    return {"ping":ping,"status":respone.status_code,"respone":json.loads(respone.content),"error":None}
+
 if not os.path.exists(os.path.join(os.getcwd(), 'asets', "blacklist.json")):
     logger.warning('no file blacklist.json')
     with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
@@ -153,7 +170,7 @@ except:
     umsettings()
     logger.debug('error settings init')
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN ,num_threads=5)
 
 #apihelper.MAX_THREADS = 5  # Ограничиваем количество потоков
 #updater = Updater(token=TOKEN)
@@ -351,6 +368,9 @@ def monitor_command(message):
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
+    if '-all' in message.text:
+        api_data=get_telegram_api()
+        test=test+f"api data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
     cpu_percent, ram_percent, disk_percent, response_time, ping1 = monitor_resources()
     bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
@@ -1000,7 +1020,7 @@ def handle_warn(message):
 
 def scan_hex_in_text(text:list)->bool:
     for i in text:
-        if i not in asets.dictt.hex_sinvol:
+        if i not in ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']:
             return False
     return True
 
@@ -2094,7 +2114,6 @@ def message_handler(message):
 @bot.message_handler(content_types=['voice'])
 def message_voice(message):
     data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
-
     if time.time() - message.date >= SPAM_TIMEFRAME:
         return
     elif message.forward_from:
@@ -2119,7 +2138,7 @@ def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f"new member in chat | user name> {message.from_user.username}")
         data_base(message.chat.id,new_member.id,time_v=time.time())
-        if time.time()-message.date <=300:
+        if time.time()-message.date <=350:
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
                 output_gif_path = 'output.gif'
