@@ -2011,7 +2011,7 @@ def anti_spam(message):
                     povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
                 if povtor_messade_shet>=SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
-                    nacase(message,[message.message.id])
+                    nacase(message,[message.message_id])
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
@@ -2041,14 +2041,14 @@ def anti_spam(message):
                         BAMBAMSpamerBlat=BAMBAMSpamerBlat+1
                 if BAMBAMSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
-                    nacase(message,[message.message.id])
+                    nacase(message,[message.message_id])
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
             if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
                 keys_to_delete.append(list(user_text.keys())[i])
                 print(mess[list(user_text.keys())[i]])
-                nacase(message,[message.message.id])
+                nacase(message,[message.message_id])
     # Удаляем ключи после завершения итерации
     for key in range(len(keys_to_delete)):
         if key != None:
