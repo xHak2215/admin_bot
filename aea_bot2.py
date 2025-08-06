@@ -2127,8 +2127,11 @@ def message_handler(message):
             for i in range(len(admin_list)):
                 if i >0: teg+=f",{admin_list[i]}"
                 else: teg+=f"{admin_list[i]}"
-            bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он: https://t.me/c/{id_help_hat}/{message.message_id}")# это не читабельное гавно но оно работает
-    if commad=='!я' and message.reply_to_message != True:
+            mess_text=''
+            if len(message.text)>100:
+                mess_text=message.text[:100]+"..."
+            else:mess_text=message.text
+            bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он:{mess_text}\n | https://t.me/c/{id_help_hat}/{message.message_id}")
         send_statbstic(message)
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
