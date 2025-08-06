@@ -2017,7 +2017,12 @@ def anti_spam(message):
     emoji=''
     if message.content_type=='sticker':
         emoji=f"( {message.sticker.emoji} )"
-    logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} | сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
+    reply_to=''
+    if message.reply_to_message:
+        cont=f"{message.reply_to_message.text if message.reply_to_message.content_type == 'text' else message.reply_to_message.content_type} {f"( {message.reply_to_message.sticker.emoji} )" if message.reply_to_message.content_type=='sticker' else ''}"
+        if len(cont)>15:reply_to='\nReply to: '+cont[:15]+'...'
+        else:reply_to='\nReply to: '+cont
+    logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
     logger.info(logs)
    # Проверка на спам
