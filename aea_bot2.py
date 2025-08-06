@@ -130,8 +130,8 @@ bklist=Blak_stiket_list()
 
 def get_telegram_api()->dict:
     """
-    ## return
-    ### key: 
+    ## return dict
+    ### key dict: 
     - ping :get ping type:float | None
     - status :status code type:int | None
     - respone :respone telegram api (getMe) type:dict | None
@@ -301,7 +301,7 @@ def null_report(message):
         
 #report data список с кол.во. репортами /report_data 
 @bot.message_handler(commands=['report_data'])
-def report_data(message):
+def send_report_data(message):
     try:
         #проверка на админа
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
@@ -348,11 +348,11 @@ def monitor_command(message):
         test=test+'messege log OK\n'
     else:
         test=test+'warning no messege log \n'
-    if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'Roboto_Condensed-ExtraBoldItalic.ttf')):
-        test=test+'Roboto_Condensed-ExtraBoldItalic шрифт OK\n'
+    if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'Roboto-VariableFont_wdth,wght.ttf')):
+        test=test+'Roboto-VariableFont_wdth,wght.ttf шрифт OK\n'
     else:
-        test=test+'error no Roboto_Condensed-ExtraBoldItalic \n'
-    if os.path.exists(os.path.join(os.getcwd(),'settings.json')):
+        test=test+'error no Roboto-VariableFont_wdth,wght.ttf\n'
+    if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
         test=test+'cofig file OK\n'
     else:
         test=test+'error no config file \n'
@@ -367,7 +367,7 @@ def monitor_command(message):
             test=test+f"error no ffmpeg {buff}\n"
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
-    test=test+f"IP>{get('https://api.ipify.org').content.decode('utf8')}\n"
+    test=test+f"IP>{requests.get('https://api.ipify.org').content.decode('utf8')}\n"
     if '-all' in message.text:
         api_data=get_telegram_api()
         test=test+f"api data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
@@ -403,7 +403,7 @@ def pravilo(message):
             bot.delete_message(message.chat.id, msg.message_id)
     """   
             
-    
+
 # Хранение данных о репортах
 report_data =  {}
 report_user = []
@@ -2020,7 +2020,7 @@ def anti_spam(message):
     reply_to=''
     if message.reply_to_message:
         cont=f"{message.reply_to_message.text if message.reply_to_message.content_type == 'text' else message.reply_to_message.content_type} {f"( {message.reply_to_message.sticker.emoji} )" if message.reply_to_message.content_type=='sticker' else ''}"
-        if len(cont)>15:reply_to='\nReply to: '+cont[:15]+'...'
+        if len(cont)>25:reply_to='\nReply to: '+cont[:25]+'...'
         else:reply_to='\nReply to: '+cont
     logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     print("————")
@@ -2189,7 +2189,7 @@ def welcome_new_member(message):
                 frames_with_text = []
                 # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
                 try:
-                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto_Condensed-ExtraBoldItalic.ttf'), 42)
+                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto-VariableFont_wdth,wght.ttf'), 42)
                 except IOError:
                     font = ImageFont.load_default(size=35)
                 # Добавляем текст на каждый кадр
@@ -2235,8 +2235,8 @@ def main():
                     #scheduler_thread = threading.Thread(target=update_user)
                     #scheduler_thread.daemon = True
                     #scheduler_thread.start()
-                except requests.exceptions.ReadTimeout:
-                    print("time out")
+                except requests.exceptions.ReadTimeout as e:
+                    logger.error(f"time out ({e})")
             except Exception as e:
                 logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")
                 time.sleep(3)
