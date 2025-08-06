@@ -1674,6 +1674,22 @@ def evaluate_condition(condition:str):
     elif op == '>=': return a >= b
     else:return None
 
+def r_value(vare:str)->str:
+    global value
+    """
+    ## заменяет переменную в скобках(таких:`{}`) на содержимое этой самой пременной
+
+    :param1: строка в которой должны быть заменены переменные  
+
+    :return: та же строка на переменные заменены на их содержимое  
+    """
+    if '{' in vare and '}' in vare:
+        vars=ext_arg_scob(vare)
+        for var in vars:
+            if var in list(value.keys()):
+                vare=vare.replace('{'+str(var)+'}',str(value[var]))
+    return vare
+
 @bot.message_handler(commands=['creat'])
 def create_logic(message):
     send_bufer=[]
@@ -1854,7 +1870,7 @@ def create_logic(message):
                 var = match.group(1).strip()  
                 num = match.group(2).strip() 
             else:
-                bot.reply_to(message,f"error no args \nfor{arg}\n{"   "+"^"*len(arg)} \nline:{line}")
+                bot.reply_to(message,f"error no args (Incorrect arguments) \n{command}\n{"   "+"^"*len(arg)} \nline:{line}")
                 return
             try:
                 num=int(num)
@@ -1886,7 +1902,7 @@ def create_logic(message):
                         if var in list(value.keys()):
                             arg=arg.replace('{'+str(var)+'}',str(value[var]))
             except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
+                bot.reply_to(message,f"error no args (Incorrect arguments) \nline:{line}")
                 return
             time.sleep(int(arg))
             
@@ -1914,7 +1930,7 @@ def create_logic(message):
                 if len(content)>2:
                     content=str(content[2])#если есть то вытягиваем его из списка
             except IndexError:
-                bot.reply_to(message,f"syntax error \nline:{line}")
+                bot.reply_to(message,f"syntax error (Incorrect arguments) \nline:{line}")
                 return
             try:
                 num_list=int(num_list)
@@ -1930,7 +1946,25 @@ def create_logic(message):
                     else:value[var] = lis_temp[num_list]
                 except IndexError:
                     bot.reply_to(message,f"list index out of range\nline:{line}")
-            
+        
+        elif command.startswith("replace"):# replace a={input_text}:old_symdol,new_symdol
+            command=r_value(command)
+            try:
+                arg=command.split(" ",1)[1]
+                var=arg.split("=",1)[0]
+                data=arg.split("=",1)[1]
+                text=data.split(":",1)[0]
+                new_old_texts=data.split(":")[1]
+                if len(new_old_texts.split(",",1))<=1:
+                    bot.reply_to(message,f"Incorrect arguments \n{new_old_texts}\n{"^"*len(new_old_texts)}\nline:{line}")
+                    return
+            except IndexError:
+                bot.reply_to(message,f"syntax error (Incorrect arguments) \nline:{line}")
+                return
+            try:
+                value[var]=text.replace(new_old_texts.split(",")[0],new_old_texts.split(",")[1])
+            except Exception as e:bot.reply_to(message,f"error {e}")
+
         elif command.startswith(' ') or command.startswith(''):pass
         else:
             bot.reply_to(message,f"syntax error no command \nline:{line}")
@@ -1960,6 +1994,7 @@ delete_message=[]
         
 # Функция для обработки сообщений
 def anti_spam(message):
+    global user_messages
     #инициализация хрени всякой     
     user_id = message.from_user.id
     current_time = time.time()
@@ -1990,6 +2025,7 @@ def anti_spam(message):
         for i in user_messages[user_id]:
             delete_message.append(i[1])
         nacase(message,delete_message)
+        user_messages={}
         #bot.delete_message(message.chat.id,message.message_id)
         return
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
