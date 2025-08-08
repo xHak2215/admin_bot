@@ -525,9 +525,9 @@ def configfile(message):
 
 @bot.message_handler(commands=['data_base'])
 def send_data_base(message):
-    try:
-        #проверка на админа
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
+    # проверка на админа
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
+        try:
             connection = sqlite3.connect('Users_base.db')
             cursor = connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL;")
@@ -538,8 +538,7 @@ def send_data_base(message):
             cursor.execute('PRAGMA table_info(Users);')
             data = cursor.fetchall() 
             # Печатаем информацию о столбцах
-            datas=''
-            info=''
+            datas,info='',''
             for column in rows:
                 datas += str(column)+'\n'
             for i in data:
@@ -547,13 +546,12 @@ def send_data_base(message):
             connection.close()
             bot.reply_to(message,f"data base>>\n{info}\n----------------------------------------------------------\n{datas}")
             logger.info(f"база данных :\n{datas}")
-        else:
-            bot.reply_to(message,f"тебе такое смотреть не дам")
-    except Exception as e:
-        bot.send_message(admin_grops,f"error send_data_base >> {e} ")
-        logger.error(f"error send_data_base >> {e}")
-    finally:
-        connection.close()
+        except Exception as e:
+            bot.send_message(admin_grops,f"error send_data_base >> {e} ")
+            logger.error(f"error send_data_base >> {e}")
+        finally:connection.close()
+    else:
+        bot.reply_to(message,['ты не администратор!','тебе такое смотреть не дам','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
         
 def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
     # Создаем подключение к базе данных
@@ -1554,6 +1552,8 @@ def searh_network(message):
         promt=message.text.split(' ',1)[1]
     else:
         bot.reply_to(message,f"укажите аргумент")
+        return
+    
     translator = Translator()
     wiki = wikipediaapi.Wikipedia(
     language=translator.detect(str(promt)).lang, #AUTO_TRANSLETE['laung']
@@ -2180,12 +2180,13 @@ def other_message_handler(message):
 @bot.message_handler(content_types=['new_chat_members'])
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
-        logger.info(f"new member in chat | user name> {message.from_user.username}")
+        logger.info(f"new member in chat | user name> @{message.from_user.username}")
         data_base(message.chat.id,new_member.id,time_v=time.time())
         if time.time()-message.date <=350:
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
                 output_gif_path = 'output.gif'
+                output_buffer = io.BytesIO()
                 # Открываем изображение
                 gif = Image.open(input_gif_path)
                 # Создаем список для хранения кадров с текстом
@@ -2208,31 +2209,32 @@ def welcome_new_member(message):
                     ot=26-len(usernameh)
                     otstup=' '*ot
                     text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
-                    text_position =(60, 300) # Позиция (x, y) для текста        
+                    text_position =(65, 300) # Позиция (x, y) для текста        
                     # Добавляем текст на кадр
                     draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
                     frames_with_text.append(new_frame)# Добавляем новый кадр в список
                     # Сохраняем новый GIF с текстом
-                frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0)
-                try:
-                    with open('output.gif', 'rb') as gif_file:
-                        bot.send_animation(chat_id=message.chat.id, animation=gif_file, reply_to_message_id=message.message_id)
-                    os.remove('output.gif') 
-                except Exception as e:
-                    bot.send_message(message.chat.id,f'упс ошибка\n error>>{e} \n@HITHELL чини!')
+                frames_with_text[0].save(output_buffer, save_all=True, append_images=frames_with_text[1:], loop=0, format='gif')
+                #with open('output.gif', 'rb') as gif_file:
+                with io.BytesIO(output_buffer.getvalue()) as gif_file:
+                    bot.send_animation(message.chat.id, gif_file, reply_to_message_id=message.message_id,timeout=30)
+                del output_buffer
+                #os.remove('output.gif')
             except Exception as e:
-                logger.error(f'error hello message >>{e}')
+                logger.error(f"error hello message >>{e}\n{traceback.format_exc()}")
+                bot.send_message(admin_grops,f"случилась ошибка при отправке привецтвенного gif")
                 username = '@'+new_member.username if new_member.username else new_member.first_name 
-                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, @{username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
+                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, {username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
                 bot.reply_to(message , welcome_message, parse_mode="HTML")
 # Основной цикл
 def main():
+    intrnet_error=0
     try:
         print("\033[32m{}\033[0m".format('нет ошибок :3 '))
         while True:
             try:
                 try:
-                    bot.polling(none_stop=True)
+                    bot.polling(none_stop=True,timeout=30,long_polling_timeout=30)
                     schedule.run_pending()
                     # Запускаем в отдельном потоке при старте бота
                     #scheduler_thread = threading.Thread(target=update_user)
@@ -2240,6 +2242,8 @@ def main():
                     #scheduler_thread.start()
                 except requests.exceptions.ReadTimeout as e:
                     logger.error(f"time out ({e})")
+                except requests.exceptions.ConnectionError as e:
+                    logger.error(f"Error Connection ({e})")
             except Exception as e:
                 logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")
                 time.sleep(3)
