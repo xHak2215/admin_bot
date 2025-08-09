@@ -203,7 +203,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -2132,6 +2132,7 @@ def message_handler(message):
                 mess_text=message.text[:100]+"..."
             else:mess_text=message.text
             bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он:{mess_text}\n | https://t.me/c/{id_help_hat}/{message.message_id}")
+    elif commad.startswith("!я"):        
         send_statbstic(message)
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
@@ -2186,7 +2187,6 @@ def welcome_new_member(message):
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
                 output_gif_path = 'output.gif'
-                output_buffer = io.BytesIO()
                 # Открываем изображение
                 gif = Image.open(input_gif_path)
                 # Создаем список для хранения кадров с текстом
@@ -2196,33 +2196,32 @@ def welcome_new_member(message):
                     font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto-VariableFont_wdth,wght.ttf'), 42)
                 except IOError:
                     font = ImageFont.load_default(size=35)
+                width, height = gif.size    
                 # Добавляем текст на каждый кадр
                 for frame in range(gif.n_frames):
                     gif.seek(frame)
                     # Копируем текущий кадр
                     new_frame = gif.copy()
                 #    Преобразуем в rgba 
-                    new_frame = new_frame.convert('RGBA')
+                    new_frame = new_frame.convert('RGBA', colors=256)
                     draw = ImageDraw.Draw(new_frame)
                     # Определяем текст и его позицию
                     usernameh=message.from_user.first_name
                     ot=26-len(usernameh)
                     otstup=' '*ot
                     text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
-                    text_position =(65, 300) # Позиция (x, y) для текста        
+                    text_position =(85, 300) # Позиция (x, y) для текста        
                     # Добавляем текст на кадр
                     draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
                     frames_with_text.append(new_frame)# Добавляем новый кадр в список
                     # Сохраняем новый GIF с текстом
-                frames_with_text[0].save(output_buffer, save_all=True, append_images=frames_with_text[1:], loop=0, format='gif')
-                #with open('output.gif', 'rb') as gif_file:
-                with io.BytesIO(output_buffer.getvalue()) as gif_file:
-                    bot.send_animation(message.chat.id, gif_file, reply_to_message_id=message.message_id,timeout=30)
-                del output_buffer
-                #os.remove('output.gif')
+                frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0, format='GIF', optimize=True)
+                with open(output_gif_path, 'rb') as gif_file:
+                    bot.send_animation(message.chat.id, gif_file, reply_to_message_id=message.message_id,timeout=30,width=width ,height=height)
+                os.remove(output_gif_path)
             except Exception as e:
                 logger.error(f"error hello message >>{e}\n{traceback.format_exc()}")
-                bot.send_message(admin_grops,f"случилась ошибка при отправке привецтвенного gif")
+                bot.send_message(admin_grops,f"случилась ошибка при отправке привецтвенного gif \n({datetime.now().strftime("%H:%M")})")
                 username = '@'+new_member.username if new_member.username else new_member.first_name 
                 welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, {username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
                 bot.reply_to(message , welcome_message, parse_mode="HTML")
