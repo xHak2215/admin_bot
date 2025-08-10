@@ -1695,8 +1695,11 @@ def create_logic(message):
     send_bufer=[]
     if message.reply_to_message:
         reply_to=message.reply_to_message.text
-    else:reply_to='$none'
-    value={"$pi":3.1415926535, "$reply_to":reply_to, "$username":f"{message.reply_to_message.from_user.username}"}
+        username=message.reply_to_message.from_user.username
+    else:
+        reply_to='$none'
+        username='$none'
+    value={"$pi":3.1415926535, "$reply_to":reply_to, "$username":username}
     program_line=[]
     line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
