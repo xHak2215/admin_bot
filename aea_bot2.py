@@ -1696,7 +1696,7 @@ def create_logic(message):
     if message.reply_to_message:
         reply_to=message.reply_to_message.text
     else:reply_to='$none'
-    value={"$pi":3.1415926535 ,"$reply_to":reply_to}
+    value={"$pi":3.1415926535, "$reply_to":reply_to, "$username":f"{message.reply_to_message.from_user.username}"}
     program_line=[]
     line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
@@ -1779,6 +1779,8 @@ def create_logic(message):
                 return
                 
         elif command.startswith('.end'):return
+        elif command.startswith('program'):
+            value['$program_name']=r_value(command).split(' ',1)[1]
         
         elif command.startswith('random'):
             try:
