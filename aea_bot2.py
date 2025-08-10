@@ -203,7 +203,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -2220,21 +2220,32 @@ def welcome_new_member(message):
                     bot.send_animation(message.chat.id, gif_file, reply_to_message_id=message.message_id,timeout=30,width=width ,height=height)
                 os.remove(output_gif_path)
             except Exception as e:
-                logger.error(f"error hello message >>{e}\n{traceback.format_exc()}")
+                logger.error(f"error send hello message >>{e}\n{traceback.format_exc()}")
                 bot.send_message(admin_grops,f"случилась ошибка при отправке привецтвенного gif \n({datetime.now().strftime("%H:%M")})")
                 username = '@'+new_member.username if new_member.username else new_member.first_name 
                 welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, {username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
                 bot.reply_to(message , welcome_message, parse_mode="HTML")
+
+
+@bot.message_handler(content_types=['left_chat_member'])
+def exit_chat_member(message):
+    logger.info(f"left chat member | user name> @{message.from_user.username} |ib> {message.from_user.id}")
+    #bot.reply_to(message,['пока пока','пока, я буду скучать'][random.randint(0,1)])
+
 # Основной цикл
 def main():
-    intrnet_error=0
+    get_num=0
     try:
         print("\033[32m{}\033[0m".format('нет ошибок :3 '))
         while True:
             try:
                 try:
+                    get_num=+1
                     bot.polling(none_stop=True,timeout=30,long_polling_timeout=30)
                     schedule.run_pending()
+                    if get_num >=100:
+                        get_num=0
+                        time.sleep(1)
                     # Запускаем в отдельном потоке при старте бота
                     #scheduler_thread = threading.Thread(target=update_user)
                     #scheduler_thread.daemon = True
