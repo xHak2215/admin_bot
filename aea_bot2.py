@@ -532,24 +532,45 @@ def send_data_base(message):
             cursor = connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL;")
             cursor.execute("PRAGMA synchronous=NORMAL")
-            # Получаем информацию о столбцах в таблице Users
-            cursor.execute('SELECT * FROM Users')
-            rows = cursor.fetchall() 
-            cursor.execute('PRAGMA table_info(Users);')
-            data = cursor.fetchall() 
-            # Печатаем информацию о столбцах
+
+            arg=message.text.split(' ',1)
+            
+            errors=''
             datas,info='',''
-            for column in rows:
-                datas += str(column)+'\n'
-            for i in data:
-                info+=' '+str(list(i)[1])
-            connection.close()
-            bot.reply_to(message,f"data base>>\n{info}\n----------------------------------------------------------\n{datas}")
-            logger.info(f"база данных :\n{datas}")
+            if len(arg)<2:
+                # Получаем информацию о столбцах в таблице Users
+                cursor.execute('SELECT * FROM Users')
+                rows = cursor.fetchall() 
+                cursor.execute('PRAGMA table_info(Users);')
+                data = cursor.fetchall() 
+                # Печатаем информацию о столбцах
+                for column in rows:
+                    datas += str(column)+'\n'
+                for i in data:
+                    info+=' '+str(list(i)[1])
+                connection.close()
+            else:
+                cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (int(arg[1]),message.chat.id))
+                result = cursor.fetchone()
+                datas=result.replace(')','').replace('(','')
+                cursor.execute('PRAGMA table_info(Users);')
+                data = cursor.fetchall() 
+                for i in data:
+                    info+=' '+str(list(i)[1])
+            if datas != None and info != None:
+                if len(datas)>500:
+                    datas=datas[:490]+"..."
+                    errors+="база данных слишком большая для вывода,сокращена до приемлемого объема\n"
+                bot.reply_to(message,f"data base>>\n{errors}{info}\n----------------------------------------------------------\n{datas}")
+                print(f"база данных :\n{datas}")
+            else:
+                bot.reply_to(message,"данные не были найдены")
         except Exception as e:
             bot.send_message(admin_grops,f"error send_data_base >> {e} ")
-            logger.error(f"error send_data_base >> {e}")
-        finally:connection.close()
+            logger.error(f"error send_data_base >> {e}\n{traceback.format_exc()}")
+        finally:
+            if "connection" in locals(): 
+                connection.close()
     else:
         bot.reply_to(message,['ты не администратор!','тебе такое смотреть не дам','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
         
