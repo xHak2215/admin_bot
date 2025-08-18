@@ -24,7 +24,7 @@
 ## информация
 
 
-<h3>бот адменистратор с оповешением о спаме репортах</h3>
+<h3>бот администратора с оповещением о спаме репортах</h3>
 <h3>для запуска бота вставите свой токен в файл TOKEN без пробелов или каких либо других символов!</h3>
 <h3>описание</h3>
 <h4>
@@ -37,9 +37,9 @@
 
 /monitor — для отслеживания системных показателей ПК/хостинга.<br>
 
-/warn - снижение репутации.<br>
+/warn - снижение репутации на 1.<br>
 
-/reput - повышение репутации.<br>
+/reput - повышение репутации на 1.<br>
 
 /info - информация о пользователе аргументы: `-all` - полный список информации 
 
@@ -254,109 +254,150 @@ auto_translete - авто перевод сообщений в чате с ин�
 
 ---
 
-## Information
-
-### Admin Bot with Spam Report Alerts
-
-**To launch the bot**, insert your token into the `TOKEN` file without spaces or any extra characters!  
-
-### Description  
-This bot detects spam and notifies chat administrators about it. It features customizable anti-spam settings, punishment systems, and admin group management.  
-
-#### Available Commands:  
-- `/help` — Help guide.  
-- `/report` — Report a rule violation.  
-- `/monitor` — Track system metrics of your PC/hosting.  
-- `/warn` — Reduce a user’s reputation.  
-- `/reput` — Increase a user’s reputation.  
-- `/me` — Check your own reputation.  
-- `/ban` — Ban (block) a user with reason logging.  
-- `/mute` — Temporarily mute a user (prevent messaging) with reason and duration.  
-- `/settings` — Display settings (from `settings.json`).  
-  - Use `-r` to reload settings without restarting the bot (e.g., `/settings -r`).  
-- `/t` — Translate text to Russian or other languages (supports binary, hex, and transliteration encoding).  
-  - Example: `/t any text:en`.  
-- `/download` — Download stickers/voice messages. Specify the extension (e.g., `/download png`).  
-- `/ping` — Check latency to a URL. Arguments:  
-  - `/ping <URL>` (default: `https://ya.ru`).  
-  - `/ping <URL>,<number of requests>`.  
-  - `/ping <URL>,<requests>,<mode>`:  
-    - `True` = average latency (default: per-attempt results).  
-- `/message_info` — Show message metadata (useful for media).  
-- `/log` — Send log files.  
-- `/search` — Find Wikipedia articles (e.g., `/search :<query>`).  
-  - Language depends on `settings.json` (`auto_translate.laung`).  
-  - Arguments: `-ping` — Test Wikipedia.org latency.  
-- `/creat` — A simple scripting language for creating scripts.  
-  <details><summary>Syntax and Arguments</summary>  
-
-  #### Syntax:  
-  
-  ```script
-  /creat
-  # Create a variable
-  var a=a
-  # Send variables
-  send a equals: {a}
-  ```  
-  - No indentation! Comments start with `#`.  
-  - Variables are wrapped in `{}`.  
-
-  #### Commands:  
-  - `send` — Send messages (supports HTML formatting).  
-  - `var` — Create variables (e.g., `var a=1`).  
-  - `value` — Output all variables as a dictionary.  
-  - `calc` — Execute math/logic operations (`+`, `-`, `*`, `/`, `**`, `%`, `==`, `!=`, `<`, `<=`, `>`, `>=`).  
-  - `.end` — Terminate the program.  
-  - `random` — Generate a random number (e.g., `random a=1-5`).  
-  - `timeout` — Delay execution (e.g., `timeout 5`).  
-  - `if` — Conditional execution (e.g., `if 1>0:send True`).  
-  - `len` — Count characters in a string/variable (e.g., `len a=abc`).  
-  - `list` — Array-like lists (zero-indexed; e.g., `list a=1,2,3[1]`).  
-  - `for` — Loop (e.g., `for i in 5:send num:{i}`).  
-  </details>  
-
-The bot logs messages and events.  
+Here’s the translation while preserving the original meaning and structure:
 
 ---
+
+## Information
+
+### Admin Bot with Spam Report Notifications  
+To launch the bot, insert your token into the `TOKEN` file without any spaces or additional characters!  
+
+### Description  
+This bot detects spam and notifies chat administrators about it. It includes customizable anti-spam settings, punishment rules, and admin groups.  
+
+It features multiple commands, such as:  
+
+- `/help` — Help guide.  
+- `/report` — Report a violation. To leave a comment, add a space after the command and write your comment.  
+- `/monitor` — Track system metrics of your PC/hosting.  
+- `/warn` — Decrease a user’s reputation by 1.  
+- `/reput` — Increase a user’s reputation by 1.  
+- `/info` — Get user information. Arguments: `-all` for a full info list.  
+-  `/me` — Check your own reputation.  
+- `/ban` — Ban a user with reason logging.  
+- `/mute` — Temporarily mute a user with reason and duration.  
+- `/admin_command` — Admin-only commands.  
+- `/настройки` (`/settings`) — Display settings (from the `settings.json` config file). Use `-r` to reload settings without restarting the bot (e.g., `/настройки -r`).  
+- `/t` — Translate text to Russian or another language (also supports encoding to binary, hex, and translit). Example: `/t any text:en`.  
+- `/download` — Download stickers and voice messages. For symbols, specify the extension (e.g., `/download png`).  
+- `/test` — Extensive bot system testing. Argument: `-all` for extra Telegram API details.  
+- `/ping` — Check response latency for a URL. Arguments:  
+  - `/ping <URL>` (default: `https://ya.ru`).  
+  - `/ping <URL>,<number of requests>` — Repeat latency checks.  
+  - `/ping <URL>,<requests>,<mode>` — `True` calculates average latency; default shows each attempt.  
+- `/message_info` — Display message details (useful for media).  
+- `/log` — Send log files.  
+- `/serh` (`/search`) — Search Wikipedia articles (e.g., `/serh :<query>`). Article language depends on `settings.json` (`auto_translate: "lang"`). Argument: `-ping` to test `wikipedia.org` latency.  
+- `/creat` — A simple scripting language for creating scripts.  
+  <details><summary>Syntax and Arguments</summary><p>  
+
+  ### Syntax:  
+  #### General command syntax:  
+  ```script  
+  /creat  
+  # Create a variable  
+  var a=a  
+  # Send variables  
+  send a equals: {a}  
+  ```  
+  (No indentation at the start!)  
+
+  Comments start with `#`.  
+  To insert a variable, wrap its name in `{}`.  
+
+  #### Commands:  
+  - `send` — Send messages to chat (supports HTML formatting). Example: `send hello world`.  
+  - `var` — Create variables. Example: `var a=1`.  
+    ```script  
+    var a=1  
+    send a equals: {a}  
+    ```  
+    Output: `a equals: 1`.  
+  - `value` — Output all variables as a dictionary.  
+  - `calc` — Execute logical operations (e.g., `calc a=1>0`). Supported operators: `+`, `-`, `*`, `/`, `**`, `%`, `==`, `!=`, `<`, `<=`, `>`, `>=`.  
+    ```script  
+    var a=5  
+    var b=10  
+    calc out={a}<{b}  
+    send {out}  
+    ```  
+  - `.end` — End the program.  
+  - `random` — Generate a random number in a range (e.g., `random a=1-5`).  
+  - `timeout` — Delay execution (e.g., `timeout 5`).  
+  - `if` — Execute a command if a condition is met (e.g., `if 1>0:send True`). For multiple commands, separate them with `;`.  
+  - `len` — Count characters in a string/variable (e.g., `len a=abc`).  
+  - `list` — Alternative list (zero-indexed). Example: `list a=1,2,3[1]`. Assign values by ID: `list a=1,2,3[1]=0`.  
+  - `for` — Run commands a set number of times (stores count in a variable). Example: `for i in 5:send num:{i}`.  
+  - `replace` — Replace characters in a string (e.g., `replace a=text:old_char/new_char`).  
+
+  #### Variable Constants:  
+  - `$reply_to` — Text of the replied message (or `$none` if no reply).  
+  - `$pi` — Math constant π (10 decimal places).  
+  - `$username` — Username of the replied user (or `$none`).  
+
+  #### Example Programs:  
+  > Hello World  
+  ```script  
+  /creat  
+  send hello world  
+  ```  
+  > Roulette Game  
+  ```script  
+  /creat  
+  random rand=1-3  
+  if {rand}==1:send You win!  
+  if {rand}==2:send You lost. Try again!  
+  if {rand}==3:send You lost. Better luck next time!  
+  ```  
+  </p></details>  
+
+- `/data_base` — Display the database. Argument: Show data for a specific user (e.g., `/data_base 1234567890`).  
+- `/ban` — Ban a user (e.g., `/ban reason:for trolling`).  
+- `/мут` (`/mute`) — Mute a user (e.g., `/mute reason:reason time:1.h`).  
+  - `.h` — Hours (default).  
+  - `.d` — Days.  
+  - `.m` — Minutes.  
+- `/blaklist` (`/blacklist`) — Add a sticker to the blacklist (blacklisted stickers are auto-deleted).  
+- `/unblaklist` (`/unblacklist`) — Remove a sticker from the blacklist.  
+- Logs messages and other events.  
 
 ### Installation  
 Requires [Python 3.12+](https://www.python.org/).  
 
-```sh
-git clone https://github.com/xHak2215/admin_telegram_bot
-cd admin_telegram_bot
-pip install -r requirements.txt
-python aea_bot.py
-```
+```sh  
+git clone https://github.com/xHak2215/admin_telegram_bot  
+cd admin_telegram_bot  
+pip install -r requirements.txt  
+python aea_bot.py  
+```  
 
----
+### Configuration (`settings.json`)  
+```json  
+{  
+    "bambam": false,  
+    "delet_messadge": true,  
+    "admin_grops": "-1001234567890",  
+    "spam_limit": 10,  
+    "spam_timer": 4,  
+    "ban_and_myte_command": true,  
+    "console_control": true,  
+    "auto_translete": {"laung": "ru", "Activate": false}  
+}  
+```  
 
-### Configuration/settings (`settings.json`)  
+- `true` = enabled, `false` = disabled.  
+- `bambam` — Auto-mute/ban.  
+- `delet_messadge` — Auto-delete messages (e.g., after 5 reports).  
+- `admin_grops` — Admin group ID.  
+- `spam_limit` — Messages per user considered spam (within `spam_timer` seconds).  
+- `spam_timer` — Time window for spam detection.  
+- `ban_and_myte_command` — Enable `/ban` and `/mute`.  
+- `console_control` — Allow remote terminal commands via `/console :<command>` (⚠️ risky if misused).  
+- `auto_translete` — Auto-translate messages to `"laung"` (default: `"ru"`). Toggle with `"Activate"`.  
 
-```json
-{
-  "bambam": false,
-  "delete_message": true,
-  "admin_groups": "-1001234567890",
-  "spam_limit": 10,
-  "spam_timer": 4,
-  "ban_and_mute_command": true,
-  "console_control": true,
-  "auto_translate": {"laung": "ru", "Activate": false}
-}
-```
+--- 
 
-- **`true`/`false`**: Toggle features.  
-- **`bambam`**: Auto-mute/ban.  
-- **`delete_message`**: Auto-delete messages (e.g., after 5 reports).  
-- **`admin_groups`**: Admin group ID.  
-- **`spam_limit`**: Messages per user to trigger spam detection (within `spam_timer` seconds).  
-- **`ban_and_mute_command`**: Enable `/ban` and `/mute`.  
-- **`console_control`**: Remote terminal commands via `/console` (⚠️ **Risky!**).  
-- **`auto_translate`**: Auto-translate messages to `laung` (default: `ru`).  
-
----
 
 ### Supported Formats  
 #### Audio/Voice Messages:  
