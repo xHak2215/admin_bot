@@ -176,34 +176,35 @@ bot = telebot.TeleBot(TOKEN ,num_threads=5)
 #updater = Updater(token=TOKEN)
 #dispatcher = updater.dispatcher
 warn=0
-print('\n','\33[0m'+os.getcwd())
+print('\33[0m')
+print('\n'+os.getcwd())
 
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
     print('gif OK')
 else:
     warn=warn+1
-    print('error no hello.gif')
+    print('\33[31error no hello.gif\33[0m')
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'blacklist.json')):pass
 else:
     warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
-    print('settings.json OK')
+    print('settings.json OK\33[0m')
 else:
     warn=warn+1
-    print('error no settings.json')
+    print('\33[31error no settings.json\33[0m')
 if os.path.exists(os.path.join(os.getcwd(), 'requirements.txt')) != True:
     warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'Users_base.db')):
     print('data base ok')
 else:
     warn=warn+1
-    print("error no bata base ")
+    print("\33[31merror no bata base\33[0m")
 if warn >=3:
     bot.send_message(admin_grops, f"обнаружены не критичные ошибки возможны неполадки\nwarn level:{warn}")
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -466,8 +467,9 @@ def handle_report(message):
                 bot.delete_message(message.chat.id,message.message_id)
         # Удаляем данные о репорте
         del report_data[chat_id]
-    else: 
-        bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы сообщить о нарушении.")
+    else:
+        if time.time()-message.date <= 60:
+            bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы сообщить о нарушении.")
 
 def fetch_data_by_column_and_row(column_name, row_index):
     # Создаем подключение к базе данных
@@ -606,7 +608,6 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
         updates.append("auto_reputation_data = ?")
         params.append(reputation_time)
         
-
     # Проверяем, были ли добавлены параметры
     if not updates:
         connection.close()
@@ -1486,8 +1487,8 @@ def handle_spam_deletion(call):
         bot.answer_callback_query(call.id, f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений")
     except Exception as e:
         bot.send_message(admin_grops,f"Ошибка при удалении: {str(e)}")
-        logger.error(f"Ошибка в handle_spam_deletion: {str(e)}")
-        
+        logger.error(f"Ошибка в handle_spam_deletion: {str(e)}\n{traceback.format_exc()}")
+
 @bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
     if '-help' in message.text or '-h' in message.text:
@@ -2021,6 +2022,8 @@ delete_message=[]
 # Функция для обработки сообщений
 def anti_spam(message):
     global user_messages
+    global user_text
+    global message_text
     #инициализация хрени всякой     
     user_id = message.from_user.id
     current_time = time.time()
@@ -2056,6 +2059,7 @@ def anti_spam(message):
         for i in user_messages[user_id]:
             delete_message.append(i[1])
         nacase(message,delete_message)
+        user_text={}
         user_messages={}
         #bot.delete_message(message.chat.id,message.message_id)
         return
@@ -2079,6 +2083,7 @@ def anti_spam(message):
                 if povtor_messade_shet>=SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message,[message.message_id])
+                    user_messages={}
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
@@ -2109,6 +2114,7 @@ def anti_spam(message):
                 if BAMBAMSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message,[message.message_id])
+                    user_messages={}
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
@@ -2116,6 +2122,7 @@ def anti_spam(message):
                 keys_to_delete.append(list(user_text.keys())[i])
                 print(mess[list(user_text.keys())[i]])
                 nacase(message,[message.message_id])
+                user_messages={}
     # Удаляем ключи после завершения итерации
     for key in range(len(keys_to_delete)):
         if key != None:
@@ -2208,7 +2215,7 @@ def other_message_handler(message):
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f"new member in chat | user name> @{message.from_user.username}")
-        data_base(message.chat.id,new_member.id,time_v=time.time())
+        data_base(message.chat.id,new_member.id,time_v=new_member.date)
         if time.time()-message.date <=350:
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
@@ -2262,13 +2269,13 @@ def exit_chat_member(message):
 def main():
     get_num=0
     try:
-        print("\033[32m{}\033[0m".format('нет ошибок :3 '))
+        print("\033[32m нет ошибок :3\033[0m")
         while True:
             try:
                 try:
                     get_num=+1
-                    bot.polling(none_stop=True,timeout=30,long_polling_timeout=30)
-                    schedule.run_pending()
+                    bot.polling(none_stop=True,timeout=30,long_polling_timeout=30,interval=1)
+                    #schedule.run_pending()
                     if get_num >=100:
                         get_num=0
                         time.sleep(1)
