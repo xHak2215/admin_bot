@@ -6,8 +6,10 @@ from loguru import logger
 import subprocess
 from typing import Dict, Union
 
-linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-linuxarm64-lgpl','bin','ffmpeg') 
-windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg-master-latest-win64-gpl-shared','bin','ffmpeg.exe')
+linux_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_linux_x64','ffmpeg')
+windows_path_ffmpeg=os.path.join(os.getcwd(),'asets' ,'ffmpeg_windows_X64','bin','ffmpeg.exe')
+
+if ' 'in linux_path_ffmpeg or ' 'in windows_path_ffmpeg:logger.error("уберите пробелы из пути")
 
 def audio_conwert(data:bytes,format,inp_format='save.ogg'):
         """
@@ -70,11 +72,11 @@ def video_to_audio_conwert(data:bytes,format:str):
         """
         audio_conwert(data,format)
         
-        :param1: binaru music data
+        :param1: bytes music data
         
         :param2: video (`mp4`) convert to audio file 
         
-        :return: binaru converts data or error
+        :return: bytes converts data or error
         """
         try:
             # Определяем путь к ffmpeg
