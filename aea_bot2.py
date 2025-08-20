@@ -92,7 +92,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
 admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
@@ -552,9 +552,14 @@ def send_data_base(message):
                     info+=' '+str(list(i)[1])
                 connection.close()
             else:
-                cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (int(arg[1]),message.chat.id))
+                try:
+                    arg_id=int(re.sub(r'[^0-9]', '', str(arg[1]).replace(' ','')))
+                except ValueError as e:
+                    bot.reply_to(message,f"неверный аргумент({arg[1]}) пример: /data_base <id>")
+                    return
+                cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (arg_id,message.chat.id))
                 result = cursor.fetchone()
-                datas=result.replace(')','').replace('(','')
+                datas=str(result).replace(')','').replace('(','')
                 cursor.execute('PRAGMA table_info(Users);')
                 data = cursor.fetchall() 
                 for i in data:
