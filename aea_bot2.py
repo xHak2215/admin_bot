@@ -204,7 +204,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -220,7 +220,7 @@ def monitor_resources():
             scode= ''
             pass
         else:
-            scode=f' status code {response.status_code}'
+            scode=f" status code {response.status_code}"
         if i == 1:
             popitka1= time.time() - start_time
         response_time+= time.time() - start_time
@@ -363,17 +363,17 @@ def monitor_command(message):
         buff =f"(error start:{ffpg})"
     else:
         if ffpg:
-            test=test+'ffmpeg OK\n'
+            test=test+'ffmpeg OK\n\n'
         else:
-            test=test+f"error no ffmpeg {buff}\n"
+            test=test+f"error no ffmpeg {buff}\n\n"
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{requests.get('https://api.ipify.org').content.decode('utf8')}\n"
     if '-all' in message.text:
         api_data=get_telegram_api()
-        test=test+f"api data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
+        test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
     cpu_percent, ram_percent, disk_percent, response_time, ping1 = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n\n{test} \nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n\n{test}admin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -807,7 +807,7 @@ def status(rec):
 
 @bot.message_handler(commands=['я', 'me' , 'Я'])
 def send_statbstic(message):
-    if time.time()-message.date <=65:
+    if time.time()-message.date <=80:
         data=data_base(message.chat.id,message.from_user.id,soob_num=1)
         bot.reply_to(message, f"Твоя репутация: {data[0]} \n{status(data[0])}\nколичество сообщений: {data[2]}")
 
@@ -2023,15 +2023,15 @@ def create_logic(message):
             
 user_messages = {}#инициализация слова+рей и тп
 user_text = {}
-message_text=[]
+message_text = []
 #SPAM_LIMIT = 8 # Максимальное количество сообщений
 #SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
-s_level=0
-tekst_m=[]
-delete_message=[]
-        
+s_level = 0
+tekst_m = []
+delete_message = []
+
 # Функция для обработки сообщений
-def anti_spam(message):
+def anti_spam(message,auto_repytation=0):
     global user_messages
     global user_text
     global message_text
@@ -2063,18 +2063,19 @@ def anti_spam(message):
         if len(cont)>25:reply_to='\nReply to: '+cont[:25]+'...'
         else:reply_to='\nReply to: '+cont
     logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
-    print("————")
     logger.info(logs)
+    print("————")
    # Проверка на спам
     if len(user_messages[user_id]) > SPAM_LIMIT:
         for i in user_messages[user_id]:
             delete_message.append(i[1])
         nacase(message,delete_message)
-        user_text={}
+        user_text.clear()
         user_messages.clear()
         #bot.delete_message(message.chat.id,message.message_id)
         return
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
+        user_id=message.from_user.id
         paket_num=4
         sr_d,slova=0,[]
         keys_to_delete=[]
@@ -2092,7 +2093,7 @@ def anti_spam(message):
                 if str(list_mess[k]).lower() == str(list_mess[a]).lower():
                     povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
                 if povtor_messade_shet>=SPAM_LIMIT:
-                    keys_to_delete.append(list(user_text.keys())[i])
+                    keys_to_delete.append(user_id)
                     nacase(message,[message.message_id])
                     user_messages.clear()
                 s_level=0
@@ -2123,21 +2124,23 @@ def anti_spam(message):
                     if list_povt_slov[b]==list_povt_slov[0]:
                         BAMBAMSpamerBlat=BAMBAMSpamerBlat+1
                 if BAMBAMSpamerBlat>SPAM_LIMIT:
-                    keys_to_delete.append(list(user_text.keys())[i])
+                    keys_to_delete.append(user_id)
                     nacase(message,[message.message_id])
                     user_messages.clear()
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
             if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
-                keys_to_delete.append(list(user_text.keys())[i])
-                print(mess[list(user_text.keys())[i]])
+                keys_to_delete.append(user_id)
                 nacase(message,[message.message_id])
-                user_messages={}
+                user_messages.clear()
+
     # Удаляем ключи после завершения итерации
     for key in range(len(keys_to_delete)):
         if key != None:
+            print(user_text[keys_to_delete[key]])
             del user_text[keys_to_delete[key]]
+            tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
     
 text={}
 warn=0
@@ -2153,7 +2156,7 @@ def anti_spam_forward(message,text=text,warn=warn):
 
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
     if message.sticker:
         if message.sticker.file_id in bklist.blist:
             if bool(DELET_MESSADGE):
@@ -2176,15 +2179,16 @@ def message_handler(message):
                 mess_text=message.text[:100]+"..."
             else:mess_text=message.text
             bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он:{mess_text}\n | https://t.me/c/{id_help_hat}/{message.message_id}")
-    elif commad.startswith("!я"):        
-        send_statbstic(message)
+    elif commad.startswith("!я"):   
+        if time.time()-message.date <=65:
+            send_statbstic(message)
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
         return
     elif message.forward_from:
         anti_spam_forward(message)
     else:
-        anti_spam(message)
+        anti_spam(message,ar)
         if AUTO_TRANSLETE['Activate']:
             translator = Translator()
             conf = translator.detect(str(message.text))
@@ -2194,32 +2198,32 @@ def message_handler(message):
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None:
         return
     else:
-        anti_spam(message)
+        anti_spam(message,ar)
 
 @bot.message_handler(content_types=['voice'])
 def message_voice(message):
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME:
         return
     elif message.forward_from:
         anti_spam_forward(message)
     
     else:
-        anti_spam(message)
+        anti_spam(message,ar)
     #    if message.voice.duration>=1800 and time.time()-message.date>=60:
     #        bot.reply_to(message,'скока бл ...ужас')
+
 # Обработчик всех остальных типов сообщений
 @bot.message_handler(func=lambda message: True)
 def other_message_handler(message):
-    
-    data_base(message.chat.id,message.from_user.id,soob_num=1)# добовляем 1 сообщение
+    ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.forward_date and message.forward_from and message.forward_from_chat:
         return
-    anti_spam(message)
+    anti_spam(message,ar)
 
 #новый юзер 
 @bot.message_handler(content_types=['new_chat_members'])
@@ -2237,7 +2241,7 @@ def welcome_new_member(message):
                 frames_with_text = []
                 # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
                 try:
-                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto-VariableFont_wdth,wght.ttf'), 42)
+                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto-VariableFont_wdth,wght.ttf'), 43)
                 except IOError:
                     font = ImageFont.load_default(size=35)
                 width, height = gif.size    
