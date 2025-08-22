@@ -1133,6 +1133,12 @@ def audio_to_text(message):
                 data_r=asets.ffmpeg_tool.audio_conwert(temp.ogg_data,'wav') # конвертирую в wav
                 if type(data_r)!=bytes:
                     logger.error(data_r)
+                    bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=msg.message_id,
+                    text=f"случилась ошибка :(\n{data_r}"
+                    )
+                    return
                 wav_buffer = io.BytesIO(data_r)
                 ai_stream.join()
                 while True:
@@ -2065,7 +2071,7 @@ def anti_spam(message):
             delete_message.append(i[1])
         nacase(message,delete_message)
         user_text={}
-        user_messages={}
+        user_messages.clear()
         #bot.delete_message(message.chat.id,message.message_id)
         return
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
@@ -2088,7 +2094,7 @@ def anti_spam(message):
                 if povtor_messade_shet>=SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message,[message.message_id])
-                    user_messages={}
+                    user_messages.clear()
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
@@ -2119,7 +2125,7 @@ def anti_spam(message):
                 if BAMBAMSpamerBlat>SPAM_LIMIT:
                     keys_to_delete.append(list(user_text.keys())[i])
                     nacase(message,[message.message_id])
-                    user_messages={}
+                    user_messages.clear()
         #print(list_povt_slov)# debug
         #print(list(user_text.keys())[i])
         #print(s_level)
@@ -2220,7 +2226,7 @@ def other_message_handler(message):
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f"new member in chat | user name> @{message.from_user.username}")
-        data_base(message.chat.id,new_member.id,time_v=new_member.date)
+        data_base(message.chat.id,new_member.id,time_v=message.date)
         if time.time()-message.date <=350:
             try:
                 input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
