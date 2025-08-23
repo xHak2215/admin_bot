@@ -1,4 +1,7 @@
-/cats_message.log
-/TOKEN
-/Users_base.db
+cats_message.log
+TOKEN
+Users_base.db
 /virtual
+
+.log
+.db
