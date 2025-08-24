@@ -1,14 +1,11 @@
 [project]
 name = "senbot"
-version = "2.5"
+version = "2.3"
 authors = [{name = "HITHELL"}]
 requires-python = ">=3.13" 
 description = "много функциональной Телеграм бот администратор"  
 readme = "README.md"
-
-[build-system]  
-requires = ["setuptools", "setuptools-scm"]
-requires = [
+dependencies = [
     "certifi==2025.6.15",
     "cffi==1.17.1",
     "chardet==3.0.4",
@@ -40,15 +37,8 @@ requires = [
     "websockets==15.0.1",
     "win32_setctime==1.2.0",
     "urllib3==1.26.5",
-    "legacy-cgi==2.6.3",
-    "Wikipedia-API==0.8.1",
-    ][project]
-name = "senbot"
-version = "2.3"
-authors = [{name = "HITHELL"}]
-requires-python = ">=3.13" 
-description = "много функциональной Телеграм бот администратор"  
-readme = "README.md"
+    "legacy-cgi==2.6.3"
+    ]
 
 [build-system]  
-requires = ["setuptools", "setuptools-scm"]
+requires = ["uv"]
