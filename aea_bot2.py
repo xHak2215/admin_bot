@@ -1590,8 +1590,10 @@ def searh_network(message):
     if len(message.text.split(' ',1))>1:
         promt=message.text.split(' ',1)[1]
     else:
-        bot.reply_to(message,"вы не узазали  аргумент")
+        bot.reply_to(message,"вы не указали  аргумент")
         return
+    
+    e_mess=bot.reply_to(message,"ищю...")
     out_wiki=wiki_api.search_query(promt)
     data_wiki_serh.wiki_api_out=out_wiki
 
@@ -1605,11 +1607,20 @@ def searh_network(message):
     for i in range(len(l)):
         button = types.InlineKeyboardButton(
             l[i], 
-            callback_data=f"title_wiki_resurse_{message.id}_{i}"
+            callback_data=f"title_wiki_resurse_{e_mess.id}_{i}"
             )
         markup.add(button)
-        
-    data_wiki_serh.message_id = bot.reply_to(message,"выберите наиболее подходящую статью",reply_markup=markup).id
+    if len(l)<=0:
+        bot.edit_message_text(['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)],
+                              data_wiki_serh.chat_id,
+                              e_mess.id
+                              )
+    else:
+        data_wiki_serh.message_id = bot.edit_message_text("выберите наиболее подходящую статью",
+                              data_wiki_serh.chat_id,
+                              e_mess.id,
+                              reply_markup=markup
+                              ).id
 
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse_'))
@@ -1627,13 +1638,13 @@ def handle_wiki_searh(call):
                         if i['page'] == title:
                             link=i['link']
                     page=page[:400]+'...'+f"\nстатья:{link}"
+            bot.answer_callback_query(call.id, "выполняю")
             bot.edit_message_text(
             chat_id=data_wiki_serh.chat_id,
-            message_id=data_wiki_serh.message_id,
+            message_id=call.data.split('_')[-2],
             text=page
             ,parse_mode='HTML',disable_web_page_preview=True
             )
-            #bot.answer_callback_query(call.id, f"")
 
 def ext_arg_scob(arg:str):
     if '{' not in arg:
