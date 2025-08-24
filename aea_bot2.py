@@ -17,6 +17,7 @@ import gc
 
 import asets.ffmpeg_tool
 import asets.dictt
+from asets.wiki_api_lib import wiki
 
 try:
     from vosk import Model, KaldiRecognizer
@@ -93,7 +94,7 @@ except:
     umsettings()
     
 help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
-admin_command = '/monitor — показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — вся база данных\n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
+admin_command = '/monitor — выводит показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
 
 logse="nan"
 i=0
@@ -204,7 +205,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -868,8 +869,8 @@ def handle_warn(message):
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
         
-@bot.message_handler(commands=['info','user'])#узнать репутацию
-def handle_warn(message):
+@bot.message_handler(commands=['info','user','кто'])#узнать репутацию
+def handle_info(message):
 #    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
     if message.reply_to_message:
         data_v=''
@@ -880,15 +881,19 @@ def handle_warn(message):
         #message_to_warp=str(warn_chat).replace("-100", "")
         data=data_base(chat_id,user)
         if '-all' in str(message.text).lower():
-            bot.reply_to(message,f'ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщение:{data[2]}\ntime:{datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")}')
+            if str(data[3])==str(0):
+                date=0
+            else:
+                date=datetime.fromtimestamp(data[3]).strftime(r"%Y-%m-%d %H:%M:%S")
+            bot.reply_to(message,f"ID:{user}\nрепутация:{data[0]}\nавто репутация:{data[1]}\nсообщения:{data[2]}\ntime:{date}")
             return
         if str(data[3]) != str(0):
             if data[3]>=86400:
-                if round((time.time()-data[3])/86400)==1:
+                if round((time.time()-data[3])/86400) == 1:
                     c='день назад'
                 else:
                     c='дней назад' 
-                i=str(round((time.time()-data[3])/86400))+ c
+                i=str(round((time.time()-data[3])/86400)) + c
             elif data[3]>=3600:
                 if round((time.time()-data[3])/3600)==1:
                     c='час назад'
@@ -939,7 +944,7 @@ def send_reminder():
 #schedule.every().day.at("12:00").do(send_reminder)
 
 @bot.message_handler(commands=['ban','бан'])
-def handle_warn(message):
+def handle_ban_command(message):
         commad=str(message.text).lower()
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
@@ -961,7 +966,7 @@ def handle_warn(message):
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
 
 @bot.message_handler(commands=['mute','мут'])
-def handle_warn(message):
+def handle_mute_command(message):
         commad=str(message.text).lower()
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
@@ -1018,7 +1023,7 @@ def handle_warn(message):
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
 
 @bot.message_handler(commands=['cmd','console'])
-def handle_warn(message):
+def handle_command(message):
     try:
         if CONSOLE_CONTROL:
             if str(message.chat.id)==admin_grops or message.from_user.id == 5194033781:
@@ -1073,7 +1078,7 @@ def translitor(message):
     else:
         if ':' in message.text:
             try:
-                text=str(message.text).replace('/t','').replace('/translite','').split(':')
+                text=str(message.text).replace('/t','').replace('/translate','').split(':')
                 if text[1].lower()=="bin":
                     hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
                     binary_str = ''.join([
@@ -1091,7 +1096,7 @@ def translitor(message):
                 result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
                 bot.reply_to(message,result.text)
             except ValueError:
-                bot.reply_to(message,'похоже язык не определен (примечание язык нужно указывать в сокращённой форме так: en - английский')
+                bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
         
 
 @bot.message_handler(commands=['to_text'])
@@ -1150,11 +1155,12 @@ def audio_to_text(message):
                 print('выполнено')
                 final = json.loads(temp.rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
-                bot.edit_message_text(
-                chat_id=message.chat.id,
-                message_id=msg.message_id,
-                text=f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}"
-                )
+                if msg in locals():
+                    bot.edit_message_text(
+                    chat_id=message.chat.id,
+                    message_id=msg.message_id,
+                    text=f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}")
+                else:bot.reply_to(message,f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}с.")
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
@@ -1564,92 +1570,70 @@ def ping_command(message):
         
 class SearhData():
     def __init__(self):
-        self.title=[]
+        self.title_and_url=[]
+        self.wiki_api_out=[]
         self.message_id=-1
-        self.wiki_object=''
-        
+        self.chat_id=0
+
+wiki_api=wiki()
 data_wiki_serh=SearhData()
+
 @bot.message_handler(commands=['serh','поиск','searh'])
 def searh_network(message): 
     if '-ping' in message.text:
-        timer=time.time()
-        try:
-            esp=requests.get('https://ru.wikipedia.org',timeout=20).status_code
-        except requests.exceptions.ReadTimeout:
-            bot.reply_to(message,f"превышена задержка (20s) возможно ресурс недоступен\nstatus code:{esp}")
+        ping=wiki_api.wiki_ping()
+        if ping['error']!=None:
+            bot.reply_to(message,f"превышена задержка (20s) возможно ресурс недоступен\nstatus code:{ping['error']}")
             return
-        timer=time.time()-timer
-        bot.reply_to(message,f'ping to wikipedia.org>{timer}',parse_mode='HTML',disable_web_page_preview=True)
+        bot.reply_to(message,f'ping to wikipedia.org>{ping['time_out']}',parse_mode='HTML',disable_web_page_preview=True)
         return
     if len(message.text.split(' ',1))>1:
         promt=message.text.split(' ',1)[1]
     else:
-        bot.reply_to(message,f"укажите аргумент")
+        bot.reply_to(message,"вы не узазали  аргумент")
         return
-    
-    translator = Translator()
-    wiki = wikipediaapi.Wikipedia(
-    language=translator.detect(str(promt)).lang, #AUTO_TRANSLETE['laung']
-    user_agent="Mozilla/5.0",  # Маскируемся под браузер
-    timeout=20
-    )
-    data_wiki_serh.wiki_object=wiki
+    out_wiki=wiki_api.search_query(promt)
+    data_wiki_serh.wiki_api_out=out_wiki
 
-    out_wiki = wiki.page(promt)
-    '''
+    l=[]
+    for i in out_wiki:
+        l.append(i['page'])
+    data_wiki_serh.title_and_url = l
+    data_wiki_serh.chat_id = message.chat.id
+
     markup = types.InlineKeyboardMarkup() 
-    for content in out_wiki:
+    for i in range(len(l)):
         button = types.InlineKeyboardButton(
-            content, 
-            callback_data=f"title_wiki_resurse{message.id}"
+            l[i], 
+            callback_data=f"title_wiki_resurse_{message.id}_{i}"
             )
         markup.add(button)
-    data_wiki_serh.title = out_wiki
-    data_wiki_serh.message_id = message.id
-    '''
-    
-    if out_wiki.text == '' or out_wiki.text == None and out_wiki.summary == '' or out_wiki.summary == None:
-        bot.reply_to(message,['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)])
-    else:
-        stext=str(out_wiki.summary)
-        stext_translit=''
-        conf = translator.detect(str(promt))
-        if conf.lang != AUTO_TRANSLETE['laung']:
-            if len(stext)>1000:
-                for i in range(int(round(len(stext)/1000,0))):
-                    #print(stext[1000*i:1000])
-                    try:
-                        stext_translit=stext_translit+translator.translate(stext[1000*i:1000], src='auto', dest=AUTO_TRANSLETE['laung']).text
-                    except TypeError:
-                        bot.reply_to(message,f"(не удалось перевести на русский,ориг:{conf.lang})\n{stext}")
-                        return
-            else:
-                try:
-                    stext_translit=translator.translate(stext, src='auto', dest=AUTO_TRANSLETE['laung']).text
-                except TypeError:
-                    bot.reply_to(message,f"(не удалось перевести на русский,ориг:{conf.lang})\n{stext}")
-                    return
-        else:
-            stext_translit=stext
-        bot.reply_to(message,f"•{out_wiki.title}\n{stext_translit}")#,reply_markup=markup
-        #print(out_wiki.links)
+        
+    data_wiki_serh.message_id = bot.reply_to(message,"выберите наиболее подходящую статью",reply_markup=markup).id
 
-@bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse'))
+
+@bot.callback_query_handler(func=lambda call:call.data.startswith('title_wiki_resurse_'))
 def handle_wiki_searh(call):
-    try:
-        for title in data_wiki_serh.title:
-            print(call.data ,title)
-            if title == call.data:
-                content=data_wiki_serh.wiki_object.page(title)
-                bot.edit_message_text(
-                chat_id=call.chat.id,
-                message_id=data_wiki_serh.message_id,
-                text=f"{content.title}\n{content.content}"
-                )
-        #bot.answer_callback_query(call.id, f"")
-    except Exception as e:
-        bot.send_message(admin_grops,f"Ошибка : {str(e)}")
-        logger.error(f"Ошибка в : {str(e)}")
+    for title in data_wiki_serh.title_and_url:
+        if title == data_wiki_serh.title_and_url[int(call.data.split('_')[-1])]:
+            page=wiki_api.title_to_page(title)
+            link=''
+            bot.answer_callback_query(call.id)
+            if page == '' or page == None:
+                page=['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)]
+            else:
+                if len(page)>=400:
+                    for i in data_wiki_serh.wiki_api_out:
+                        if i['page'] == title:
+                            link=i['link']
+                    page=page[:400]+'...'+f"\nстатья:{link}"
+            bot.edit_message_text(
+            chat_id=data_wiki_serh.chat_id,
+            message_id=data_wiki_serh.message_id,
+            text=page
+            ,parse_mode='HTML',disable_web_page_preview=True
+            )
+            #bot.answer_callback_query(call.id, f"")
 
 def ext_arg_scob(arg:str):
     if '{' not in arg:
