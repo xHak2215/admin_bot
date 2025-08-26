@@ -34,7 +34,6 @@ try:
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
-    import wikipediaapi
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -205,7 +204,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -232,7 +231,7 @@ def monitor_resources():
         else:
             disk_percent +=float(psutil.disk_usage('/').percent)
     shutka=' '
-    if cpu_percent==round(cpu_percent/popitki,1):
+    if round(cpu_percent/popitki)==100:
         shutka='\nпроцессор шя рванет 🤯'
     print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {popitka1} \n{shutka}")
     return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+shutka),round(popitka1,3)
@@ -1152,7 +1151,6 @@ def audio_to_text(message):
                         break
                     if temp.rec.AcceptWaveform(data):
                         results.append(json.loads(temp.rec.Result()))
-                print('выполнено')
                 final = json.loads(temp.rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
                 if msg in locals():
@@ -1498,10 +1496,13 @@ def handle_spam_deletion(call):
             try:
                 bot.delete_message(delete_data.chat_id, msg_id)
                 deleted_count += 1
-            except:
-                continue
+            except telebot.apihelper.ApiTelegramException as e:
+                bot.send_message(admin_grops, f"случилась ошибка при попытке удаления сообщений\n{str(e)}\nвероятно у бота недостаточно прав")
+            except:continue
+
         # Ответ пользователю
         bot.answer_callback_query(call.id, f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений")
+        logger.info(f"Успешно удалено {deleted_count}/{len(delete_data.message_l)} сообщений. инициатор: @{call.from_user.username}")
     except Exception as e:
         bot.send_message(admin_grops,f"Ошибка при удалении: {str(e)}")
         logger.error(f"Ошибка в handle_spam_deletion: {str(e)}\n{traceback.format_exc()}")
@@ -1627,6 +1628,7 @@ def searh_network(message):
 def handle_wiki_searh(call):
     for title in data_wiki_serh.title_and_url:
         if title == data_wiki_serh.title_and_url[int(call.data.split('_')[-1])]:
+            bot.answer_callback_query(call.id, "выполняю")
             page=wiki_api.title_to_page(title)
             link=''
             bot.answer_callback_query(call.id)
@@ -1638,7 +1640,6 @@ def handle_wiki_searh(call):
                         if i['page'] == title:
                             link=i['link']
                     page=page[:400]+'...'+f"\nстатья:{link}"
-            bot.answer_callback_query(call.id, "выполняю")
             bot.edit_message_text(
             chat_id=data_wiki_serh.chat_id,
             message_id=call.data.split('_')[-2],
@@ -2060,7 +2061,7 @@ def anti_spam(message,auto_repytation=0):
     logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     logger.info(logs)
     print("————")
-   # Проверка на спам
+    # Проверка на спам
     if len(user_messages[user_id]) > SPAM_LIMIT:
         for i in user_messages[user_id]:
             delete_message.append(i[1])
@@ -2090,7 +2091,6 @@ def anti_spam(message,auto_repytation=0):
                 if povtor_messade_shet>=SPAM_LIMIT:
                     keys_to_delete.append(user_id)
                     nacase(message,[message.message_id])
-                    user_messages.clear()
                 s_level=0
                 list_povt_slov=[]
                 if list_mess[a]!=None:
@@ -2132,10 +2132,13 @@ def anti_spam(message,auto_repytation=0):
 
     # Удаляем ключи после завершения итерации
     for key in range(len(keys_to_delete)):
-        if key != None:
-            print(user_text[keys_to_delete[key]])
-            del user_text[keys_to_delete[key]]
-            tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
+        try:
+            if key != None:
+                del user_text[keys_to_delete[key]]
+        except Exception as e: 
+            logger.error(e)
+            continue
+    tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
     
 text={}
 warn=0
