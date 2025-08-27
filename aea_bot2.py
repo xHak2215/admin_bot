@@ -1359,7 +1359,7 @@ def blaklist(message):
             bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
         if message.date - time.time()<=60:
-            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
     
 @bot.message_handler(commands=['unblaklist'])
 def unblaklist(message):
@@ -1386,7 +1386,7 @@ def unblaklist(message):
             bot.reply_to(message,'ответьте этой командой на стикер что бы убрать его из черного списка')
     else:
         if message.date - time.time()<=60:
-            bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт','Для этого нужно быть админом'][random.randint(0,5)])
+            bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт','Для этого нужно быть админом'][random.randint(0,5)])
             
 @bot.message_handler(commands=['message_info'])
 def send_message_info(message):
@@ -1594,8 +1594,12 @@ def searh_network(message):
         bot.reply_to(message,"вы не указали  аргумент")
         return
     
-    e_mess=bot.reply_to(message,"ищю...")
+    e_mess=bot.reply_to(message,"поиск...")
     out_wiki=wiki_api.search_query(promt)
+    if out_wiki == None:
+        bot.edit_message_text("не удалось найти, возможно проблемы настороне сервера",
+            data_wiki_serh.chat_id,
+            e_mess.id)
     data_wiki_serh.wiki_api_out=out_wiki
 
     l=[]
@@ -1604,7 +1608,7 @@ def searh_network(message):
     data_wiki_serh.title_and_url = l
     data_wiki_serh.chat_id = message.chat.id
 
-    markup = types.InlineKeyboardMarkup() 
+    markup = types.InlineKeyboardMarkup()
     for i in range(len(l)):
         button = types.InlineKeyboardButton(
             l[i], 
@@ -1635,11 +1639,11 @@ def handle_wiki_searh(call):
             if page == '' or page == None:
                 page=['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)]
             else:
-                if len(page)>=400:
+                if len(page)>=2000:
                     for i in data_wiki_serh.wiki_api_out:
                         if i['page'] == title:
                             link=i['link']
-                    page=page[:400]+'...'+f"\nстатья:{link}"
+                    page=page[:2000]+'...'+f"\nстатья:{link}"
             bot.edit_message_text(
             chat_id=data_wiki_serh.chat_id,
             message_id=call.data.split('_')[-2],
@@ -1647,9 +1651,9 @@ def handle_wiki_searh(call):
             ,parse_mode='HTML',disable_web_page_preview=True
             )
 
-def ext_arg_scob(arg:str):
+def ext_arg_scob(arg:str)-> str:
     if '{' not in arg:
-        return
+        return arg
     bufer=[]
     for con in arg.split('{'):
         if '}' in con:
@@ -2139,7 +2143,7 @@ def anti_spam(message,auto_repytation=0):
             logger.error(e)
             continue
     tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
-    
+
 text={}
 warn=0
 def anti_spam_forward(message,text=text,warn=warn):
