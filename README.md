@@ -1,23 +1,7 @@
 <h3 align="center">Telegram бот админестратор</h3>
 
-<!--
-<details>
-  <summary>автор</summary>
-  <ol>
-    <li>
-      <ul>
-      <li><a href="https://github.com/xHak2215/consol">основной проект</a></li>
-      </ul>
-     </li>
-     <li>
-      <ul>
-      <li><a href="https://t.me/HITHELL">telegram</a></li>
-      </ul>
-     </li>
-  </ol>
-</details>
-<a id="readme-top"></a>
--->
+![GitHub](https://img.shields.io/github/license/1yib/vsc-bundle?color=A3BE8C&style=flat-square)
+
 <a id="top"></a>
 <a id="ru"></a>
 
