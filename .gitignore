@@ -4,6 +4,8 @@ Users_base.db
 /virtual
 /venv
 
+.vscode
 .log
 .db
+
 
