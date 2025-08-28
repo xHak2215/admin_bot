@@ -93,11 +93,12 @@ except:
     umsettings()
     
 help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
-admin_command = '/monitor — выводит показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/мут — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка'
+admin_command = '/monitor — выводит показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/mute — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка\n/log - получить лог файл\n/backup_log - создание бек апа текущего лог файла\n/null_log - очишение текущего лог файла'
 
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
+log_file_name="cats_message.log"
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
 
 gc.enable()
@@ -124,7 +125,8 @@ class Blak_stiket_list:
 
     def slen(self):
         """Возвращает количество запрещенных стикеров."""
-        return len(self.blist)
+        print(self.blist)
+        return len(self.blist)-1
 
 bklist=Blak_stiket_list()
 
@@ -156,7 +158,7 @@ with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
         with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
             json.dump({'stiker':[0]}, f)
 # Инициализация логирования
-logger.add("cats_message.log", level="TRACE", encoding='utf-8', rotation="500 MB")
+logger.add(log_file_name, level="TRACE", encoding='utf-8', rotation="500 MB")
 try:
     BAMBAM=bool(settings['bambam'])
     DELET_MESSADGE=bool(settings['delet_messadge'])
@@ -253,7 +255,7 @@ def send_log(message):
     try:
         data=data_base(message.chat.id, message.from_user.id)
         if data[1]<10 and data[0]>=3 or bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
-            bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open('cats_message.log', 'r',encoding='utf-8', errors='replace'))
+            bot.send_document(message.chat.id,reply_to_message_id=message.message_id,document=open(log_file_name, 'r',encoding='utf-8', errors='replace'))
     except Exception as e:
         bot.send_message(admin_grops,f"error logs file>> {e} ")
         logger.error(f"log error >> {e}")
@@ -264,15 +266,15 @@ def null_log(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
         try:
         #проверка на админа
-            if str(message.chat.id)==str(admin_grops) or str(message.from_user.id) ==5194033781:
+            if str(message.chat.id)==str(admin_grops) or message.from_user.id ==5194033781:
                 if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
                     bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
-                    file = open('cats_message.log', "w")
+                    file = open(log_file_name, "w")
                 #    Изменяем содержимое файла
                     file.write("log null")
                     # Закрываем файл
                     file.close()
-                    logger.debug(f"логи очищены, очистил:  @{message.from_user.username}")
+                    logger.info(f"логи очищены, очистил:  @{message.from_user.username}")
                 else:
                     bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
             else:
@@ -282,6 +284,41 @@ def null_log(message):
             logger.error(f"clear log  error >> {e}")
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
+
+# /backup_log
+@bot.message_handler(commands=['backup_log'])
+def backup_log(message):
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
+        try:
+        #проверка на админа
+            if str(message.chat.id)==str(admin_grops) or message.from_user.id == 5194033781:
+                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id == 5194033781:
+                    if os.path.isdir("backup_log"):
+                        if os.path.isfile(log_file_name):
+                            try:
+                                root_dict=os.getcwd()
+                                log=open(log_file_name,'r')
+                                os.chdir(os.path.join(root_dict,"backup_log"))
+                                open(f"cats_message({datetime.now()}).log",'w+').write(log.read())
+                                bot.send_message(admin_grops,f"бекап логов сделан инициатор: @{message.from_user.username}")
+                            except Exception as e:logger.error(f"{e}\n{traceback.format_exc()}")
+                            finally:
+                                if "root_dict" in locals():
+                                    os.chdir(root_dict)
+                        else:
+                            bot.reply_to(message,"файл логов еще не создан копировать то и не чего")
+                    else:
+                        os.mkdir("backup_log")
+                else:
+                    bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
+            else:
+                bot.reply_to(message,'команда доступна только из группы администрации')
+        except Exception as e:
+            bot.send_message(admin_grops,f"error logs file>> {e} ")
+            logger.error(f"clear log  error >> {e}")
+    else:
+        bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
+
 #очищение списка репортов  /null_report
 @bot.message_handler(commands=['null_report'])
 def null_report(message):
@@ -345,7 +382,7 @@ def monitor_command(message):
         test=test+'data base OK\n'
     else:
         test=test+"error no bata base \n"
-    if os.path.exists(os.path.join(os.getcwd(), 'cats_message.log')):
+    if os.path.exists(os.path.join(os.getcwd(), log_file_name)):
         test=test+'messege log OK\n'
     else:
         test=test+'warning no messege log \n'
@@ -1355,7 +1392,8 @@ def blaklist(message):
         else:
             if len(message.text.split(' '))>1:
                 if message.text.split(' ')[1].lower() =='-info':
-                    bot.reply_to(message,f"количество:{bklist.slen}")
+                    bot.reply_to(message,f"количество заблокированых стикеров:{bklist.slen()}")
+                    return
             bot.reply_to(message,'ответьте этой командой на стикер что бы внести его в черный список ')
     else:
         if message.date - time.time()<=60:
