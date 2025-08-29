@@ -1923,14 +1923,15 @@ def create_logic(message):
                 return
             if out == 'True' or out:
                 new_code = command.split(':', 1)[1]
-                if ',;' in new_code:
+                if ',;' in command:
                     #kav_serh_pattern.search(new_code)
-                    for  nc in new_code.split(',;'):
-                        ine=1
+                    ine=1
+                    for nc in new_code.split(',;'):
                         program_line.insert(line+ine,nc)
                         ine=+1
                 else:
                     program_line.insert(line+1,new_code)
+
                     
         elif command.startswith('for'): # for i in 5: ...
             try:
