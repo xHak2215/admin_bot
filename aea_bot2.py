@@ -1775,6 +1775,7 @@ def create_logic(message):
     line=0
     program=message.text.split('creat',1)[1].replace('/creat','')
     program_line=str(program).split('\n')
+    kav_serh_pattern = re.compile(r'\"[^\"]+\"')
     while True:
         if line>len(program_line):
             break
@@ -1783,11 +1784,13 @@ def create_logic(message):
             command=program_line[line]
         except IndexError:
             break
+
         if command.startswith('send'):
-            try:
-                arg=command.split(' ',1)[1]
-            except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
+            arg=kav_serh_pattern.search(command)
+            if arg == None:
+                bot.reply_to(message,f"{command}]\n    {'^'*len(command)}\nerror no args\nline:{line}")
+                return
+            else:arg=arg.group()[1:-1]
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
@@ -1920,9 +1923,9 @@ def create_logic(message):
                 return
             if out == 'True' or out:
                 new_code = command.split(':', 1)[1]
-                if ';' in new_code:
-                    for  nc in new_code.split(';'):
-                        print(program_line)
+                if ',;' in new_code:
+                    #kav_serh_pattern.search(new_code)
+                    for  nc in new_code.split(',;'):
                         ine=1
                         program_line.insert(line+ine,nc)
                         ine=+1
@@ -1934,7 +1937,7 @@ def create_logic(message):
                 arg=command.split(' ',1)[1].split(':',1)[0]
             except IndexError:
                 bot.reply_to(message,f"error no args \nline:{line}")
-            if '{' in arg and '}' in arg:
+            if "{" in arg and "}" in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
                     if var in list(value.keys()):
@@ -2052,7 +2055,9 @@ def create_logic(message):
             return
         else:
             try:
-                bot.send_message(message.chat.id, send_text,parse_mode='HTML')
+                if len(send_text)<=500:
+                    bot.send_message(message.chat.id, send_text, parse_mode='HTML')
+                else:bot.reply_to(message,f"привышена максимальная длина сообщения 500/{len(send_text)}")
             except telebot.apihelper.ApiTelegramException as e:
                 bot.reply_to(message,f"error: {e}\nA request to the Telegram API was unsuccessful\nline:{line}")
             except Exception as e:
@@ -2100,7 +2105,9 @@ def anti_spam(message,auto_repytation=0):
         cont=f"{message.reply_to_message.text if message.reply_to_message.content_type == 'text' else message.reply_to_message.content_type} {f"( {message.reply_to_message.sticker.emoji} )" if message.reply_to_message.content_type=='sticker' else ''}"
         if len(cont)>25:reply_to='\nReply to: '+cont[:25]+'...'
         else:reply_to='\nReply to: '+cont
-    logs = f"chat>> {message.chat.id} user>> @{message.from_user.username} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
+    user_n='@'+message.from_user.username
+    if user_n == None:user_n=message.from_user.first_name
+    logs = f"chat>> {message.chat.id} user>> {user_n} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
     logger.info(logs)
     print("————")
     # Проверка на спам
@@ -2113,74 +2120,80 @@ def anti_spam(message,auto_repytation=0):
         #bot.delete_message(message.chat.id,message.message_id)
         return
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
-        user_id=message.from_user.id
-        paket_num=4
-        sr_d,slova=0,[]
-        keys_to_delete=[]
-        list_mess=[]
-        for i in range(len(user_text.keys())):
-            mess=list(user_text[list(user_text.keys())[i]])
-            for temp_list_mess in list(user_text[list(user_text.keys())[i]]):
-                list_mess.append(list(temp_list_mess.keys())[0])# достаю текст сообщения и добовляю list_mess
-            povtor_messade_shet=0
-            k=0
-            for a in range(len(list_mess)):
-                k=a-1
-                if k<len(list_mess) or len(list_mess)>k:
-                    k=0
-                if str(list_mess[k]).lower() == str(list_mess[a]).lower():
-                    povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
-                if povtor_messade_shet>=SPAM_LIMIT:
-                    keys_to_delete.append(user_id)
-                    nacase(message,[message.message_id])
-                s_level=0
-                list_povt_slov=[]
-                if list_mess[a]!=None:
-                    text_s=str(list_mess[a])
-                    if str(text_s)==list_mess[0] and len(list_mess)>=1:
-                        s_level+=1
-                    if len(text_s)>=300:
-                        s_level+=1
-                    if list_mess.count(" ")<=round(len(text_s)/10):# подсчет пробелов
-                        s_level+=1
-                    if len(text_s)>=20+SPAM_LIMIT:
-                        slova=list(str(text_s).split(' '))
-                        for s in range(len(slova)):
-                            slova.append(slova[s].split(',')[0])
-                            sr_d=+len(slova[s])
-                        if  len(slova) !=0 and sr_d !=0 and len(slova)>len(text_s)-sr_d/len(slova):
-                            s_level+=sr_d/len(slova)
-                cours=0
-                for l in range(round(len(str(list_mess[a]))/paket_num)):
-                    text=''
-                    text = str(list_mess[a])[cours:cours + paket_num]
-                    list_povt_slov.append(text)
-                    cours += paket_num
-                BAMBAMSpamerBlat=0
-                for b in range(len(list_povt_slov)):
-                    if list_povt_slov[b]==list_povt_slov[0]:
-                        BAMBAMSpamerBlat=BAMBAMSpamerBlat+1
-                if BAMBAMSpamerBlat>SPAM_LIMIT:
+        try:
+            user_id=message.from_user.id
+            paket_num=4
+            sr_d,slova=0,[]
+            keys_to_delete=[]
+            list_mess=[]
+            for i in range(len(user_text.keys())):
+                mess=list(user_text[list(user_text.keys())[i]])
+                for temp_list_mess in list(user_text[list(user_text.keys())[i]]):
+                    list_mess.append(list(temp_list_mess.keys())[0])# достаю текст сообщения и добовляю list_mess
+                povtor_messade_shet=0
+                k=0
+                for a in range(len(list_mess)):
+                    k=a-1
+                    if k<len(list_mess) or len(list_mess)>k:
+                        k=0
+                    if str(list_mess[k]).lower() == str(list_mess[a]).lower():
+                        povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
+                    if povtor_messade_shet>=SPAM_LIMIT:
+                        keys_to_delete.append(user_id)
+                        nacase(message,[message.message_id])
+                    s_level=0
+                    list_povt_slov=[]
+                    if list_mess[a]!=None:
+                        text_s=str(list_mess[a])
+                        if str(text_s)==list_mess[0] and len(list_mess)>=1:
+                            s_level+=1
+                        if len(text_s)>=300:
+                            s_level+=1
+                        if list_mess.count(" ")<=round(len(text_s)/10):# подсчет пробелов
+                            s_level+=1
+                        if len(text_s)>=20+SPAM_LIMIT:
+                            slova=list(str(text_s).split(' '))
+                            for s in range(len(slova)):
+                                slova.append(slova[s].split(',')[0])
+                                sr_d=+len(slova[s])
+                            if  len(slova) !=0 and sr_d !=0 and len(slova)>len(text_s)-sr_d/len(slova):
+                                s_level+=sr_d/len(slova)
+                    cours=0
+                    for l in range(round(len(str(list_mess[a]))/paket_num)):
+                        text=''
+                        text = str(list_mess[a])[cours:cours + paket_num]
+                        list_povt_slov.append(text)
+                        cours += paket_num
+                    BAMBAMSpamerBlat=0
+                    for b in range(len(list_povt_slov)):
+                        if list_povt_slov[b]==list_povt_slov[0]:
+                            BAMBAMSpamerBlat=BAMBAMSpamerBlat+1
+                    if BAMBAMSpamerBlat>SPAM_LIMIT:
+                        keys_to_delete.append(user_id)
+                        nacase(message,[message.message_id])
+                        user_messages.clear()
+            #print(list_povt_slov)# debug
+            #print(list(user_text.keys())[i])
+            #print(s_level)
+                if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
                     keys_to_delete.append(user_id)
                     nacase(message,[message.message_id])
                     user_messages.clear()
-        #print(list_povt_slov)# debug
-        #print(list(user_text.keys())[i])
-        #print(s_level)
-            if s_level>=len(list_povt_slov) and len(list_povt_slov)>=5:
-                keys_to_delete.append(user_id)
-                nacase(message,[message.message_id])
-                user_messages.clear()
 
-    # Удаляем ключи после завершения итерации
-    for key in range(len(keys_to_delete)):
-        try:
-            if key != None:
-                del user_text[keys_to_delete[key]]
-        except Exception as e: 
-            logger.error(e)
-            continue
-    tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
+            # Удаляем ключи после завершения итерации
+            for key in range(len(keys_to_delete)):
+                try:
+                    if key != None:
+                        del user_text[keys_to_delete[key]]
+                except Exception as e: 
+                    logger.error(e)
+                    continue
+            tekst_m.clear() # возможно надо переделать эту строку но мне лень может поже
+        except Exception as e:
+            logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")  
+        finally: 
+            tekst_m.clear() 
+            user_text.clear()
 
 text={}
 warn=0
