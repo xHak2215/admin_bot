@@ -1,16 +1,20 @@
 import requests
 import time
-
+import json
+from loguru import logger
 
 class wiki: 
     def __init__(self):
         self.time_out = 20
         self.api_url = "https://ru.wikipedia.org/w/api.php"
+        self.user_agent = {
+        'User-Agent': 'Mozilla/5.0'
+        }
 
     def api_url_edit(self,url):self.api_url=url
     def time_out_edit(self,time_out):self.time_out=time_out
 
-    def search(self,promt)->str:
+    def search(self,promt)->str | None:
         params = {
             "action": "query",
             "titles": promt,
@@ -19,13 +23,17 @@ class wiki:
             "explaintext": True,
             "format": "json"
         }
-        response = requests.get(self.api_url, params=params,timeout=self.time_out)
-        data = response.json()
+        response = requests.get(self.api_url, params=params,headers=self.user_agent,timeout=self.time_out)
+        try:
+            data = response.json()
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"error {e} data:{response}")
+            return None
         # Извлечение текста статьи
         page = next(iter(data['query']['pages'].values()))
         return page['extract']
 
-    def search_query(self,search_query,limit=5)->list:
+    def search_query(self,search_query,limit=5)->list | None:
         """
         ### получение статей по теме запроса
 
@@ -44,8 +52,12 @@ class wiki:
             "format": "json"
         }
 
-        response = requests.get(self.api_url, params=params)
-        data = response.json()
+        response = requests.get(self.api_url, params=params, headers=self.user_agent, timeout=self.time_out)
+        try:
+            data = response.json()
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"error {e} data:{response}")
+            return None
 
         # Извлечение названий статей и ссылок
         titles = data[1]
@@ -57,7 +69,7 @@ class wiki:
             out_data.append({'page':title, 'link':link}) 
         return out_data
     
-    def title_to_page(self,title):
+    def title_to_page(self,title)->str|None:
 
         params = {
         "action": "query",
@@ -67,14 +79,18 @@ class wiki:
         "format": "json"
         }
 
-        response = requests.get(self.api_url, params=params, timeout=self.time_out)
-        data = response.json()
+        response = requests.get(self.api_url, params=params, headers=self.user_agent, timeout=self.time_out)
+        try :
+            data = response.json()
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"error {e} data:{response}")
+            return None
 
         # Извлечение текста статьи
         page = next(iter(data['query']['pages'].values()))
         return page.get('extract', None)
     
-    def wiki_ping(self):
+    def wiki_ping(self)->dict:
         """
         ### проверяет пинг wiki (`self.api_url`)
         
@@ -83,7 +99,7 @@ class wiki:
         """
         t=time.time()
         try:
-            response=requests.get(self.api_url, timeout=self.time_out)
+            response=requests.get(self.api_url, timeout=self.time_out,headers=self.user_agent)
         except Exception as e:
             return {'time_out':time.time()-t,'code':None,'error':e}
         return {'time_out':time.time()-t,'code':response.status_code,'error':None}
@@ -92,7 +108,7 @@ class wiki:
 def test():
     api=wiki()
 
-    promt='python'
+    promt='привет'
 
     print("ping:",api.wiki_ping())
     print("searh:",api.search(promt))
