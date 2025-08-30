@@ -1923,16 +1923,16 @@ def create_logic(message):
                 return
             if out == 'True' or out:
                 new_code = command.split(':', 1)[1]
+                ine=1
                 if ',;' in command:
                     #kav_serh_pattern.search(new_code)
-                    ine=1
-                    i=list(new_code.split(',;'))#это кастыль но оно вроде как работает
-                    i.reverse()
+                    i=list(new_code.split(',;'))
                     for nc in i:
                         program_line.insert(line+ine,nc)
-                        ine=+1
+                        ine=ine+1
                 else:
-                    program_line.insert(line+1,new_code)
+                    program_line.insert(line+ine,new_code)
+                    ine=ine+1
 
                     
         elif command.startswith('for'): # for i in 5: ...
@@ -1959,6 +1959,7 @@ def create_logic(message):
             except ValueError:
                 bot.reply_to(message,f"error invalid literal for num \nline:{line}")
                 return
+            ine=1
             for i in range(num):
                 value[var]=i
                 new_code_v=new_code
@@ -1969,13 +1970,12 @@ def create_logic(message):
                             new_code_v=new_code.replace('{'+str(var)+'}',str(value[var]))
                 if ';' in new_code_v:
                     i=new_code_v.split(';')
-                    i.reverse()
                     for nc in i:
-                        ine=1
                         program_line.insert(line+ine,nc)
-                        ine=+1
+                        ine=ine+1
                 else:
-                    program_line.insert(line+1,new_code_v)
+                    program_line.insert(line+ine,new_code_v)
+                    ine=ine+1
             
         elif command.startswith('timeout'):
             try:
