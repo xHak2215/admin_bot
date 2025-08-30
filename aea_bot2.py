@@ -206,7 +206,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -1689,7 +1689,7 @@ def handle_wiki_searh(call):
             ,parse_mode='HTML',disable_web_page_preview=True
             )
 
-def ext_arg_scob(arg:str)-> str:
+def ext_arg_scob(arg:str)-> str|list:
     if '{' not in arg:
         return arg
     bufer=[]
@@ -1705,14 +1705,14 @@ def evaluate_condition(condition:str):
     Returns:
         bool or int
     """
-    
     b,a,op='','',''
     for ops in ["+","-","*","/","**","%",'==','!=','<','<=','>','>=']:
         if ops in condition:
-            data=str(condition).split(ops)
+            data=str(condition).split(ops,1)
             op=ops
             a=data[0]
             b=data[1]
+            break
     try:
         try:
             a = int(a)
@@ -1745,12 +1745,13 @@ def evaluate_condition(condition:str):
     elif op == '>=': return a >= b
     else:return None
 
-def r_value(vare:str)->str:
-    global value
+def r_value(vare:str,value)->str:
     """
-    ## заменяет переменную в скобках(таких:`{}`) на содержимое этой самой пременной
+    ### заменяет переменную в скобках(таких:`{}`) на содержимое этой самой пременной
 
     :param1: строка в которой должны быть заменены переменные  
+
+    :param2: словарь с переменными
 
     :return: та же строка на переменные заменены на их содержимое  
     """
@@ -1786,11 +1787,19 @@ def create_logic(message):
             break
 
         if command.startswith('send'):
-            arg=kav_serh_pattern.search(command)
-            if arg == None:
-                bot.reply_to(message,f"{command}]\n    {'^'*len(command)}\nerror no args\nline:{line}")
+            if '"' in command: 
+                arg=kav_serh_pattern.search(command)
+                if arg == None:
+                    bot.reply_to(message,f"{command}]\n     {'^'*len(command)}\nerror incorret arg \nline:{line}")
+                    return
+                else:arg=arg.group()[1:-1]
+            else:
+                if ' ' in command:
+                    if command.split(' ',1)[1] in list(value.keys()):
+                        send_bufer.append(value[command.split(' ',1)[1]])
+                        return
+                bot.reply_to(message,f"{command}]\n     {'^'*len(command)}\nerror incorret arg \nline:{line}")
                 return
-            else:arg=arg.group()[1:-1]
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
@@ -1800,8 +1809,12 @@ def create_logic(message):
 
             
         elif command.startswith('var'):
-            data=command.split(' ',1)[1]
-            arg=data.split('=',1)[1]
+            try:
+                data=command.split(' ',1)[1]
+                arg=data.split('=',1)[1]
+            except:
+                bot.reply_to(message,f"{command}]\n     {'^'*len(command)}\nerror incorret arg \nline:{line}")
+                return
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
@@ -1818,16 +1831,12 @@ def create_logic(message):
         elif command.startswith('calc'):
             try:
                 args=command.split(' ',1)[1]
+                val=args.split('=',1)[0]
             except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
-            val=args.split('=',1)[0]
+                bot.reply_to(message,f"{command}     \n{'^'*len(command)}\nerror no args \nline:{line}")
+                return
             arg=str(args.split('=',1)[1]).replace(' ','')
-            if '{' in arg and '}' in arg:
-                vars=ext_arg_scob(arg)
-                for var in vars:
-                    if var in list(value.keys()):
-                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
-                        
+            arg=r_value(arg,value)
             if "or" in arg.lower() or "and" in arg.lower() or "not" in arg.lower():
                 expr = str(arg).replace(" ", "").lower()
                 # Обрабатываем логическое NOT
@@ -1849,50 +1858,56 @@ def create_logic(message):
                 if out != '-0':
                     value[val]=str(out)
                 else:
-                    bot.reply_to(message,f"error division by zero \nline:{line}")
+                    bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror division by zero \nline:{line}")
                     return
             else:
-                bot.reply_to(message,f'не коректное условие \nстрока:{line}')
+                bot.reply_to(message,f'{command}\n{'^'*len(command)}\nне коректное условие \nстрока:{line}')
                 return
                 
-        elif command.startswith('.end'):return
+        elif command.startswith('.end'):break
         elif command.startswith('program'):
-            value['$program_name']=r_value(command).split(' ',1)[1]
+            value['$program_name']=r_value(command,value).split(' ',1)[1]
         
         elif command.startswith('random'):
             try:
                 cont=command.split(' ',1)[1]
             except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror no args \nline:{line}")
                 return
-            arg=cont.split('=')
-            if '{' in arg and '}' in arg:
-                vars=ext_arg_scob(arg)
+            
+            if '{' in cont and '}' in cont:
+                vars=ext_arg_scob(cont)
                 for var in vars:
                     if var in list(value.keys()):
-                        arg=arg.replace('{'+str(var)+'}',str(value[var]))
-            a=arg[1].split('-',1)[0]
-            b=arg[1].split('-',1)[1]
-            
+                        cont=cont.replace('{'+str(var)+'}',str(value[var]))
+            if '=' in cont and '-' in cont:
+                arg=cont.split('=',1)[1]
+                a=arg.split('-',1)[0]
+                b=arg.split('-',1)[1]
+                v=cont.split('=',1)[0]
+            else:
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror no args or invalid args\nline:{line}")
+                return
             try:
                 a,b=int(a),int(b)
-            except ValueError:bot.reply_to(message,f"error invalid literal for num \nline:{line}")
-            if a == b+1 or a>b:
-                if a+1 == b:
-                    b=+1
-                else:
-                    a=+1
-            try:
-                value[arg[0]]=random.randint(a,b)
-            except:
-                bot.reply_to(message,f"error not correct arg\nline:{line}")
+            except ValueError:
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror invalid literal for num \nline:{line}")
                 return
-        
+            if a==b+1:
+                value[v]=a
+            else:
+                value[v]=random.randint(a,b)
+            #    bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror not correct arg \n(random {v}=start num-stop num) \nline:{line}")
+            #    return
+        elif command.startswith('log'):
+            logger.info(f"/creat log> line:{line} message:{command.split(' ',1)[1]}")
+
         elif command.startswith('if'):
             try:
                 arg=command.split(' ',1)[1].split(':',1)[0]
             except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
+                bot.reply_to(message,f"{command}\n   {'^'*len(command)}\nerror no args \nline:{line}")
+                return
             if '{' in arg and '}' in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
@@ -1904,7 +1919,7 @@ def create_logic(message):
                 if expr.startswith("not"):
                     arg = evaluate_condition(expr[3:])
                     out= not arg
-
+                
                 # Обрабатываем OR и AND (разделяем по операторам)
                 for op in ["or", "and"]:
                     if op in expr:
@@ -1913,20 +1928,22 @@ def create_logic(message):
                             left = evaluate_condition(parts[0])
                             right = evaluate_condition(parts[1])
                             out= left or right if op == "or" else left and right
+                        else:out=None
+                    else:out=None
             else:
                 out=evaluate_condition(arg)
             if out==None:
-                bot.reply_to(message,f'не коректное условие \nстрока:{line}')
+                bot.reply_to(message,f'{command}\n{'^'*len(command)}\nне коректное условие \nстрока:{line}')
                 return
             if out == '-0':
-                bot.reply_to(message,f"error division by zero \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror division by zero \nline:{line}")
                 return
             if out == 'True' or out:
                 new_code = command.split(':', 1)[1]
                 ine=1
-                if ',;' in command:
+                if '&' in command:
                     #kav_serh_pattern.search(new_code)
-                    i=list(new_code.split(',;'))
+                    i=list(new_code.split('&'))#это кастыль но оно вроде как работает
                     for nc in i:
                         program_line.insert(line+ine,nc)
                         ine=ine+1
@@ -1939,7 +1956,8 @@ def create_logic(message):
             try:
                 arg=command.split(' ',1)[1].split(':',1)[0]
             except IndexError:
-                bot.reply_to(message,f"error no args \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror no args \nline:{line}")
+                return
             if "{" in arg and "}" in arg:
                 vars=ext_arg_scob(arg)
                 for var in vars:
@@ -1952,12 +1970,12 @@ def create_logic(message):
                 var = match.group(1).strip()  
                 num = match.group(2).strip() 
             else:
-                bot.reply_to(message,f"error no args (Incorrect arguments) \n{command}\n{"   "+"^"*len(arg)} \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror no args (Incorrect arguments) \n{command}\n{"   "+"^"*len(arg)} \nline:{line}")
                 return
             try:
                 num=int(num)
             except ValueError:
-                bot.reply_to(message,f"error invalid literal for num \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror invalid literal for num \nline:{line}")
                 return
             ine=1
             for i in range(num):
@@ -1986,7 +2004,7 @@ def create_logic(message):
                         if var in list(value.keys()):
                             arg=arg.replace('{'+str(var)+'}',str(value[var]))
             except IndexError:
-                bot.reply_to(message,f"error no args (Incorrect arguments) \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror no args (Incorrect arguments) \nline:{line}")
                 return
             time.sleep(int(arg))
             
@@ -2014,12 +2032,12 @@ def create_logic(message):
                 if len(content)>2:
                     content=str(content[2])#если есть то вытягиваем его из списка
             except IndexError:
-                bot.reply_to(message,f"syntax error (Incorrect arguments) \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nsyntax error (Incorrect arguments) \nline:{line}")
                 return
             try:
                 num_list=int(num_list)
             except ValueError:
-                bot.reply_to(message,f"error ({num_list}) invalid literal for num \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nerror ({num_list}) invalid literal for num \nline:{line}")
                 return
             if ',' in arg:
                 try:
@@ -2029,7 +2047,7 @@ def create_logic(message):
                         value[var] = lis_temp[num_list]
                     else:value[var] = lis_temp[num_list]
                 except IndexError:
-                    bot.reply_to(message,f"list index out of range\nline:{line}")
+                    bot.reply_to(message,f"{command}\n{'^'*len(command)}\nlist index out of range\nline:{line}")
         
         elif command.startswith("replace"):# replace a={input_text}:old_symdol,new_symdol
             command=r_value(command)
@@ -2040,10 +2058,10 @@ def create_logic(message):
                 text=data.split(":",1)[0]
                 new_old_texts=data.split(":")[1]
                 if len(new_old_texts.split(",",1))<=1:
-                    bot.reply_to(message,f"Incorrect arguments \n{new_old_texts}\n{"^"*len(new_old_texts)}\nline:{line}")
+                    bot.reply_to(message,f"{command}\n{'^'*len(command)}\nincorrect arguments \n{new_old_texts}\n{"^"*len(new_old_texts)}\nline:{line}")
                     return
             except IndexError:
-                bot.reply_to(message,f"syntax error (Incorrect arguments) \nline:{line}")
+                bot.reply_to(message,f"{command}\n{'^'*len(command)}\nsyntax error (Incorrect arguments) \nline:{line}")
                 return
             try:
                 value[var]=text.replace(new_old_texts.split(",")[0],new_old_texts.split(",")[1])
@@ -2051,17 +2069,17 @@ def create_logic(message):
 
         elif command.startswith(' ') or command.startswith(''):pass
         else:
-            bot.reply_to(message,f"syntax error no command \nline:{line}")
+            bot.reply_to(message,f"{command}\n{'^'*len(command)}\nsyntax error no command \nline:{line}")
             return
         line=line+1
     for send_text in send_bufer:
-        if len(send_bufer) >=25:
-            bot.reply_to(message, 'провощено количество отправляемых сообщений')
+        if len(send_bufer) >=15:
+            bot.reply_to(message, f"провощено количество отправляемых сообщений {len(send_bufer)}/15")
             return
         else:
             try:
                 if len(send_text)<=500:
-                    bot.send_message(message.chat.id, send_text, parse_mode='HTML')
+                    bot.send_message(message.chat.id, str(send_text), parse_mode='HTML')
                 else:bot.reply_to(message,f"привышена максимальная длина сообщения 500/{len(send_text)}")
             except telebot.apihelper.ApiTelegramException as e:
                 bot.reply_to(message,f"error: {e}\nA request to the Telegram API was unsuccessful\nline:{line}")
@@ -2112,7 +2130,7 @@ def anti_spam(message,auto_repytation=0):
         else:reply_to='\nReply to: '+cont
     user_n='@'+message.from_user.username
     if user_n == None:user_n=message.from_user.first_name
-    logs = f"chat>> {message.chat.id} user>> {user_n} id>> {message.from_user.id} {reply_to}| сообщение >>\n{message.text if message.content_type == 'text' else message.content_type} {emoji}"
+    logs = f"chat>> {message.chat.id} user>> {user_n} id>> {message.from_user.id} {reply_to}| сообщение >>\n{str(message.text if message.content_type == 'text' else message.content_type)} {emoji}"
     logger.info(logs)
     print("————")
     # Проверка на спам
