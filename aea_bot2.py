@@ -206,7 +206,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -1926,7 +1926,9 @@ def create_logic(message):
                 if ',;' in command:
                     #kav_serh_pattern.search(new_code)
                     ine=1
-                    for nc in new_code.split(',;'):
+                    i=list(new_code.split(',;'))#это кастыль но оно вроде как работает
+                    i.reverse()
+                    for nc in i:
                         program_line.insert(line+ine,nc)
                         ine=+1
                 else:
@@ -1966,7 +1968,9 @@ def create_logic(message):
                         if var in list(value.keys()):
                             new_code_v=new_code.replace('{'+str(var)+'}',str(value[var]))
                 if ';' in new_code_v:
-                    for nc in new_code_v.split(';'):
+                    i=new_code_v.split(';')
+                    i.reverse()
+                    for nc in i:
                         ine=1
                         program_line.insert(line+ine,nc)
                         ine=+1
