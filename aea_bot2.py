@@ -1504,14 +1504,14 @@ def nacase(message, delete_message=None):
         else:
             bot.send_message(admin_grops, admin_msg)
         
-        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username}, id: {message.from_user.id}')
+        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username}, id: {message.from_user.id} message:https://t.me/c/{the_message}/{message.message_id}')
         
     except telebot.apihelper.ApiTelegramException as e:
         bot.send_message(admin_grops, f'{str(e)}\nВероятно у бота недостаточно прав')
         logger.error(f'{str(e)}\nВероятно у бота недостаточно прав')
     except Exception as e:
-        bot.send_message(admin_grops, f"Неожиданная ошибка: {str(e)}")
-        logger.error(f"Неожиданная ошибка: {str(e)}")
+        bot.send_message(admin_grops, f"при обработке спама случилась ошибка: {e}")
+        logger.error(f"Неожиданная ошибка: {str(e)}\n{traceback.format_exc()}")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('delete_spam_'))
 def handle_spam_deletion(call):
