@@ -184,6 +184,25 @@ cd admin_telegram_bot
 pip install -r requirements.txt
 
 python aea_bot.py
+
+```
+установки используя `make`:
+
+загрузка и установка зависимостей 
+
+```sh
+git clone https://github.com/xHak2215/admin_telegram_bot
+
+cd admin_telegram_bot
+
+make install
+
+```
+
+запуск :
+
+```sh
+make run
 ```
 
 ### настройка:
