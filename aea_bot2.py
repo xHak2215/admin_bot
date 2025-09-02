@@ -1633,7 +1633,20 @@ def searh_network(message):
         return
     
     e_mess=bot.reply_to(message,"поиск...")
-    out_wiki=wiki_api.search_query(promt)
+    try:
+        out_wiki=wiki_api.search_query(promt)
+    except Exception as e:
+        logger.error(f"{e}\n{traceback.format_exc()}")
+        wiki_api.time_out_edit(40)
+        try:
+            out_wiki=wiki_api.search_query(promt)
+        except Exception as e:
+            logger.error(f"{e}\n{traceback.format_exc()}")
+            bot.edit_message_text(f"случилась ошибка",
+            data_wiki_serh.chat_id,
+            e_mess.id)
+        finally:wiki_api.time_out_edit(20)
+
     if out_wiki == None:
         bot.edit_message_text("не удалось найти, возможно проблемы настороне сервера",
             data_wiki_serh.chat_id,
@@ -1764,10 +1777,12 @@ def r_value(vare:str,value)->str:
 
 @bot.message_handler(commands=['creat'])
 def create_logic(message):
+    if message.chat.type != 'private': #ограничение для невозможности взаимодействия в не личном чате 
+        return
     send_bufer=[]
     if message.reply_to_message:
-        reply_to=message.reply_to_message.text
-        username=message.reply_to_message.from_user.username
+        reply_to=message.reply_to_message.text if message.reply_to_message.text != None else '$none'  
+        username=message.reply_to_message.from_user.username if message.reply_to_message.from_user.username != None else '$none'   
     else:
         reply_to='$none'
         username='$none'
@@ -2073,14 +2088,14 @@ def create_logic(message):
             return
         line=line+1
     for send_text in send_bufer:
-        if len(send_bufer) >=15:
-            bot.reply_to(message, f"провощено количество отправляемых сообщений {len(send_bufer)}/15")
+        if len(send_bufer) >=30:
+            bot.reply_to(message, f"провощено количество отправляемых сообщений {len(send_bufer)}/30")
             return
         else:
             try:
-                if len(send_text)<=500:
+                if len(send_text)<=600:
                     bot.send_message(message.chat.id, str(send_text), parse_mode='HTML')
-                else:bot.reply_to(message,f"привышена максимальная длина сообщения 500/{len(send_text)}")
+                else:bot.reply_to(message,f"привышена максимальная длина сообщения 600/{len(send_text)}")
             except telebot.apihelper.ApiTelegramException as e:
                 bot.reply_to(message,f"error: {e}\nA request to the Telegram API was unsuccessful\nline:{line}")
             except Exception as e:
@@ -2128,8 +2143,9 @@ def anti_spam(message,auto_repytation=0):
         cont=f"{message.reply_to_message.text if message.reply_to_message.content_type == 'text' else message.reply_to_message.content_type} {f"( {message.reply_to_message.sticker.emoji} )" if message.reply_to_message.content_type=='sticker' else ''}"
         if len(cont)>25:reply_to='\nReply to: '+cont[:25]+'...'
         else:reply_to='\nReply to: '+cont
-    user_n='@'+message.from_user.username
-    if user_n == None:user_n=message.from_user.first_name
+
+    if message.from_user.username != None:user_n='@'+message.from_user.username
+    else:user_n=str(message.from_user.first_name)
     logs = f"chat>> {message.chat.id} user>> {user_n} id>> {message.from_user.id} {reply_to}| сообщение >>\n{str(message.text if message.content_type == 'text' else message.content_type)} {emoji}"
     logger.info(logs)
     print("————")
@@ -2385,5 +2401,3 @@ def main():
         bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
 if __name__ == '__main__':
     main()
-    
-    
