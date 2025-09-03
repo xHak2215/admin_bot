@@ -1064,9 +1064,9 @@ def handle_mute_command(message):
 def handle_command(message):
     try:
         if CONSOLE_CONTROL:
-            if str(message.chat.id)==admin_grops or message.from_user.id == 5194033781:
+            if str(message.chat.id)==str(admin_grops) or message.from_user.id == 5194033781:
                 if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
-                    command=str(message.text).split(' ')[1]
+                    command=str(message.text).split(' ',1)[1]
                     if sys.platform.startswith('win'): # кросс плотформиность
                         result=subprocess.run(command , shell=True, stdout=subprocess.PIPE, text=True)
                         out=result.stdout
@@ -1076,7 +1076,7 @@ def handle_command(message):
                     bot.reply_to(message, out if out !=None else 'None')
                 else:
                     if message.date - time.time()<=60:
-                        bot.reply_to(['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
+                        bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ай ай ай с терминалом играться '][random.randint(0,5)])
             else:
                 if message.date - time.time()<=60:
                     bot.reply_to(message,'эта команда может быть выполнена только в группе администрации')
