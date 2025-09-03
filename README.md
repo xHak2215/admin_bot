@@ -232,7 +232,7 @@ spam_timer - функционал описан выше. <br>
 
 ban_and_myte_command - включает команды /бан и /мут для банов и мутов соотвецтвено. <br>
 
-console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис /console :<команда терминала> работает только в группе администрации администратором группы.<br>
+console_control - разрешения удалённого запуска команд в терминале с помощью команды /console, синтаксис `/console <команда терминала>` работает только в группе администрации администратором группы.<br>
 (⚠️данная команда может выполнять в том числе и вредоносные команды буте внимательны с ее включением).<br>
 
 auto_translete - авто перевод сообщений в чате с иностранного на указанный в `laung` по умолчанию `"laung":"ru"` параметр активации `Activate` по умолчанию `"Activate":false`.
@@ -328,9 +328,9 @@ Main commands:
 
 /data_base - Outputs the database. To search for a specific user in the database, add their ID to the command separated by a space. Example: `/data_base 5194033781`
 
-/search - Search for articles on Wikipedia. Example: search :<prompt>. Article language depends on the auto_translate:lang parameter in settings.json. Arguments: -ping - check latency of the wikipedia.org site.
+/search - Search for articles on Wikipedia. Example: `search :<prompt>`. Article language depends on the auto_translate:lang parameter in settings.json. Arguments: -ping - check latency of the wikipedia.org site.
 
-/blacklist - Add a sticker to the blacklist (stickers on the blacklist are automatically deleted if deletion is enabled in the settings). Argument: -info - shows the number of stickers on the blacklist.
+/blacklist - Add a sticker to the blacklist (stickers on the blacklist are automatically deleted if deletion is enabled in the settings). Argument: `-info` - shows the number of stickers on the blacklist.
 
 /unblacklist - Remove a sticker from the blacklist.
 
