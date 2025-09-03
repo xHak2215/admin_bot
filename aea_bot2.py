@@ -92,8 +92,10 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
+help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
 admin_command = '/monitor — выводит показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/mute — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка\n/log - получить лог файл\n/backup_log - создание бек апа текущего лог файла\n/null_log - очишение текущего лог файла'
+
+#/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n
 
 logse="nan"
 i=0
@@ -1190,12 +1192,12 @@ def audio_to_text(message):
                         results.append(json.loads(temp.rec.Result()))
                 final = json.loads(temp.rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
-                if msg in locals():
+                try:
                     bot.edit_message_text(
                     chat_id=message.chat.id,
                     message_id=msg.message_id,
                     text=f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}")
-                else:bot.reply_to(message,f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}с.")
+                except:bot.reply_to(message,f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}с.")
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
