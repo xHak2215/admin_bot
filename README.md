@@ -326,7 +326,7 @@ Main commands:
 
 /log - Send the log file.
 
-/data_base - Outputs the database. To search for a specific user in the database, add their ID to the command separated by a space. Example: /data_base 5194033781
+/data_base - Outputs the database. To search for a specific user in the database, add their ID to the command separated by a space. Example: `/data_base 5194033781`
 
 /search - Search for articles on Wikipedia. Example: search :<prompt>. Article language depends on the auto_translate:lang parameter in settings.json. Arguments: -ping - check latency of the wikipedia.org site.
 
@@ -428,11 +428,6 @@ for i in 6:random r=0-{i};if {r}==1:send"you lost"&.end;if {i} == 5:send"you won
 
 </p></details>
 
-/data_base - Outputs the database. Argument: shows data for an individual user. Example: /data_base 1234567890
-
-/ban - Ban a user. Example: /ban reason:for lolz
-
-/mute - Mute a user. Example: /mute reason:reason time:1.h .h - hours (default), .d - days, .m - minutes
 
 It features logging of messages and other events.
 
@@ -499,7 +494,7 @@ spam_timer - Functionality described above.
 
 ban_and_mute_command - Enables the /ban and /mute commands for bans and mutes respectively.
 
-console_control - Allows remote execution of terminal commands using the /console command. Syntax: /console :<terminal command>. Works only in the administration group by the group administrator. (⚠️This command can execute malicious commands as well;be very careful with enabling this).
+console_control - Allows remote execution of terminal commands using the /console command. Syntax: `/console <terminal command>`. Works only in the administration group by the group administrator. (⚠️This command can execute malicious commands as well;be very careful with enabling this).
 
 auto_translate - Auto-translate foreign language messages in the chat to the language specified in lang (default "lang":"ru"). Activation parameter Activate (default "Activate":false).
 
