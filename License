@@ -1,9 +1,12 @@
-The MIT License (MIT)
+=== GPL v3 ===
+В [[2005 год]]у [[Моглен, Эбен|Эбен Моглен]] и [[Столлман, Ричард Мэттью|Ричард Столлман]] написали черновик третьей версии GPL. В разгоревшейся затем 7 апреля 2005 года в Филадельфии дискуссии Столлман сделал несколько заявлений, касающихся [[патент]]ов на ПО и [[Технические средства защиты авторских прав|DRM]].
 
-Copyright © «year» «copyright holders»
+В [[2006 год]]у [[Фонд свободного программного обеспечения]] начал двенадцатимесячную консультацию о возможных изменениях в GPL. Этот процесс координировался самим Фондом свободного ПО, [[Правовой центр свободы программного обеспечения|Правовым центром свободы ПО]] и [[Европейский фонд программного обеспечения|Европейским фондом свободного ПО]]. Целью консультаций являлось создание новой версии лицензии с учётом рекомендаций и опыта всех заинтересованных сторон, но с сохранением приверженности принципам свободного ПО.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Первый черновик был опубликован [[16 января]] 2006 года.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Компании, распространяющие GPLv3-ПО, не могут предъявлять к пользователям GPLv3-продуктов судебные претензии касательно обхода распространяемыми версиями продуктов [[ТСЗАП]] и нарушения ими же патентов распространителей. Также запрещена [[тивоизация]].
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Окончательная версия GPLv3 была опубликована [[29 июня]] [[2007 год]]а.
+
+[[19 ноября]] [[2007 год]]а была выпущена [[GNU Affero General Public License]] v3 — GPLv3 с изменениями на основе Affero General Public License v1, выпущенной в [[2002 год]]у [[Affero|Affero Inc.]] на основе GNU GPLv2. Данная лицензия добавляет возможность получения исходного кода пользователям программы, взаимодействующим с ней только через сеть<ref name="agpl3rel" />.
