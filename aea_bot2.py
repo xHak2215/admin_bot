@@ -22,7 +22,7 @@ from asets.wiki_api_lib import wiki
 try:
     from vosk import Model, KaldiRecognizer
     import telebot 
-    from telebot import types ,formatting , util ,apihelper
+    from telebot import types, formatting, util, apihelper
     from telebot.types import InlineKeyboardButton
     from collections import defaultdict
     import psutil
@@ -869,19 +869,24 @@ def handle_warn(message):
             logger.info(f"Пользователь @{message.from_user.username} понизил репутацию @{message.reply_to_message.from_user.username} ") 
         
         # Проверяем, достаточно ли маленькая репутация для мута
-            if BAMBAM==True:
+            if BAMBAM:
                 if reputation <= 0:
                     #Ограничиваем пользователя на 24 часа 
-                    bot.restrict_chat_member(
-                    chat_id=message.chat.id,
-                    user_id=message.from_user.id,
-                    until_date=timedelta(hours=24),
-                    can_send_messages=False
-                    )
-                    bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")
-                    logger.info(f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")        
+                    try:
+                        bot.restrict_chat_member(
+                        chat_id=message.chat.id,
+                        user_id=message.from_user.id,
+                        until_date=timedelta(hours=24),
+                        can_send_messages=False
+                        )
+                        bot.reply_to(message, f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")
+                        logger.info(f"Пользователь {message.reply_to_message.from_user.username} получил мут на 24 часа за нарушение.")    
+                    except Exception as e:
+                        bot.send_message(admin_grops,f"ошибка выдачи мута:{e}")
+                        logger.error(f"{e}")    
+                        return    
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
-                bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={warn_message} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
+                    bot.send_message(admin_grops,f"грубый нарушитель ! >> tg://user?id={warn_message} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id}")
         else:
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, нарушающее правила, чтобы снизить репутацию") 
     else:
@@ -981,6 +986,14 @@ def send_reminder():
 # Планирование напоминаний
 #schedule.every().day.at("12:00").do(send_reminder)
 
+
+def ban(bot,chat:int, id:int)->bool | str:
+    try:
+        bot.ban_chat_member(chat,id)
+        return True
+    except telebot.apihelper.ApiTelegramException as e:
+        return str(e)
+
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -990,9 +1003,10 @@ def handle_ban_command(message):
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
             if message.reply_to_message:
                 if 'reason:' in commad:
-                    reason=commad.split('reason:')[1]
+                    reason=commad.split('reason:',1)[1]
                 else :
-                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:`/бан reason:причина`')
+                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:<code>/бан for @username\n reason:причина`</code>',parse_mode='HTML')
+                    return
                 try:
                     bot.ban_chat_member(message.chat.id,message.reply_to_message)
                     logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
@@ -1035,7 +1049,7 @@ def handle_mute_command(message):
                             elif deleu=='s':
                                 deleu=0
                     else:
-                        wirning+=f'не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты '
+                        wirning+=f"не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты "
                         deleu=3600
                 else:
                     error=''
