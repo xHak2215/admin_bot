@@ -13,6 +13,8 @@ import threading
 import io
 import binascii
 import gc
+import aiohttp
+import asyncio
 
 
 import asets.ffmpeg_tool
@@ -101,6 +103,7 @@ logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
 log_file_name="cats_message.log"
+user_bot_api_server='http://localhost:8800'
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
 
 gc.enable()
@@ -408,6 +411,13 @@ def monitor_command(message):
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{requests.get('https://api.ipify.org').content.decode('utf8')}\n"
+    try:
+        response=requests.get(user_bot_api_server, timeout=20)
+        if response.status_code==200:
+            test=test+'user bot>удачное подключение к api юзер бота\n'
+        else:logger.debug(f"status code:{response.status_code}")
+    except requests.exceptions.ReadTimeout or requests.exceptions.ConnectionError:
+        test=test+'user bot>не удачное подключение к api юзер бота\n'
     if '-all' in message.text:
         api_data=get_telegram_api()
         test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
@@ -993,6 +1003,29 @@ def ban(bot,chat:int, id:int)->bool | str:
         return True
     except telebot.apihelper.ApiTelegramException as e:
         return str(e)
+    
+async def get_user_id(username: str) -> dict|None:
+    try:
+        requests.get(user_bot_api_server,timeout=30)
+    except requests.exceptions.ConnectionError:
+        return None
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{user_bot_api_server}/get_user?user_name={username}",timeout=30) as response:
+            response.raise_for_status()
+            data = await response.json()
+            return data
+
+@bot.message_handler(commands=['name_to_info'])
+def user_name_to_info(message):
+    username=message.text.split(' ')[1].replace(' ','')
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        data = loop.run_until_complete(get_user_id(username))
+        bot.reply_to(message,str(data))
+    except Exception as e:
+        bot.reply_to(message,str(e))
+    
 
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
@@ -1001,19 +1034,43 @@ def handle_ban_command(message):
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-            if message.reply_to_message:
-                if 'reason:' in commad:
-                    reason=commad.split('reason:',1)[1]
-                else :
-                    bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:<code>/бан for @username\n reason:причина`</code>',parse_mode='HTML')
-                    return
-                try:
-                    bot.ban_chat_member(message.chat.id,message.reply_to_message)
-                    logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-                    bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-                except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
-            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы выдать бан')
+            if 'reason:' in commad and 'for' in commad:
+                reason=commad.split('reason:',1)[1]
+            else :
+                bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:<code>/бан for @username\n reason:причина`</code>',parse_mode='HTML')
+                return
+            try:
+                user_names=commad.split('for',1)[1].split('reason:')[0]
+                if ',' in user_names:
+                    user_name_list=user_names.split(',')
+                else:
+                    user_name_list=[user_names]
+                for user_name in user_name_list:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    data = loop.run_until_complete(get_user_id(user_name))
+                    if data != None:
+                        if data['error']!=None:
+                            logger.error(f"user bot server connect error:{data['error']}")
+                            bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
+                            return
+                        else:
+                            bot.ban_chat_member(message.chat.id,data['id'])
+                            logger.info(f"ban for {user_name} id:{data['id']}\nreason:{reason}")
+                            bot.send_message(admin_grops,f'ban for {user_name}\nreason:{reason}')
+                    else:
+                        logger.error(f"user bot server connect error")
+                        if message.reply_to_message:
+                            bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
+                            logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+                            bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
+
+
+                        else:
+                            bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать бан")
+            except telebot.apihelper.ApiTelegramException:
+                bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
+
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
 
@@ -1109,6 +1166,9 @@ def scan_hex_in_text(text:list)->bool:
 @bot.message_handler(commands=['t','translate','перевод'])  
 def translitor(message):
     if message.reply_to_message:
+        if message.reply_to_message.text==None:
+            bot.reply_to(message,"я могу переводить только текст!")
+            return
         bins=str(message.reply_to_message.text).replace(' ','').lower()
         if set(bins) == {'0', '1'} :
             bytes_list = [int(bins[i:i+8], 2) for i in range(0, len(bins), 8)]
