@@ -1,7 +1,5 @@
 <h3 align="center">Telegram бот админестратор</h3>
 
-![GitHub](https://img.shields.io/github/license/1yib/vsc-bundle?color=A3BE8C&style=flat-square)
-
 <a id="top"></a>
 <a id="ru"></a>
 
