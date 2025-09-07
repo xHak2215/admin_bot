@@ -1040,7 +1040,7 @@ def handle_ban_command(message):
                 bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:<code>/бан for @username\n reason:причина`</code>',parse_mode='HTML')
                 return
             try:
-                user_names=commad.split('for',1)[1].split('reason:')[0]
+                user_names=str(commad.split('for',1)[1].split('reason:')[0]).replace('\n','').replace(' ','')
                 if ',' in user_names:
                     user_name_list=user_names.split(',')
                 else:
@@ -1093,8 +1093,8 @@ def handle_mute_command(message):
                         arg=commad.replace("/mute", "").replace("/мут", "").split('reason:')
                         timer=arg[0]
                         reason=arg[1]
-                    if '.' in timer: 
-                        deleu=timer.split('.')[1] 
+                    if '.' in timer:     
+                        deleu=timer.split(' ',1)[1] 
                         num_date=int(re.sub(r'\D', '',timer.split('.')[0])) #убираем буквы и т.д
                         if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
                             if deleu=='h':
@@ -1106,7 +1106,7 @@ def handle_mute_command(message):
                             elif deleu=='s':
                                 deleu=0
                     else:
-                        wirning+=f"не корректное значение времени ({deleu}) использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты "
+                        wirning+wirning=f"не корректное значение времени использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1 h` \nh - часы (по умолчанию) , d - дни , m - минуты "
                         deleu=3600
                 else:
                     error=''
