@@ -836,6 +836,32 @@ def set_day_message():#я не смог это реализовать я пох�
             print(f"File write error: {e}")
             return False
     return False
+
+def team_data_bese(chat_id, team_name):
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+        # Создаем таблицу (если она еще не существует)
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS team (
+            id INTEGER PRIMARY KEY,
+            chat_id INTEGER NOT NULL,
+            team_name STRING NOT NULL,
+            users STRING NOT NULL,
+            team_info STRING NOT NULL
+        )
+        ''')
+        
+        # Создаем индекс (если он еще не существует)
+        cursor.execute('CREATE INDEX IF NOT EXISTS team_name ON team (team_name)')
+
+        cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (team_name, chat_id))#поиск
+
+        result = cursor.fetchone()
     
 def status(rec):
     if rec >= 1000:
@@ -1076,58 +1102,74 @@ def handle_ban_command(message):
 
 @bot.message_handler(commands=['mute','мут'])
 def handle_mute_command(message):
-        commad=str(message.text).lower()
+        commad=message.text.split(' ',1)[1]
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
-        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
-            if message.reply_to_message:
-                wirning=None
-                if 'reason:' in commad and 'time:'in commad:
-                    finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
-                    if format(finds[0])== 'reason:':
-                        arg=commad.replace("/mute", "").replace("/мут", "").split('time:')
-                        timer=arg[1]
-                        reason=arg[0]
-                    else:
-                        arg=commad.replace("/mute", "").replace("/мут", "").split('reason:')
-                        timer=arg[0]
-                        reason=arg[1]
-                    if '.' in timer:     
-                        deleu=timer.split(' ',1)[1] 
-                        num_date=int(re.sub(r'\D', '',timer.split('.')[0])) #убираем буквы и т.д
-                        if deleu=='h' or deleu=='d' or deleu=='m' or deleu=='s':
-                            if deleu=='h':
-                                deleu=3600
-                            elif deleu=='d':
-                                deleu=86400
-                            elif deleu=='m':
-                                deleu=60
-                            elif deleu=='s':
-                                deleu=0
-                    else:
-                        wirning+wirning=f"не корректное значение времени использован аргумент по умолчанию (в часах)\nпример: `/мут reason:причина time:1 h` \nh - часы (по умолчанию) , d - дни , m - минуты "
-                        deleu=3600
+        if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
+            if 'reason:' in commad and 'time:'in commad:
+                #finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
+                #if format(finds[0])== 'reason:':
+                data=re.search(r"time:(\d+)(\w+)", commad.lower().replace(' ',''))
+                
+                if data: 
+                    timer= int(data.group(1))
+                    deleua= data.group(2)
                 else:
-                    error=''
-                    if 'reason:' not in commad :
-                        error+=' не хватает аргумента `reason:`'
-                    if 'time:' not in commad :
-                        if len(error)>1:
-                            error+=','
-                        error+=' не хватает аргумента `time:`'
-                    bot.reply_to(message,f'SyntaxError\n{error}\nпример: `/мут reason:причина time:1.h` \n.h - часы (по умолчанию) , .d - дни , .m - минуты',parse_mode='MarkdownV2')
+                    bot.reply_to(message,"не верно задан порамитер времени ")
                     return
-                #time=re.sub(r'.*?time:', '', time, 1)# убираем все до time:
-                try:
-                    bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + num_date*deleu)
-                    logger.info(f'ban for {message.reply_to_message.from_user.username}\n{reason}')
-                    bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{num_date} ({num_date*deleu}) {reason}')
-                    if wirning != None:
-                        bot.reply_to(message,wirning)
-                except telebot.apihelper.ApiTelegramException:
-                    bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
-            else:bot.reply_to(message,'Пожалуйста, ответьте командой на сообщение, чтобы вытать мут')
+                
+                reason= re.search(r"reason:(\w+)", commad.lower().replace(' ',''))
+                if reason:
+                    reason=reason.group(1)
+                else:
+                    bot.reply_to(message," аргумент reason: указан не верно")
+                    return
+
+                #num_date=int(re.sub(r'\D', '',timer)) # убираем буквы и т.д
+                if deleua=='h' or deleua=='d' or deleua=='m' or deleua=='s':
+                    if deleua=='h':
+                        deleu=3600
+                    elif deleua=='d':
+                        deleu=86400
+                    elif deleua=='m':
+                        deleu=60
+                    elif deleua=='s':
+                        deleu=0
+                else:
+                    bot.reply_to(message,'не корректное значение времени использован аргумент по умолчанию (в часах)\nпример: /мут for @username time:1 h reason:причина  \nh - часы (по умолчанию) , d - дни , m - минуты ')
+                    return
+                
+            else:bot.reply_to(message,"не хватает аргументов пример: /мут for @username time:1 h reason:причина")
+
+            try:
+                user_names=str(commad.split('for',1)[1].split('time:')[0]).replace('\n','').replace(' ','')
+                if ',' in user_names:
+                    user_name_list=user_names.split(',')
+                else:
+                    user_name_list=[user_names]
+                for user_name in user_name_list:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    data = loop.run_until_complete(get_user_id(user_name))
+                if data != None:
+                    if data['error']!=None:
+                        logger.error(f"user bot server connect error:{data['error']}")
+                        bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
+                        return
+                    else:
+                        bot.restrict_chat_member(message.chat.id, int(data['id']), until_date=(message.date + timer*deleu))
+                        logger.info(f"myte for {user_names} id:{data['id']} time:{timer}{deleua} reason:{reason}")
+                        bot.send_message(admin_grops,f'myte for {data['id']}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
+                else:
+                    if message.reply_to_message:
+                        bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=(message.date + timer*deleu))
+                        logger.info(f"myte for {message.reply_to_message.from_user.username} id:{message.reply_to_message.from_user.id} time:{timer}{deleua} reason:{reason}")
+                        bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
+                    else:bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать мут")
+
+            except telebot.apihelper.ApiTelegramException:
+                bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
 
@@ -1202,10 +1244,10 @@ def translitor(message):
                     bot.reply_to(message, '202e'+(text[0].encode("utf-8").hex().replace("'",'')))
                     return
                 elif text[1].lower()=="translit" or text[1].lower()=="транслит":
-                    bot.reply_to(message,''.join(asets.dictt.translit_ru.get(c, c) for c in text[0]))
+                    bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
                 translator = Translator()
                 conf = translator.detect(str(message.text))
-                result = translator.translate(text[1], src=conf.lang, dest=text[0].replace(' ',''))
+                result = translator.translate(text[1], src=conf.lang, dest=text[1].replace(' ',''))
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
@@ -1225,7 +1267,7 @@ def audio_to_text(message):
                 else:
                     msg=bot.reply_to(message,['выполняется','идет расшифровка','приодеться немного подождать...','Loading','загрузка'][random.randint(0,4)])
                 class Bufer_data:
-                    def __init__(self,rec='',ogg_data='') -> str:
+                    def __init__(self,rec='',ogg_data=''):
                         self.rec = rec
                         self.ogg_data = ogg_data
                 timers=time.time()
