@@ -20,6 +20,7 @@ import asyncio
 import asets.ffmpeg_tool
 import asets.dictt
 from asets.wiki_api_lib import wiki
+from asets.data_bese import data_base, team_data_bese, data_bese_colonium
 
 try:
     from vosk import Model, KaldiRecognizer
@@ -63,6 +64,7 @@ except ImportError:
             print('\33[32m suppress (успешно)')
         else:
             print('\33[32m error install (что то пошло не так )')
+    exit(1)
 
 if not os.path.exists(os.path.join(os.getcwd(), 'asets')):
     os.mkdir('asets')
@@ -495,7 +497,7 @@ def handle_report(message):
             logger.info(f"послали репорт на >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id} |{coment_message} сообщение>> {content}")
         bot.reply_to(message,['админы посмотрят','амон уже в пути','да придет же админ и покарает нечестивцев баном','кто тут нарушает?','стоять бояться работает админ','записал ...'][random.randint(0,4)])
         # Проверяем, достаточно ли ответов для бана
-        reput=data_base(message.chat.id,ban_ded)[1]
+        reput=data_base(message.chat.id, ban_ded)[1]
         if reput > 2:
             n=4
         elif reput < 0:
@@ -536,7 +538,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
             return None
     except sqlite3.Error as e:
         logger.error(f'get data base error >> {e}')
-        return 'get data base error >>'+e
+        return 'get data base error >>'+str(e)
     
 @bot.message_handler(commands=['config','настройки'])
 def configfile(message):
@@ -548,6 +550,7 @@ def configfile(message):
         bot.reply_to(message,out)
         f.close()
         if  '-r' in message.text :
+            global BAMBAM,DELET_MESSADGE,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL,AUTO_TRANSLETE
             try:
                 with open("settings.json", "r") as json_settings:
                     settings= json.load(json_settings)
@@ -578,12 +581,11 @@ def configfile(message):
 def send_data_base(message):
     # проверка на админа
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
+        connection = sqlite3.connect('Users_base.db')
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
         try:
-            connection = sqlite3.connect('Users_base.db')
-            cursor = connection.cursor()
-            cursor.execute("PRAGMA journal_mode=WAL;")
-            cursor.execute("PRAGMA synchronous=NORMAL")
-
             arg=message.text.split(' ',1)
             
             errors=''
@@ -625,243 +627,9 @@ def send_data_base(message):
             bot.send_message(admin_grops,f"error send_data_base >> {e} ")
             logger.error(f"error send_data_base >> {e}\n{traceback.format_exc()}")
         finally:
-            if "connection" in locals(): 
-                connection.close()
+            connection.close()
     else:
         bot.reply_to(message,['ты не администратор!','тебе такое смотреть не дам','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
-        
-def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
-    # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db', timeout=5000)
-    cursor = connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL;")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-
-    # Формируем запрос для обновления
-    query = "UPDATE Users SET "
-    params = []
-    updates = []
-    
-    if reputation is not None:
-        updates.append("reputation = ?")
-        params.append(reputation)
-    
-    if ps_reputation is not None:
-        updates.append("auto_reputation = ?")
-        params.append(ps_reputation)
-    
-    if soob_num is not None:
-        updates.append("num_message = ?")
-        params.append(soob_num)
-        
-    if day_message_num is not None:
-        updates.append("day_message = ?")
-        params.append(day_message_num)
-        
-    if reputation_time is not None:
-        updates.append("auto_reputation_data = ?")
-        params.append(reputation_time)
-        
-    # Проверяем, были ли добавлены параметры
-    if not updates:
-        connection.close()
-        logger.warning("update_user Нет параметров для обновления.")
-        return None
-    
-    query += ", ".join(updates)
-    query += " WHERE warn_user_id = ? AND chat_id = ?"
-    params.append(id)
-    params.append(chat)
-    
-    try:
-        cursor.execute(query, params)
-        connection.commit()
-    except Exception as e:
-        logger.error(f"Error updating user: {e}")
-        return None
-    finally:
-        connection.close()
-        
-def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, time_v=0) -> list: # data_base(message.chat.id,message.from_user.id,0,0,0) (вызов без изменения базы ) выход: [resperens,ps_reputation_new,int(soob_num),time.time()] (репутация,2 репутация_ps,каличество сообщений,время входа) 
-    '''
-    data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, time_v=0)
-    
-    взаимодействует с базой данных
-    
-    :param1: id чата
-    
-    :param2: id пользевателя
-    
-    :param3: количество отнимаемой репутации
-    
-    :param4: количество прибавляемых сообщений
-    
-    :param5: прибавление к авто/псевдо репутации
-    
-    :param6: дата входа задаеться при входе
-    
-    ## return
-    
-    ### list
-    
-    - 0-resperens — количество репутации
-    
-    - 1-ps_reputation_new — количество авто репутации 
-    
-    - 2-soob_num — количество сообщений
-    
-    - 3-time_v — дата входа если нет то возворощяет 0
-    
-    - 3-reputation_time — дана изменения авто репутации содержит `dict` словарь
-    '''
-
-    if ps_reputation_upt == 0:
-        reputation_time=None
-    else:
-        reputation_time=time.time()
-    try:
-        resperens = 5
-        # Создаем подключение к базе данных
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
-        cursor = connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL;")
-        cursor.execute("PRAGMA synchronous=NORMAL")
-        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
-        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
-
-        # Создаем таблицу (если она еще не существует)
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS Users (
-            id INTEGER PRIMARY KEY,
-            chat_id INTEGER NOT NULL,
-            reputation INTEGER NOT NULL,
-            warn_user_id INTEGER NOT NULL,
-            warn_time INTEGER ,
-            num_message INTEGER NOT NULL,
-            day_message INTEGER NOT NULL,
-            auto_reputation INTEGER NOT NULL,
-            auto_reputation_data TEXT , 
-            vhod_data INTEGER NOT NULL,
-            temp REAL
-        )
-        ''')
-        
-        # Создаем индекс (если он еще не существует)
-        cursor.execute('CREATE INDEX IF NOT EXISTS warn_user_id_index ON Users (warn_user_id)')
-        
-        # Проверяем, существует ли пользователь с данным warn_user_id
-        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (warn_user_id,chat_id))
-        result = cursor.fetchone()
-        ps_reputation_new=0+ps_reputation_upt
-        
-        if result is not None:
-            # Извлекаем репутацию из результата
-            current_reputation = result[2]  # репутация находится в третьем столбце
-            ps_reputation = result[7]
-            chat = result[1]  # id чата
-            text = result[5] # кол.во сообщений
-            vhod_data = result[9]
-            day_message = result[6]
-            
-            if text is None:
-                text=1
-            if current_reputation is None:
-                current_reputation=0
-
-            if chat == chat_id:
-                ps_reputation_new=ps_reputation+ps_reputation_upt
-                new_reputation = current_reputation - nfkaz
-                # Обновляем репутацию пользователя
-                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num ,reputation_time)# Передаем id,chat и данные пользователя для обновления
-                connection.commit()
-                connection.close()
-                return [new_reputation,ps_reputation_new,int(text+soob_num),vhod_data,reputation_time]# ,day_message
-            else:
-                resperens = 5 - nfkaz
-                cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
-                connection.commit()
-                connection.close()
-                return [resperens,ps_reputation_new,int(text+soob_num),time_v,reputation_time]# ,day_message
-        else:
-            # Если пользователь не найден, добавляем его
-            resperens = 5 - nfkaz
-            cursor.execute('INSERT INTO Users (chat_id, reputation, warn_user_id, num_message, auto_reputation, vhod_data ,day_message ,auto_reputation_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (chat_id, resperens, warn_user_id, soob_num, ps_reputation_new, time_v, soob_num ,reputation_time))
-            connection.commit()
-            connection.close()
-            return [resperens,ps_reputation_new,int(soob_num),time_v,reputation_time]
-
-    except Exception as e:
-        logger.error(f'Ошибка в операции с базой данных: {e}\n{traceback.format_exc()}')
-        connection.close()
-        bot.send_message(admin_grops, f"data_base error>> {e}")
-        return None  # Возвращаем None в случае ошибки
-    finally:
-        # Закрываем соединение
-        connection.close()
-        
-def set_day_message():#я не смог это реализовать я походу тупой 
-    file_path = os.path.join(os.getcwd(), 'asets', 'set_day_message_time.json')
-    # Создаем папку asets, если её нет
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    try:
-        if os.path.isfile(file_path):
-            with open(file_path, "r") as json_settings:
-                data = json.load(json_settings)
-                timer = data.get('reset_time', 0)
-        else:
-            timer = 0
-    except (json.JSONDecodeError, KeyError):
-        timer = 0
-    # Если таймер не установлен или прошло больше суток
-    if timer == 0 or time.time() - timer >= 1*86400:
-        try:
-            # Обновляем базу данных
-            connection = sqlite3.connect('Users_base.db', timeout=10)
-            cursor = connection.cursor()
-            cursor.execute("PRAGMA journal_mode=WAL;")
-            cursor.execute('UPDATE Users SET day_message = 0')
-            connection.commit()
-        except sqlite3.Error as e:
-            print(f"Database error: {e}")
-            return False
-        finally:
-            if connection:
-                connection.close()
-        # Обновляем время последнего сброса
-        try:
-            with open(file_path, 'w') as json_settings:
-                json.dump({"reset_time": time.time()}, json_settings)
-            return True
-        except IOError as e:
-            print(f"File write error: {e}")
-            return False
-    return False
-
-def team_data_bese(chat_id, team_name):
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
-        cursor = connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL;")
-        cursor.execute("PRAGMA synchronous=NORMAL")
-        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
-        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
-
-        # Создаем таблицу (если она еще не существует)
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS team (
-            id INTEGER PRIMARY KEY,
-            chat_id INTEGER NOT NULL,
-            team_name STRING NOT NULL,
-            users STRING NOT NULL,
-            team_info STRING NOT NULL
-        )
-        ''')
-        
-        # Создаем индекс (если он еще не существует)
-        cursor.execute('CREATE INDEX IF NOT EXISTS team_name ON team (team_name)')
-
-        cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (team_name, chat_id))#поиск
-
-        result = cursor.fetchone()
     
 def status(rec):
     if rec >= 1000:
@@ -929,7 +697,7 @@ def handle_warn(message):
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
                     
 @bot.message_handler(commands=['reput'])
-def handle_warn(message):
+def handle_reput(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
             #инециалезацыя всякой хрени 
@@ -974,7 +742,7 @@ def handle_info(message):
                     c='дней назад' 
                 i=str(round((time.time()-data[3])/86400)) + c
             elif data[3]>=3600:
-                if round((time.time()-data[3])/3600)==1:
+                if round((time.time()-data[3])/3600) == 1:
                     c='час назад'
                 else:
                     c='часов назад' 
@@ -1081,7 +849,7 @@ def handle_ban_command(message):
                             bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
                             return
                         else:
-                            bot.ban_chat_member(message.chat.id,data['id'])
+                            bot.ban_chat_member(message.chat.id, int(data['id']))
                             logger.info(f"ban for {user_name} id:{data['id']}\nreason:{reason}")
                             bot.send_message(admin_grops,f'ban for {user_name}\nreason:{reason}')
                     else:
@@ -1090,8 +858,6 @@ def handle_ban_command(message):
                             bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
                             logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
                             bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-
-
                         else:
                             bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать бан")
             except telebot.apihelper.ApiTelegramException:
@@ -1108,8 +874,6 @@ def handle_mute_command(message):
             return
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
             if 'reason:' in commad and 'time:'in commad:
-                #finds = re.findall(r'(\breason:\b|\btime:\b)', commad, re.IGNORECASE)
-                #if format(finds[0])== 'reason:':
                 data=re.search(r"time:(\d+)(\w+)", commad.lower().replace(' ',''))
                 
                 if data: 
@@ -1666,7 +1430,7 @@ def handle_spam_deletion(call):
 @bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
     if '-help' in message.text or '-h' in message.text:
-        bot.reply_to(message, 'аргументы: /ping <ссылка для тестирования по умолчанию https://ya.ru> <количество повторов замера задержки>  <режим расчета>.\nрежимы расчета: 1 - вычисление средни статистической задержки из всех попыток. по умолчанию (не указывая значение) 2 - отображение задержки каждой попытки\nпример:<code>/ping example.com 5 1</code>',parse_mode='HTML',disable_web_page_preview=True)
+        bot.reply_to(message, 'аргументы: /ping <ссылка для тестирования по умолчанию https://ya.ru <количество повторов замера задержки>  <режим расчета>.\nрежимы расчета: 1 - вычисление средни статистической задержки из всех попыток. по умолчанию (не указывая значение) 2 - отображение задержки каждой попытки\nпример:<code>/ping example.com 5 1</code>',parse_mode='HTML',disable_web_page_preview=True)
         return
     data=str(message.text).split(' ')
     if len(data)>1:
@@ -2183,7 +1947,7 @@ def create_logic(message):
                     bot.reply_to(message,f"{command}\n{'^'*len(command)}\nlist index out of range\nline:{line}")
         
         elif command.startswith("replace"):# replace a={input_text}:old_symdol,new_symdol
-            command=r_value(command)
+            command=r_value(command,value)
             try:
                 arg=command.split(" ",1)[1]
                 var=arg.split("=",1)[0]
@@ -2219,6 +1983,47 @@ def create_logic(message):
             except Exception as e:
                 bot.reply_to(message,f"{e}\nline:{line}")
 
+@bot.message_handler(commands=['team','каманда','клан'])  
+def team(message):
+    command=str(message.text.split(' ',1)[1])
+    if 'создать' in command: 
+        name=command.split('создать',1)[1]
+        if name in data_bese_colonium():
+            bot.reply_to(message,"ьакая команда уже есть!\nпридумай другое название")
+            return
+        if not re.match("^[a-zA-Z0-9]+$",name):
+            team_data_bese(message.chat.id, name,
+                           users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
+                           team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
+                           )
+            bot.reply_to(message,f"команда '{name}' создана")
+    elif 'инфо' in command:
+        name=command.split('инфо', 1)[1]
+        messages=''
+        data=team_data_bese(message.chat.id, name)
+        messages+=f"имя:{data[2]}\n"
+        print(data[4])
+        messages+=f"дата создания: {datetime.fromtimestamp(int(json.loads(data[4])['creat_time'])).strftime(r"%Y-%m-%d-%H.%M.%S")}\n"
+        messages+=f"создатель: {json.loads(data[4])['creator_user_name']}\n"
+        messages+=f"учасники:\n"
+        for uname in json.loads(data[3]):
+            messages+=f"{uname['username']}"
+        bot.reply_to(message, messages)
+    
+    elif 'пригласить' in command: # /team приглосить в team_name 
+        if message.reply_to_message:
+            un=message.reply_to_message.from_user.username
+            id=message.reply_to_message.from_user.id
+            team_name=command.split('в',1)[1]
+
+            team_data=team_data_bese(message.chat.id, team_name)
+            if team_name:
+                bot.send_message(message.chat_id,f"<a href='tg://user?id={id}'>{message.reply_to_message.from_user.first_name}</a>\nвас прегласили в команду{team_name}!"
+                             ,parse_mode='HTML',disable_web_page_preview=True)
+            
+            else:bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {team_name}</code>",parse_mode='HTML')
+        else:
+            bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
             
 user_messages = {}#инициализация слова+рей и тп
 user_text = {}
