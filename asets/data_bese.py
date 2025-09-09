@@ -205,7 +205,7 @@ def set_day_message():#я не смог это реализовать я пох�
             return False
     return False
 
-def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team_info: list | None = None) -> list | None:
+def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team_info: dict | None = None) -> list:
     '''
     :param1: chat id
 
@@ -213,7 +213,7 @@ def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team
 
     :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456 ,'in_time':13133.013, 'status':'user' }`
 
-    :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator':12335444}`
+    :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
 
     :return: список с порамитрами 
 
@@ -233,7 +233,7 @@ def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team
         chat_id INTEGER NOT NULL,
         team_name STRING NOT NULL,
         users STRING NOT NULL,
-        team_info STRING NOT NULL,
+        team_info STRING NOT NULL
     )
     ''')
     
@@ -243,8 +243,10 @@ def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team
     cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (team_name, chat_id))#поиск
 
     result = cursor.fetchone()
+    if not result:
+        cursor.execute('INSERT INTO team (chat_id, team_name, users , team_info) VALUES (?, ?, ?, ?)', (chat_id, team_name, str(users), str(team_info)))
 
-    query = "UPDATE Users SET "
+    query = "UPDATE team SET "
     params = []
     updates = []
     
@@ -254,17 +256,17 @@ def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team
     
     if users is not None:
         updates.append("users = ?")
-        params.append(users)
+        params.append(json.dumps(users))
     
     if team_info is not None:
         updates.append("team_info = ?")
-        params.append(team_info)
+        params.append(json.dumps(team_info))
         
     # Проверяем, были ли добавлены параметры
     if not updates:
         connection.close()
         logger.warning("update_user Нет параметров для обновления.")
-        return None
+        return[None,None,None,None]
 
     query += ", ".join(updates)
     query += " WHERE team_name = ? AND chat_id = ?"
@@ -276,8 +278,25 @@ def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team
         connection.commit()
     except Exception as e:
         logger.error(f"Error updating user: {e}")
-        return None
+        return[None,None,None,None]
     finally:
         connection.close()
+    if result:
+        return result
+    else:return[None,None,None,None]
 
-    return list(result)
+def data_bese_colonium(c_name='team', colonium_name='team_name')->list:
+    '''
+    получение списка с данными определенной колонки
+    '''
+
+    connection = sqlite3.connect('Users_base.db',timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    cursor.execute(f"SELECT {colonium_name} FROM {c_name}")
+    rows = cursor.fetchall()
+    return rows
