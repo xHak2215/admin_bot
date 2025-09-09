@@ -1988,11 +1988,12 @@ def team(message):
     command=str(message.text.split(' ',1)[1])
     if 'создать' in command: 
         name=command.split('создать',1)[1]
+        print(data_bese_colonium())
         if name in data_bese_colonium():
             bot.reply_to(message,"ьакая команда уже есть!\nпридумай другое название")
             return
         if not re.match("^[a-zA-Z0-9]+$",name):
-            team_data_bese(message.chat.id, name,
+            team_data_bese(message.chat.id, name.replace(' ',''),
                            users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
                            team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
                            )
