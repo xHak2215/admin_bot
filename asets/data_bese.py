@@ -205,98 +205,125 @@ def set_day_message():#я не смог это реализовать я пох�
             return False
     return False
 
-def team_data_bese(chat_id: int, team_name: str, users: list | None = None, team_info: dict | None = None) -> list:
-    '''
-    :param1: chat id
+class team_data_bese():
+    def __init__(self):
+        pass
 
-    :param2: team neme 
+    def team_bese_init(self,chat_id: int, team_name: str, users: list, team_info: dict) -> list:
+        '''
+        :param1: chat id
 
-    :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456 ,'in_time':13133.013, 'status':'user' }`
+        :param2: team neme 
 
-    :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
+        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456 ,'in_time':13133.013, 'status':'user' }`
 
-    :return: список с порамитрами 
+        :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
 
-    '''
+        :return: список с порамитрами 
 
-    connection = sqlite3.connect('Users_base.db',timeout=10000)
-    cursor = connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL;")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-    cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
-    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+        '''
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
 
-    # Создаем таблицу (если она еще не существует)
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS team (
-        id INTEGER PRIMARY KEY,
-        chat_id INTEGER NOT NULL,
-        team_name STRING NOT NULL,
-        users STRING NOT NULL,
-        team_info STRING NOT NULL
-    )
-    ''')
-    
-    # Создаем индекс (если он еще не существует)
-    cursor.execute('CREATE INDEX IF NOT EXISTS team_name ON team (team_name)')
-
-    cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (team_name, chat_id))#поиск
-
-    result = cursor.fetchone()
-    if not result:
-        cursor.execute('INSERT INTO team (chat_id, team_name, users , team_info) VALUES (?, ?, ?, ?)', (chat_id, team_name, str(users), str(team_info)))
-
-    query = "UPDATE team SET "
-    params = []
-    updates = []
-    
-    if team_name is not None:
-        updates.append("team_name = ?")
-        params.append(team_name)
-    
-    if users is not None:
-        updates.append("users = ?")
-        params.append(json.dumps(users))
-    
-    if team_info is not None:
-        updates.append("team_info = ?")
-        params.append(json.dumps(team_info))
+        # Создаем таблицу (если она еще не существует)
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS team (
+            id INTEGER PRIMARY KEY,
+            chat_id INTEGER NOT NULL,
+            team_name STRING NOT NULL,
+            users STRING NOT NULL,
+            team_info STRING NOT NULL
+        )
+        ''')
         
-    # Проверяем, были ли добавлены параметры
-    if not updates:
-        connection.close()
-        logger.warning("update_user Нет параметров для обновления.")
-        return[None,None,None,None]
-
-    query += ", ".join(updates)
-    query += " WHERE team_name = ? AND chat_id = ?"
-    params.append(team_name)
-    params.append(chat_id)
-    
-    try:
-        cursor.execute(query, params)
+        # Создаем индекс (если он еще не существует)
+        cursor.execute('CREATE INDEX IF NOT EXISTS team_name ON team (team_name)')
+        cursor.execute('INSERT INTO team (chat_id, team_name, users, team_info) VALUES (?, ?, ?, ?)', (chat_id, team_name, json.dumps(users), json.dumps(team_info)))
         connection.commit()
-    except Exception as e:
-        logger.error(f"Error updating user: {e}")
-        return[None,None,None,None]
-    finally:
-        connection.close()
-    if result:
-        return result
-    else:return[None,None,None,None]
+        cursor.close()
+        return [chat_id, team_name, json.dumps(users), json.dumps(team_info)]
 
-def data_bese_colonium(c_name='team', colonium_name='team_name')->list:
-    '''
-    получение списка с данными определенной колонки
-    '''
+    def upades(self, team_name, chat_id, users, team_info):
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
 
-    connection = sqlite3.connect('Users_base.db',timeout=10000)
-    cursor = connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL;")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-    cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
-    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+        query = "UPDATE team SET "
+        params = []
+        updates = []
+        
+        if team_name != None:
+            updates.append("team_name = ?")
+            params.append(team_name)
+        
+        if users != None:
+            updates.append("users = ?")
+            params.append(json.dumps(users))
+        
+        if team_info != None:
+            updates.append("team_info = ?")
+            params.append(json.dumps(team_info))
+            
+        # Проверяем, были ли добавлены параметры
+        if not updates:
+            connection.close()
+            logger.warning("update_user Нет параметров для обновления.")
+            return[None,None,None,None]
 
-    cursor.execute(f"SELECT {colonium_name} FROM {c_name}")
-    rows = cursor.fetchall()
-    return rows
+        query += ", ".join(updates)
+        query += " WHERE team_name = ? AND chat_id = ?"
+        params.append(team_name)
+        params.append(chat_id)
+        
+        try:
+            cursor.execute(query, params)
+            connection.commit()
+        except Exception as e:
+            logger.error(f"Error updating user: {e}")
+            return[None,None,None,None]
+        finally:
+            connection.close()
+
+    def data_bese_colonium(self,c_name='team', colonium_name='team_name')->list|None:
+        '''
+        получение списка с данными определенной колонки
+        '''
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+        cursor.execute(f"SELECT {colonium_name} FROM {c_name}")
+        rows = cursor.fetchall()
+        cursor.close()
+        return rows
+    
+    def data_seah(self,chat_id:int, name:str)->list|None:
+        '''
+        получение данных определенной команды
+        '''
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+        cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (name, chat_id))#поиск
+        data=cursor.fetchall()
+        cursor.close()
+        data_list=[]
+        for i in data:
+            for a in i:
+                data_list.append(a)
+        return data_list
+        
