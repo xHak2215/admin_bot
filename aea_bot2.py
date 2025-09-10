@@ -213,7 +213,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -1568,7 +1568,7 @@ def handle_wiki_searh(call):
             bot.answer_callback_query(call.id, "выполняю")
             page=wiki_api.title_to_page(title)
             link=''
-            bot.answer_callback_query(call.id)
+            
             if page == '' or page == None:
                 page=['упс ничего не найдено','я ничего не нашел','я ничего не смог найти','не найдено попробуйте переформулировать запрос' ][random.randint(0,3)]
             else:
@@ -1577,6 +1577,7 @@ def handle_wiki_searh(call):
                         if i['page'] == title:
                             link=i['link']
                     page=page[:2000]+'...'+f"\nстатья:{link}"
+            bot.answer_callback_query(call.id)
             bot.edit_message_text(
             chat_id=data_wiki_serh.chat_id,
             message_id=call.data.split('_')[-2],
@@ -2011,46 +2012,61 @@ def team(message):
             messages+=f"создатель: {json.loads(data[4])['creator_user_name']}\n"
             messages+=f"учасники:\n"
             for uname in json.loads(data[3]):
-                messages+=f"{uname['username']}"
+                messages+=f"{uname['username']}\n"
             bot.reply_to(message, messages)
 
         else:
             bot.reply_to(message,f"не коректный ответ от БД ({data})")
     
-    elif 'пригласить' in command: # /team приглосить в team_name 
+    elif 'пригласить' in command: # /team пригласить в team_name 
         if message.reply_to_message:
             un=message.reply_to_message.from_user.username
             id=message.reply_to_message.from_user.id
-            team_name=command.split('в',1)[1]
+            team_name=command.split('в',1)[1].replace(' ','')
+
             if team_name in [i[0] for i in bese.data_bese_colonium()]:
 
                 team_data=bese.data_seah(message.chat.id, team_name)
                 if team_data:
-                        markup = types.InlineKeyboardMarkup()
-                        yes = types.InlineKeyboardButton(
-                        "✅ принять",
-                        callback_data=f"team_get_sigin_{id}_{team_name}")
+                    markup = types.InlineKeyboardMarkup()
+                    markup.add(types.InlineKeyboardButton(
+                    "✅ принять",
+                    callback_data=f"teamGetSiginYes_{id}_{team_name}"))
 
-                        no = types.InlineKeyboardButton(
-                        "❌ отказаться",
-                        callback_data=f"team_get_sigin_{id}_{team_name}")
+                    markup.add(types.InlineKeyboardButton(
+                    "❌ отказаться",
+                    callback_data=f"teamGetSiginNo_{id}_{team_name}"))
 
-                        markup.add([yes,no])
-                        bot.send_message(message.chat_id,f"<a href='tg://user?id={id}'>{message.reply_to_message.from_user.first_name}</a>\nвас прегласили в команду{team_name}!"
-                             ,parse_mode='HTML',disable_web_page_preview=True,reply_markup=markup)
-            
-                else:bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {team_name}</code>",parse_mode='HTML')
-            else:
-                bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
+                    bot.send_message(message.chat.id,f"<a href='tg://user?id={id}'>{message.reply_to_message.from_user.first_name}</a>\nвас прегласили в команду {team_name}!"
+                        ,parse_mode='HTML',disable_web_page_preview=True,reply_markup=markup)
+                else:logger.debug("база пошла по пизде")
+            else: bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {team_name}</code>",parse_mode='HTML')
+        else: bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
 
-@bot.callback_query_handler(func=lambda call:call.data.startswith('team_get_sigin_'))
-def handle_team_button(call):
-    #int(call.data.split('_')[-1])
-    if int(call.data.split('_')[1]) != call.from_user.id:
+@bot.callback_query_handler(func=lambda call:call.data.startswith('teamGetSiginYes_'))
+def handle_team_buttony(call):
+    cd=call.data.split('_',1)[1]
+    if int(cd.split('_')[0]) != call.from_user.id:
         bot.answer_callback_query(call.id, "это не для тебя.")
         return
-    team_name=call.data.split('_')[-1]
-    bese.data_seah(call.chat.id, team_name)
+    team_name=cd.split('_',1)[1]
+    data=bese.data_seah(call.message.chat.id, team_name)
+    if data:
+        new_user=json.loads(data[3])
+        new_user.append({"username":call.from_user.username, "id":call.from_user.id, "in_time":time.time(), "status":"user"})
+        bese.upades(team_name, call.message.chat.id, new_user, None)
+        bot.answer_callback_query(call.id)
+        bot.answer_callback_query(call.id, f"вы в команде {team_name} !")
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+    else:
+        logger.debug(f"нет данных из БД :(\n{data}")
+
+
+@bot.callback_query_handler(func=lambda call:call.data.startswith('teamGetSiginNo_'))
+def handle_team_buttonn(call):
+    bot.answer_callback_query(call.id)
+    bot.answer_callback_query(call.id, "ну ладно не хочешь как хочешь")
+    bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 user_messages = {}#инициализация слова+рей и тп
