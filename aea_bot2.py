@@ -20,7 +20,7 @@ import asyncio
 import asets.ffmpeg_tool
 import asets.dictt
 from asets.wiki_api_lib import wiki
-from asets.data_bese import data_base, team_data_bese, data_bese_colonium
+from asets.data_bese import data_base, team_data_bese
 
 try:
     from vosk import Model, KaldiRecognizer
@@ -213,7 +213,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -252,7 +252,7 @@ def send_help(message):
         bot.reply_to(message, help_user ,parse_mode='HTML',disable_web_page_preview=True)
 
 @bot.message_handler(commands=['admin_command'])
-def handle_warn(message):
+def send_admin_help(message):
     if message.date - time.time() <= 60:
         bot.reply_to(message, admin_command ,parse_mode='HTML',disable_web_page_preview=True)
     
@@ -1847,7 +1847,6 @@ def create_logic(message):
                 else:
                     program_line.insert(line+ine,new_code)
                     ine=ine+1
-
                     
         elif command.startswith('for'): # for i in 5: ...
             try:
@@ -1983,49 +1982,77 @@ def create_logic(message):
             except Exception as e:
                 bot.reply_to(message,f"{e}\nline:{line}")
 
+bese=team_data_bese()
+
 @bot.message_handler(commands=['team','каманда','клан'])  
 def team(message):
     command=str(message.text.split(' ',1)[1])
     if 'создать' in command: 
-        name=command.split('создать',1)[1]
-        print(data_bese_colonium())
-        if name in data_bese_colonium():
-            bot.reply_to(message,"ьакая команда уже есть!\nпридумай другое название")
+        name=command.split('создать',1)[1].replace(' ','')
+        if name in [i[0] for i in bese.data_bese_colonium()]:
+            bot.reply_to(message,"такая команда уже есть!\nпридумай другое название")
             return
-        if not re.match("^[a-zA-Z0-9]+$",name):
-            team_data_bese(message.chat.id, name.replace(' ',''),
+        if not re.match("^[a-zA-Z0-9а-яА-Я]+_",name) and len(name)<46:
+            bese.team_bese_init(message.chat.id, name,
                            users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
                            team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
                            )
             bot.reply_to(message,f"команда '{name}' создана")
+
+        else:bot.reply_to(message,"такое название не подходит! ")
+
     elif 'инфо' in command:
-        name=command.split('инфо', 1)[1]
+        name=command.split('инфо', 1)[1].replace(' ','')
         messages=''
-        data=team_data_bese(message.chat.id, name)
-        messages+=f"имя:{data[2]}\n"
-        print(data[4])
-        messages+=f"дата создания: {datetime.fromtimestamp(int(json.loads(data[4])['creat_time'])).strftime(r"%Y-%m-%d-%H.%M.%S")}\n"
-        messages+=f"создатель: {json.loads(data[4])['creator_user_name']}\n"
-        messages+=f"учасники:\n"
-        for uname in json.loads(data[3]):
-            messages+=f"{uname['username']}"
-        bot.reply_to(message, messages)
+        data=bese.data_seah(message.chat.id, name)
+        if data:
+            messages+=f"название: {data[2]}\n"
+            messages+=f"дата создания: {datetime.fromtimestamp(int(json.loads(data[4])['creat_time'])).strftime(r"%Y-%m-%d-%H.%M.%S")}\n"
+            messages+=f"создатель: {json.loads(data[4])['creator_user_name']}\n"
+            messages+=f"учасники:\n"
+            for uname in json.loads(data[3]):
+                messages+=f"{uname['username']}"
+            bot.reply_to(message, messages)
+
+        else:
+            bot.reply_to(message,f"не коректный ответ от БД ({data})")
     
     elif 'пригласить' in command: # /team приглосить в team_name 
         if message.reply_to_message:
             un=message.reply_to_message.from_user.username
             id=message.reply_to_message.from_user.id
             team_name=command.split('в',1)[1]
+            if team_name in [i[0] for i in bese.data_bese_colonium()]:
 
-            team_data=team_data_bese(message.chat.id, team_name)
-            if team_name:
-                bot.send_message(message.chat_id,f"<a href='tg://user?id={id}'>{message.reply_to_message.from_user.first_name}</a>\nвас прегласили в команду{team_name}!"
-                             ,parse_mode='HTML',disable_web_page_preview=True)
+                team_data=bese.data_seah(message.chat.id, team_name)
+                if team_data:
+                        markup = types.InlineKeyboardMarkup()
+                        yes = types.InlineKeyboardButton(
+                        "✅ принять",
+                        callback_data=f"team_get_sigin_{id}_{team_name}")
+
+                        no = types.InlineKeyboardButton(
+                        "❌ отказаться",
+                        callback_data=f"team_get_sigin_{id}_{team_name}")
+
+                        markup.add([yes,no])
+                        bot.send_message(message.chat_id,f"<a href='tg://user?id={id}'>{message.reply_to_message.from_user.first_name}</a>\nвас прегласили в команду{team_name}!"
+                             ,parse_mode='HTML',disable_web_page_preview=True,reply_markup=markup)
             
-            else:bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {team_name}</code>",parse_mode='HTML')
-        else:
-            bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
-            
+                else:bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {team_name}</code>",parse_mode='HTML')
+            else:
+                bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
+
+@bot.callback_query_handler(func=lambda call:call.data.startswith('team_get_sigin_'))
+def handle_team_button(call):
+    #int(call.data.split('_')[-1])
+    if int(call.data.split('_')[1]) != call.from_user.id:
+        bot.answer_callback_query(call.id, "это не для тебя.")
+        return
+    team_name=call.data.split('_')[-1]
+    bese.data_seah(call.chat.id, team_name)
+
+
 user_messages = {}#инициализация слова+рей и тп
 user_text = {}
 message_text = []
@@ -2300,7 +2327,7 @@ def exit_chat_member(message):
 def main():
     get_num=0
     try:
-        print("\033[32m нет ошибок :3\033[0m")
+        print("\033[32mнет ошибок :3\033[0m")
         while True:
             try:
                 try:
@@ -2317,9 +2344,9 @@ def main():
                 except requests.exceptions.ReadTimeout as e:
                     logger.error(f"time out ({e})")
                 except requests.exceptions.ConnectionError as e:
-                    logger.error(f"Error Connection ({e})")
+                    logger.error(f"Error Connection ({e})\n{traceback.format_exc()}")
             except Exception as e:
-                logger.error(f"Ошибка: {e} \n-----------------------------\n {traceback.format_exc()}")
+                logger.error(f"Ошибка: {e} \n-----------------------------\n{traceback.format_exc()}")
                 time.sleep(3)
     except Exception as e:
         bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
