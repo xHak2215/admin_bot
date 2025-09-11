@@ -215,7 +215,7 @@ class team_data_bese():
 
         :param2: team neme 
 
-        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456 ,'in_time':13133.013, 'status':'user' }`
+        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456, 'in_time':13133.013, 'status':'user' }`
 
         :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
 
@@ -259,15 +259,16 @@ class team_data_bese():
         params = []
         updates = []
         
-        if team_name != None:
+        if team_name:
             updates.append("team_name = ?")
             params.append(team_name)
         
-        if users != None:
+        if users:
             updates.append("users = ?")
             params.append(json.dumps(users))
+            print(123)
         
-        if team_info != None:
+        if team_info:
             updates.append("team_info = ?")
             params.append(json.dumps(team_info))
             
@@ -290,6 +291,7 @@ class team_data_bese():
             return[None,None,None,None]
         finally:
             connection.close()
+            connection.close()
 
     def data_bese_colonium(self,c_name='team', colonium_name='team_name')->list|None:
         '''
@@ -305,6 +307,7 @@ class team_data_bese():
         cursor.execute(f"SELECT {colonium_name} FROM {c_name}")
         rows = cursor.fetchall()
         cursor.close()
+        connection.close()
         return rows
     
     def data_seah(self,chat_id:int, name:str)->list|None:
@@ -321,6 +324,7 @@ class team_data_bese():
         cursor.execute('SELECT * FROM team WHERE team_name = ? AND chat_id = ?', (name, chat_id))#поиск
         data=cursor.fetchall()
         cursor.close()
+        connection.close()
         data_list=[]
         for i in data:
             for a in i:
