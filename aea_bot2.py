@@ -648,7 +648,7 @@ def status(rec):
         status=["😐",'ну норм','нейтральный','не без греха'][random.randint(0,3)]
     return status
 
-@bot.message_handler(commands=['я', 'me' , 'Я'])
+@bot.message_handler(commands=['я', 'me', 'Я'])
 def send_statbstic(message):
     if time.time()-message.date <=80:
         data=data_base(message.chat.id,message.from_user.id,soob_num=1)
@@ -656,7 +656,7 @@ def send_statbstic(message):
 
 warn_data= {}
 # Обработка ответа на сообщение /warn
-@bot.message_handler(commands=['warn'])
+@bot.message_handler(commands=['warn', 'варн', 'предупреждение'])
 def handle_warn(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id==5194033781:
         if message.reply_to_message:
@@ -696,7 +696,7 @@ def handle_warn(message):
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
                     
-@bot.message_handler(commands=['reput'])
+@bot.message_handler(commands=['reput', 'репут', 'репутация'])
 def handle_reput(message):
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id ==5194033781:
         if message.reply_to_message:
@@ -1990,17 +1990,20 @@ def team(message):
     command=str(message.text.split(' ',1)[1])
     if 'создать' in command: 
         name=command.split('создать',1)[1].replace(' ','')
-        if name in [i[0] for i in bese.data_bese_colonium()]:
-            bot.reply_to(message,"такая команда уже есть!\nпридумай другое название")
-            return
-        if not re.match("^[a-zA-Z0-9а-яА-Я]+_",name) and len(name)<46:
-            bese.team_bese_init(message.chat.id, name,
-                           users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
-                           team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
-                           )
-            bot.reply_to(message,f"команда '{name}' создана")
+        colonium=bese.data_bese_colonium()
+        if colonium:
+            if name in [i[0] for i in colonium]:
+                bot.reply_to(message,"такая команда уже есть!\nпридумай другое название")
+                return
+            if len(name)<71:
+                bese.team_bese_init(message.chat.id, name,
+                            users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
+                            team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
+                            )
+                bot.reply_to(message,f"команда '{name}' создана")
 
-        else:bot.reply_to(message,"такое название не подходит! ")
+            else:bot.reply_to(message,"такое название не подходит!")
+        else:logger.error("data_bese_colonium отработала не правельно")
 
     elif 'инфо' in command:
         name=command.split('инфо', 1)[1].replace(' ','')
@@ -2028,7 +2031,8 @@ def team(message):
             bot.reply_to(message, messages)
 
         else:
-            bot.reply_to(message,f"не коректный ответ от БД ({data}) при попытке тегнуть ")
+            bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {name}</code>",parse_mode='HTML')
+            return
     
     elif 'пригласить' in command: # /team пригласить в team_name 
         if message.reply_to_message:
@@ -2066,6 +2070,22 @@ def team(message):
 
     elif 'покинуть' in command:
         name=command.split(' ',1)[1]
+        un=message.from_user.username
+        id=message.from_user.id
+
+        team_data=bese.data_seah(message.chat.id, name)
+        if team_data:
+            users=json.loads(team_data[3])
+            new=[]
+            for u in users:
+                if u['id'] != id or u['status'] == "creator":
+                    new.append(u)
+                else:
+                    continue
+            bese.upades(name, message.chat.id, new, None)
+            bot.reply_to(message,f"вы покинули {name}")
+        else:
+            bot.reply_to(message, "такой команды нет")
 
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('teamGetSiginYes_'))
