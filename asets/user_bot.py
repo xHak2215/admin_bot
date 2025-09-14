@@ -65,7 +65,7 @@ async def get_user_id(username: str) -> dict:
             logger.info("❌ Username не может быть пустым")
             return {"id":None, "username": None, "name": None, "error": "no username"}
 
-        username = username.lstrip('@').replace(' ', '')
+        username = username.replace('@', '').replace(' ', '')
         client = data.client
 
         try:
