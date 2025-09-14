@@ -15,6 +15,8 @@ import binascii
 import gc
 import aiohttp
 import asyncio
+import tempfile
+import numpy as np
 
 
 import asets.ffmpeg_tool
@@ -25,18 +27,18 @@ from asets.data_bese import data_base, team_data_bese
 try:
     from vosk import Model, KaldiRecognizer
     import telebot 
-    from telebot import types, formatting, util, apihelper
+    from telebot import types
     from telebot.types import InlineKeyboardButton
     from collections import defaultdict
     import psutil
-    import schedule
+    #import schedule
     import requests
-    from requests import get
     import subprocess
     from loguru import logger
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
     from googletrans import Translator
+    from moviepy import ImageSequenceClip
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -63,7 +65,7 @@ except ImportError:
         if i<1:
             print('\33[32m suppress (успешно)')
         else:
-            print('\33[32m error install (что то пошло не так )')
+            print('\33[31m error install (что то пошло не так )')
     exit(1)
 
 if not os.path.exists(os.path.join(os.getcwd(), 'asets')):
@@ -96,8 +98,8 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '/report — забань дебила в чате\n\n/я — узнать свою репутацию и количество сообщений\n\n/info — узнать информацию о пользователе\n\n/translite (сокращено /t) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n/download (сокращено /dow) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n/to_text — перевод ГС в текст\n\n/serh - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение [help] и наши хелперы по возможности помогут вам \n\n/admin_command команды администраторов' 
-admin_command = '/monitor — выводит показатели сервера \n/warn — понижение репутации на 1\n/reput — повышение репутации на 1\n/data_base — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n/info — узнать репутацию пользователя\n/ban — отправляет в бан пример: <code>/бан reason:по рофлу</code>\n/mute — отправляет в мут <code>/мут reason:причина time:1.h</code>\n .h — часы (по умолчанию) , .d — дни , .m — минуты\n/blaklist — добавляет стикер в черный список\n/unblaklist — убирает стикер из черного списка\n/log - получить лог файл\n/backup_log - создание бек апа текущего лог файла\n/null_log - очишение текущего лог файла'
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов' 
+admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очишение текущего лог файла'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n
 
@@ -132,7 +134,6 @@ class Blak_stiket_list:
 
     def slen(self):
         """Возвращает количество запрещенных стикеров."""
-        print(self.blist)
         return len(self.blist)-1
 
 bklist=Blak_stiket_list()
@@ -213,7 +214,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-#bot.send_message(admin_grops, f"бот запущен ")
+bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -275,7 +276,7 @@ def null_log(message):
         #проверка на админа
             if str(message.chat.id)==str(admin_grops) or message.from_user.id ==5194033781:
                 if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
-                    bot.send_message(admin_grops,f"логи очищены очистил : @{message.from_user.username}")
+                    bot.send_message(admin_grops, f"логи очищены очистил : @{message.from_user.username}")
                     file = open(log_file_name, "w")
                 #    Изменяем содержимое файла
                     file.write("log null")
@@ -377,7 +378,7 @@ def monitor_command(message):
 
 # Команда /test 
 @bot.message_handler(commands=['test'])
-def monitor_command(message):
+def monitor_test_command(message):
     test=''
     test+=os.getcwd()+'\n'
     swap = psutil.swap_memory()
@@ -413,18 +414,25 @@ def monitor_command(message):
     test=test+f"ID> {message.from_user.id}\n"
     test=test+f"ID admin grup> {admin_grops}\n"
     test=test+f"IP>{requests.get('https://api.ipify.org').content.decode('utf8')}\n"
-    try:
-        response=requests.get(user_bot_api_server, timeout=20)
-        if response.status_code==200:
-            test=test+'user bot>удачное подключение к api юзер бота\n'
-        else:logger.debug(f"status code:{response.status_code}")
-    except requests.exceptions.ReadTimeout or requests.exceptions.ConnectionError:
-        test=test+'user bot>не удачное подключение к api юзер бота\n'
-    if '-all' in message.text:
+
+    if '-all' in message.text.lower():
+        user_bot_test='user bot\n'
+        try:
+            response=requests.get(user_bot_api_server, timeout=20)
+            if response.status_code==200:
+                user_bot_test=user_bot_test+'|-подключение: удачное \n'
+            else:logger.debug(f"status code:{response.status_code}")
+        except requests.exceptions.ReadTimeout or requests.exceptions.ConnectionError:
+            user_bot_test=user_bot_test+'|-подключение: не удачное\n'
+        if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'user_bot_config.json')):
+            user_bot_test=user_bot_test+'∟config: ok\n'
+        else:
+            user_bot_test=user_bot_test+'∟config: error no congig\n'
+
         api_data=get_telegram_api()
-        test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info:{api_data["respone"]}"
+        test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info: {str(api_data["respone"])}\n\n{user_bot_test}"
     cpu_percent, ram_percent, disk_percent, response_time, ping1 = monitor_resources()
-    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\n\n{test}admin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}")
+    bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}\n\n{test}")
 
 # Команда /time_server
 @bot.message_handler(commands=['time_server'])
@@ -508,6 +516,7 @@ def handle_report(message):
             for i in range(len(report_user)):
                 data_base(message.chat.id,report_user[i],ps_reputation_upt=-1)
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
+            teg=''
             for i in range(len(admin_list)):
                 if i >0:
                     teg+=f",{admin_list[i]}"
@@ -868,6 +877,8 @@ def handle_ban_command(message):
 
 @bot.message_handler(commands=['mute','мут'])
 def handle_mute_command(message):
+        if ' ' not in message.text:
+            bot.reply_to(message,"не правельный синтакисис команды")
         commad=message.text.split(' ',1)[1]
         if BAN_AND_MYTE_COMMAND !=True:
             bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
@@ -878,33 +889,43 @@ def handle_mute_command(message):
                 
                 if data: 
                     timer= int(data.group(1))
-                    deleua= data.group(2)
+                    deleua= data.group(2).replace(' ','').lower()
                 else:
                     bot.reply_to(message,"не верно задан порамитер времени ")
                     return
-                
+
+
                 reason= re.search(r"reason:(\w+)", commad.lower().replace(' ',''))
                 if reason:
                     reason=reason.group(1)
                 else:
-                    bot.reply_to(message," аргумент reason: указан не верно")
+                    bot.reply_to(message,"аргумент reason: указан не верно")
                     return
 
-                #num_date=int(re.sub(r'\D', '',timer)) # убираем буквы и т.д
-                if deleua=='h' or deleua=='d' or deleua=='m' or deleua=='s':
-                    if deleua=='h':
-                        deleu=3600
-                    elif deleua=='d':
-                        deleu=86400
-                    elif deleua=='m':
-                        deleu=60
-                    elif deleua=='s':
-                        deleu=0
+                if deleua=='h' or deleua=='hour' or deleua=='hours' or deleua=='час' or deleua=='часы':
+                    deleu=3600
+    
+                elif deleua=='d' or deleua=='day' or deleua=='days' or  deleua=='день' or deleua=='часы':
+                    deleu=86400
+
+                elif deleua=='m' or deleua=='minute' or deleua=='минута' or deleua=='минуты':
+                    deleu=60
+                
+                elif deleua=='неделя' or deleua=='weeks' or deleua=='week':
+                    deleu=604800
+
+                elif deleua=='месяц' or deleua=='месяцы' or deleua=='month' or deleua=='months':
+                    deleu=2592000
+
+                elif deleua=='s' or deleua=='second' or deleua=='секунды' or deleua=='секунда':
+                    deleu=0
                 else:
-                    bot.reply_to(message,'не корректное значение времени использован аргумент по умолчанию (в часах)\nпример: /мут for @username time:1 h reason:причина  \nh - часы (по умолчанию) , d - дни , m - минуты ')
+                    bot.reply_to(message,f"не корректное значение времени {deleua} использован аргумент по умолчанию (в часах)\nпример: /мут for @username time:1 h reason:причина  \nh - часы (по умолчанию) , d - дни , m - минуты ")
                     return
                 
-            else:bot.reply_to(message,"не хватает аргументов пример: /мут for @username time:1 h reason:причина")
+            else:
+                bot.reply_to(message,"не хватает аргументов пример: /мут for @username time:1 h reason:причина")
+                return
 
             try:
                 user_names=str(commad.split('for',1)[1].split('time:')[0]).replace('\n','').replace(' ','')
@@ -912,6 +933,7 @@ def handle_mute_command(message):
                     user_name_list=user_names.split(',')
                 else:
                     user_name_list=[user_names]
+                data=None
                 for user_name in user_name_list:
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
@@ -1011,7 +1033,7 @@ def translitor(message):
                     bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
                 translator = Translator()
                 conf = translator.detect(str(message.text))
-                result = translator.translate(text[1], src=conf.lang, dest=text[1].replace(' ',''))
+                result = translator.translate(text[0], src=conf.lang, dest=text[1].replace(' ',''))
                 bot.reply_to(message,result.text)
             except ValueError:
                 bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
@@ -1987,25 +2009,47 @@ bese=team_data_bese()
 
 @bot.message_handler(commands=['team','каманда','клан'])  
 def team(message):
+    if ' ' not in message.text:
+        bot.reply_to(message,"нет параметров! <code>/team -help</code> для справки",parse_mode='HTML')
+        return 
+    if "-help" in message.text or "-h" in message.text:
+        bot.reply_to(message,
+        """
+<code>/team создать имя_команды </code> - имя должно быть не более 70 символов и быть без пробелов все пробелы автамтически убераються;
+<code>/team пригласить в имя_команды </code> - ответе на сообщения того человека которого хотите пригласить в команду;
+<code>/team инфо имя_команды </code> - информация о команде а именно время создания, участники,создатель команды;
+<code>/team сбор имя_команды </code> - тегает всех учасиков команды';
+<code>/team покинуть имя_команды </code> - удаляет вас из команды если вы не ее создатель;
+<code>/team удалить имя_команды </code> - позволяет создателю команды удалить ее; 
+        """
+        ,parse_mode='HTML') 
+        return
+
     command=str(message.text.split(' ',1)[1])
     if 'создать' in command: 
+        if ' ' not in command:
+            bot.reply_to(message,"нет аргумента")
+            return 
         name=command.split('создать',1)[1].replace(' ','')
         colonium=bese.data_bese_colonium()
-        if colonium:
-            if name in [i[0] for i in colonium]:
-                bot.reply_to(message,"такая команда уже есть!\nпридумай другое название")
-                return
-            if len(name)<71:
-                bese.team_bese_init(message.chat.id, name,
-                            users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
-                            team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
-                            )
-                bot.reply_to(message,f"команда '{name}' создана")
+        if not colonium:
+            colonium=[]
+        if name in [i[0] for i in colonium]:
+            bot.reply_to(message,"такая команда уже есть!\nпридумай другое название")
+            return
+        if len(name)<71:
+            bese.team_bese_init(message.chat.id, name,
+                        users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
+                        team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
+                        )
+            bot.reply_to(message,f"команда '{name}' создана")
 
-            else:bot.reply_to(message,"такое название не подходит!")
-        else:logger.error("data_bese_colonium отработала не правельно")
+        else:bot.reply_to(message,"такое название не подходит!")
 
     elif 'инфо' in command:
+        if ' ' not in command:
+            bot.reply_to(message,"нет аргумента")
+            return 
         name=command.split('инфо', 1)[1].replace(' ','')
         messages=''
         data=bese.data_seah(message.chat.id, name)
@@ -2022,6 +2066,9 @@ def team(message):
             bot.reply_to(message,f"не коректный ответ от БД ({data})")
 
     elif 'сбор' in command:
+        if ' ' not in command:
+            bot.reply_to(message,"нет аргумента")
+            return 
         name=command.split('сбор', 1)[1].replace(' ','')
         messages=''
         data=bese.data_seah(message.chat.id, name)
@@ -2038,6 +2085,9 @@ def team(message):
         if message.reply_to_message:
             un=message.reply_to_message.from_user.username
             id=message.reply_to_message.from_user.id
+            if ' ' not in command or 'в' not in command:
+                bot.reply_to(message,"нет аргумента")
+                return 
             team_name=command.split('в',1)[1].replace(' ','')
 
             if team_name in [i[0] for i in bese.data_bese_colonium()]:
@@ -2050,6 +2100,7 @@ def team(message):
                             return
                 
                     markup = types.InlineKeyboardMarkup()
+                    
                     markup.add(types.InlineKeyboardButton(
                     "✅ принять",
                     callback_data=f"teamGetSiginYes_{id}_{team_name}"))
@@ -2069,7 +2120,10 @@ def team(message):
         else: bot.reply_to(message,"ответе на сообщение человека которого нужно пригласить")
 
     elif 'покинуть' in command:
-        name=command.split(' ',1)[1]
+        if ' ' not in command:
+            bot.reply_to(message,"нет аргумента")
+            return 
+        name=command.split(' ',1)[1].replace(' ','')
         un=message.from_user.username
         id=message.from_user.id
 
@@ -2087,6 +2141,30 @@ def team(message):
         else:
             bot.reply_to(message, "такой команды нет")
 
+    elif 'удалить' in command:
+        if ' ' not in command:
+            bot.reply_to(message,"нет аргумента")
+            return 
+        name=command.split(' ',1)[1].replace(' ','')
+        id=message.from_user.id
+        team_data=bese.data_seah(message.chat.id, name)
+        if team_data:
+            users=json.loads(team_data[3])
+            new=[]
+            for user in users:
+                if str(user['id']) == str(id):
+                    if user['status'] == "creator":
+                        r=bese.delete_team(name, message.chat.id)
+                        if r:
+                            bot.reply_to(message, "команда удалена")
+                        else:
+                            bot.reply_to(message,"не удалось удалить комнду вероятно ошибка БД, извените")
+                    else:
+                        bot.reply_to(message,"нет прав удаление команды доступно только ее создателям")
+                else:
+                    bot.reply_to(message,"нет прав удаление команды доступно только ее создателям")
+    else:
+        bot.reply_to(message, "нет параметров или они не корректны")
 
 @bot.callback_query_handler(func=lambda call:call.data.startswith('teamGetSiginYes_'))
 def handle_team_buttony(call):
@@ -2260,7 +2338,7 @@ def anti_spam_forward(message,text=text,warn=warn):
 
 @bot.message_handler(content_types=['text','sticker'])
 def message_handler(message):
-    ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
+    ar=data_base(message.chat.id, message.from_user.id, soob_num=1)[1]# добовляем 1 сообщение
     if message.sticker:
         if message.sticker.file_id in bklist.blist:
             if bool(DELET_MESSADGE):
@@ -2334,49 +2412,107 @@ def other_message_handler(message):
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
         logger.info(f"new member in chat | user name> @{message.from_user.username}")
-        data_base(message.chat.id,new_member.id,time_v=message.date)
-        if time.time()-message.date <=350:
+        data_base(message.chat.id, new_member.id, time_v=message.date)
+        if time.time() - message.date <= 350:
             try:
-                input_gif_path = os.path.join(os.getcwd(),'asets','hello.gif')
-                output_gif_path = 'output.gif'
-                # Открываем изображение
+                input_gif_path = os.path.join(os.getcwd(), 'asets', 'hello.gif')
+
                 gif = Image.open(input_gif_path)
-                # Создаем список для хранения кадров с текстом
                 frames_with_text = []
-                # Настройка шрифта (по умолчанию, если шрифт не найден, будет использован шрифт по умолчанию)
+
+                # шрифт: пробуем ваш файл, если нет — дефолтный
+                if os.path.exists(os.path.join(os.getcwd(), 'asets', 'Roboto-VariableFont_wdth,wght.ttf')):
+                    font_path = os.path.join(os.getcwd(), 'asets', 'Roboto-VariableFont_wdth,wght.ttf')
+                    font = ImageFont.truetype(font_path, 43)
+                else:
+                    font = ImageFont.load_default()
+
+                for frame_index in range(getattr(gif, "n_frames", 1)):
+                    gif.seek(frame_index)
+                    frame = gif.convert("RGBA")
+
+                    draw = ImageDraw.Draw(frame)
+                    if message.from_user.first_name:
+                        usernameh = message.from_user.first_name
+                    else:
+                        usernameh = message.from_user.username
+                    ot = 26 - len(usernameh)
+                    otstup = ' ' * ot
+                    text = f"добро пожаловать в чат  \n{otstup}{usernameh}"
+                    text_position = (85, 300)
+
+                    # рисуем текст (RGBA)
+                    draw.text(text_position, text, font=font, fill=(21, 96, 189, 255))
+
+                    # Конвертируем обратно в "P" palette для корректного GIF
+                    out_frame = frame.convert("P", palette=Image.ADAPTIVE,colors=128)
+                    frames_with_text.append(out_frame)
+                #этот код был спижен
+                duration_ms = getattr(gif, "info", {}).get("duration", None)
+                if duration_ms:
+                    fps = max(1, int(round(1000.0 / duration_ms)))
+                else:
+                    fps = 20
+
+                # Ограничим fps по количеству кадров и длительности чтобы избежать экстремов
+                num_frames = len(frames_with_text)
+                if num_frames > fps * 10:  # если очень много кадров, увеличим шаг
+                    step = max(1, num_frames // (fps * 10))
+                    frames_with_text = frames_with_text[::step]
+                    num_frames = len(frames_with_text)
+
+                # Подготовка numpy-кадров (RGB) напрямую из PIL
+                frames_np = [np.array(im.convert("RGB")) for im in frames_with_text]
+
+                # динамическое определение пути
+                tmpdir = tempfile.mkdtemp(prefix="welcome_vid_")
+                out_mp4 = os.path.join(tmpdir, "welcome.mp4")
+
+                clip = None
                 try:
-                    font = ImageFont.truetype(os.path.join(os.getcwd(),'asets','Roboto-VariableFont_wdth,wght.ttf'), 43)
-                except IOError:
-                    font = ImageFont.load_default(size=35)
-                width, height = gif.size    
-                # Добавляем текст на каждый кадр
-                for frame in range(gif.n_frames):
-                    gif.seek(frame)
-                    # Копируем текущий кадр
-                    new_frame = gif.copy()
-                #    Преобразуем в rgba 
-                    new_frame = new_frame.convert('RGBA', colors=256)
-                    draw = ImageDraw.Draw(new_frame)
-                    # Определяем текст и его позицию
-                    usernameh=message.from_user.first_name
-                    ot=26-len(usernameh)
-                    otstup=' '*ot
-                    text = f"добро пожаловать в чат  \n{otstup}{usernameh}" 
-                    text_position =(85, 300) # Позиция (x, y) для текста        
-                    # Добавляем текст на кадр
-                    draw.text(text_position, text, font=font, fill=(21,96,189))  # Цвет текста задан в формате RGB
-                    frames_with_text.append(new_frame)# Добавляем новый кадр в список
-                    # Сохраняем новый GIF с текстом
-                frames_with_text[0].save(output_gif_path, save_all=True, append_images=frames_with_text[1:], loop=0, format='GIF', optimize=True)
-                with open(output_gif_path, 'rb') as gif_file:
-                    bot.send_animation(message.chat.id, gif_file, reply_to_message_id=message.message_id,timeout=30,width=width ,height=height)
-                os.remove(output_gif_path)
+                    clip = ImageSequenceClip(frames_np, fps=fps)
+
+                    # Подбор параметров кодека: используем crf 23 (баланс) если файл большой, иначе 20
+                    # Рассчитаем примерный целевой CRF по исходному количеству пикселей/кадра:
+                    w, h = frames_np[0].shape[1], frames_np[0].shape[0]
+                    px = w * h
+                    # простая эвристика: чем больше пикселей, тем чуть выше CRF (больше сжатие)
+                    crf = 23
+                    if px < 320*240:
+                        crf = 20
+                    elif px > 1280*720:
+                        crf = 25
+
+                    # Запись файла (moviepy использует ffmpeg)
+                    clip.write_videofile(
+                        out_mp4,
+                        codec="libx264",
+                        ffmpeg_params=["-pix_fmt", "yuv420p", "-crf", str(crf)],
+                        preset="medium"
+                    )
+                    #коец спиженого кода
+                    # Отправляем как video
+                    with open(out_mp4, "rb") as vf:
+                        bot.send_video(message.chat.id, vf, reply_to_message_id=message.message_id, timeout=60)
+
+                finally:
+                    if clip is not None:
+                        try:
+                            clip.close()
+                        except Exception:
+                            pass
+                    try:
+                        for fn in os.listdir(tmpdir):
+                            os.remove(os.path.join(tmpdir, fn))
+                        os.rmdir(tmpdir)
+                    except Exception as e:
+                        logger.error(f"{e}\n{traceback.format_exc()}")
             except Exception as e:
                 logger.error(f"error send hello message >>{e}\n{traceback.format_exc()}")
-                bot.send_message(admin_grops,f"случилась ошибка при отправке привецтвенного gif \n({datetime.now().strftime("%H:%M")})")
-                username = '@'+new_member.username if new_member.username else new_member.first_name 
-                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки",f"<s>новенький скинь ножки</s>  Привет, {username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0,1)]
-                bot.reply_to(message , welcome_message, parse_mode="HTML")
+                username = '@' + new_member.username if new_member.username else new_member.first_name
+                welcome_message = [f"Привет, {username}! Добро пожаловать в наш чат!  /help для справки", f"<s>новенький скинь ножки</s>  Привет, {username}! Добро пожаловать в наш чат!  /help для справки", f"привецтвую, {username}! Добро пожаловать в наш чат!  /help для справки"][random.randint(0, 2)]
+                bot.reply_to(message, welcome_message, parse_mode="HTML")
+
 
 
 @bot.message_handler(content_types=['left_chat_member'])
@@ -2407,7 +2543,7 @@ def main():
                 except requests.exceptions.ConnectionError as e:
                     logger.error(f"Error Connection ({e})\n{traceback.format_exc()}")
             except Exception as e:
-                logger.error(f"Ошибка: {e} \n-----------------------------\n{traceback.format_exc()}")
+                logger.error(f"Ошибка: {e}\n-----------------------------\n{traceback.format_exc()}")
                 time.sleep(3)
     except Exception as e:
         bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
