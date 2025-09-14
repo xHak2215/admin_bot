@@ -266,7 +266,6 @@ class team_data_bese():
         if users:
             updates.append("users = ?")
             params.append(json.dumps(users))
-            print(123)
         
         if team_info:
             updates.append("team_info = ?")
@@ -330,4 +329,25 @@ class team_data_bese():
             for a in i:
                 data_list.append(a)
         return data_list
-        
+    
+    def delete_team(self,team_name:str ,chat_id:int)->bool:
+        """
+        удаляет строку с командой
+        """
+        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout = 10000")  # Ждать разблокировки до 10 сек
+        cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+        try:
+            cursor.execute("DELETE FROM team WHERE team_name = ? AND chat_id = ?", (team_name, chat_id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return True
+        except Exception as e:
+            logger.error(f"error data bese {e}")
+            cursor.close()
+            connection.close()
+            return False
