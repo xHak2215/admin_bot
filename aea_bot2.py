@@ -25,6 +25,7 @@ from asets.wiki_api_lib import wiki
 from asets.data_bese import data_base, team_data_bese
 
 try:
+    import vosk
     from vosk import Model, KaldiRecognizer
     import telebot 
     from telebot import types
@@ -98,7 +99,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов' 
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создовать клавны/команды; <code>/team -h</code> для инсктукции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_trlrgram_bot#doc_commad" a>расширенная документация команд</a>' 
 admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очишение текущего лог файла'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_trlrgram_bot#creat_program_info">см. дакументацию</a>\n\n
@@ -106,6 +107,7 @@ admin_command = '<code>/monitor</code> — выводит показатели �
 logse="nan"
 i=0
 admin_list=["@HITHELL","@mggxst"]
+
 log_file_name="cats_message.log"
 user_bot_api_server='http://localhost:8800'
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
@@ -214,7 +216,7 @@ if warn >=3:
 
 date = datetime.now().strftime("%H:%M")
 
-bot.send_message(admin_grops, f"бот запущен ")
+#bot.send_message(admin_grops, f"бот запущен ")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
@@ -514,17 +516,21 @@ def handle_report(message):
             n=5
         if len(report['responses']) >= n:
             for i in range(len(report_user)):
-                data_base(message.chat.id,report_user[i],ps_reputation_upt=-1)
+                data_base(message.chat.id, report_user[i], ps_reputation_upt=-1)
 #           bot.kick_chat_member(chat_id, user_to_ban, until_date=int(time.time()) + 86400)
             teg=''
-            for i in range(len(admin_list)):
-                if i >0:
-                    teg+=f",{admin_list[i]}"
-                else:
-                    teg+=f"{admin_list[i]}"
-            bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
+            if admin_list:
+                for i in range(len(admin_list)):
+                    if i >0:
+                        teg+=f",{admin_list[i]}"
+                    else:
+                        teg+=f"{admin_list[i]}"
+            mer=bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
             if DELET_MESSADGE:
-                bot.delete_message(message.chat.id,message.message_id)
+                try:
+                    bot.delete_message(message.chat.id, message.message_id)
+                except telebot.apihelper.ApiTelegramException as e:
+                    bot.reply_to(mer, f"не удлось удалить сообщения вероятно у бота не достаточно прав\nerror:{e}")
         # Удаляем данные о репорте
         del report_data[chat_id]
     else:
@@ -538,7 +544,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
     cursor.execute("PRAGMA journal_mode=WAL;")
     try:
         # Выполняем запрос для получения данных из указанного столбца по индексу строки
-        query = f'SELECT {column_name} FROM Users LIMIT 1 OFFSET ?'
+        query = f"SELECT {column_name} FROM Users LIMIT 1 OFFSET ?"
         cursor.execute(query, (row_index,))  # Передаем индекс как кортеж
         result = cursor.fetchone()  # Получаем первую строку результата
         if result:
@@ -547,7 +553,7 @@ def fetch_data_by_column_and_row(column_name, row_index):
             return None
     except sqlite3.Error as e:
         logger.error(f'get data base error >> {e}')
-        return 'get data base error >>'+str(e)
+        return f"get data base error >> {e}"
     
 @bot.message_handler(commands=['config','настройки'])
 def configfile(message):
@@ -842,35 +848,41 @@ def handle_ban_command(message):
             else :
                 bot.reply_to(message,'SyntaxError\nнет аргумента reason:\nпример:<code>/бан for @username\n reason:причина`</code>',parse_mode='HTML')
                 return
-            try:
-                user_names=str(commad.split('for',1)[1].split('reason:')[0]).replace('\n','').replace(' ','')
-                if ',' in user_names:
-                    user_name_list=user_names.split(',')
-                else:
-                    user_name_list=[user_names]
-                for user_name in user_name_list:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    data = loop.run_until_complete(get_user_id(user_name))
-                    if data != None:
-                        if data['error']!=None:
-                            logger.error(f"user bot server connect error:{data['error']}")
-                            bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
-                            return
-                        else:
+            user_names=str(commad.split('for',1)[1].split('reason:')[0]).replace('\n','').replace(' ','')
+            if ',' in user_names:
+                user_name_list=user_names.split(',')
+            else:
+                user_name_list=[user_names]
+            for user_name in user_name_list:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                data = loop.run_until_complete(get_user_id(user_name))
+                if data != None:
+                    if data['error']!=None:
+                        logger.error(f"user bot server connect error:{data['error']}")
+                        bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
+                        return
+                    else:
+                        try:
                             bot.ban_chat_member(message.chat.id, int(data['id']))
                             logger.info(f"ban for {user_name} id:{data['id']}\nreason:{reason}")
                             bot.send_message(admin_grops,f'ban for {user_name}\nreason:{reason}')
-                    else:
-                        logger.error(f"user bot server connect error")
-                        if message.reply_to_message:
+                        except telebot.apihelper.ApiTelegramException as e:
+                            bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
+                            logger.error(f"{e}\n{traceback.format_exc()}")
+                else:
+                    logger.error(f"user bot server connect error")
+                    if message.reply_to_message:
+                        try:
                             bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
                             logger.info(f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
                             bot.send_message(admin_grops,f'ban for {message.reply_to_message.from_user.username}\nreason:{reason}')
-                        else:
-                            bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать бан")
-            except telebot.apihelper.ApiTelegramException:
-                bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
+                        except telebot.apihelper.ApiTelegramException as e:
+                            bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
+                            logger.error(f"{e}\n{traceback.format_exc()}")
+                    else:
+                        bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать бан")
+
 
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и забанить наивный'][random.randint(0,5)])
@@ -927,35 +939,40 @@ def handle_mute_command(message):
                 bot.reply_to(message,"не хватает аргументов пример: /мут for @username time:1 h reason:причина")
                 return
 
-            try:
-                user_names=str(commad.split('for',1)[1].split('time:')[0]).replace('\n','').replace(' ','')
-                if ',' in user_names:
-                    user_name_list=user_names.split(',')
+            user_names=str(commad.split('for',1)[1].split('time:')[0]).replace('\n','').replace(' ','')
+            if ',' in user_names:
+                user_name_list=user_names.split(',')
+            else:
+                user_name_list=[user_names]
+            data=None
+            for user_name in user_name_list:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                data = loop.run_until_complete(get_user_id(user_name))
+            if data != None:
+                if data['error']!=None:
+                    logger.error(f"user bot server connect error:{data['error']}")
+                    bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
+                    return
                 else:
-                    user_name_list=[user_names]
-                data=None
-                for user_name in user_name_list:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    data = loop.run_until_complete(get_user_id(user_name))
-                if data != None:
-                    if data['error']!=None:
-                        logger.error(f"user bot server connect error:{data['error']}")
-                        bot.reply_to(message,f"ошибка сервер юзер бота >{data['error']}")
-                        return
-                    else:
+                    try:
                         bot.restrict_chat_member(message.chat.id, int(data['id']), until_date=(message.date + timer*deleu))
                         logger.info(f"myte for {user_names} id:{data['id']} time:{timer}{deleua} reason:{reason}")
                         bot.send_message(admin_grops,f'myte for {data['id']}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
-                else:
-                    if message.reply_to_message:
+                    except telebot.apihelper.ApiTelegramException as e:
+                        bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
+                        logger.error(f"{e}\n{traceback.format_exc()}")
+            else:
+                if message.reply_to_message:
+                    try:
                         bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=(message.date + timer*deleu))
                         logger.info(f"myte for {message.reply_to_message.from_user.username} id:{message.reply_to_message.from_user.id} time:{timer}{deleua} reason:{reason}")
                         bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
-                    else:bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать мут")
+                    except telebot.apihelper.ApiTelegramException as e:
+                        bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
+                        logger.error(f"{e}\n{traceback.format_exc()}")
+                else:bot.reply_to(message,"ошибка сервер юзер бота не активен ответе на сообщение что бы выдать мут")
 
-            except telebot.apihelper.ApiTelegramException:
-                bot.reply_to(message,'error>> elebot.apihelper.ApiTelegramException\nвероятно у бота недостаточно прав')
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
 
@@ -1038,44 +1055,41 @@ def translitor(message):
             except ValueError:
                 bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
         
+vosk_model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
+vosk.SetLogLevel(-1) # отключение логов
+rec = KaldiRecognizer(Model(vosk_model_path), 16000) # эксмпляр модели 
 
-@bot.message_handler(commands=['to_text'])
+
+@bot.message_handler(commands=['to_text','в_текст'])
 def audio_to_text(message):
-    if message.reply_to_message :
+    if message.reply_to_message:
         if message.reply_to_message.voice:
             try:
-                # Инициализация модели Vosk
-                model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
-                if not os.path.exists(model_path):
-                    logger.warning(f"Модель Vosk не найдена по пути: {model_path}")
-                    bot.reply_to(message,f'модель {model_path} не найдена сообщите разработчику/хосту о проблеме')
+                if not os.path.exists(vosk_model_path):
+                    logger.warning(f"Модель Vosk не найдена по пути: {vosk_model_path}")
+                    bot.reply_to(message,f'модель {vosk_model_path} не найдена сообщите разработчику/хосту о проблеме')
                     return
                 else:
                     msg=bot.reply_to(message,['выполняется','идет расшифровка','приодеться немного подождать...','Loading','загрузка'][random.randint(0,4)])
-                class Bufer_data:
-                    def __init__(self,rec='',ogg_data=''):
-                        self.rec = rec
-                        self.ogg_data = ogg_data
+
                 timers=time.time()
-                temp=Bufer_data()
-                def init_ai():
-                    temp.rec = KaldiRecognizer(Model(model_path), 16000)
 
-                def download():
-                    file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                    temp.ogg_data = bot.download_file(file_info.file_path)
-                ai_stream= threading.Thread(target=init_ai)
-                ai_stream.daemon = True
+                file_info = bot.get_file(message.reply_to_message.voice.file_id)
+                if file_info:
+                    ogg_data = bot.download_file(file_info.file_path)
+                else:
+                    logger.error(f"no data file_info ({file_info})")
+                    if msg is not None:
+                        bot.edit_message_text(
+                        chat_id=message.chat.id,
+                        message_id=msg.message_id,
+                        text=f"случилась ошибка :("
+                        )
+                    return
 
-                downl_stream= threading.Thread(target=download)
-                downl_stream.daemon = True
-
-                downl_stream.start()
-                ai_stream.start()
                 # Распознавание
                 results = []
-                downl_stream.join()
-                data_r=asets.ffmpeg_tool.audio_conwert(temp.ogg_data,'wav') # конвертирую в wav
+                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data,'wav') # конвертирую в wav
                 if type(data_r)!=bytes:
                     logger.error(data_r)
                     bot.edit_message_text(
@@ -1085,14 +1099,13 @@ def audio_to_text(message):
                     )
                     return
                 wav_buffer = io.BytesIO(data_r)
-                ai_stream.join()
                 while True:
                     data = wav_buffer.read(4000)
                     if not data:
                         break
-                    if temp.rec.AcceptWaveform(data):
-                        results.append(json.loads(temp.rec.Result()))
-                final = json.loads(temp.rec.FinalResult())
+                    if rec.AcceptWaveform(data):
+                        results.append(json.loads(rec.Result()))
+                final = json.loads(rec.FinalResult())
                 text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
                 try:
                     bot.edit_message_text(
@@ -1364,6 +1377,7 @@ class DeleteData:
     def __init__(self):
         self.message_l = []
         self.chat_id = None
+
 # Глобальный экземпляр для хранения данных
 delete_data = DeleteData()
 
@@ -1374,22 +1388,27 @@ def nacase(message, delete_message=None):
         
         if bool(BAMBAM): 
             # Ограничиваем пользователя на 24 часа
-            bot.restrict_chat_member(
-                chat_id=message.chat.id,
-                user_id=message.from_user.id,
-                until_date=int(time.time()) + 86400, 
-                can_send_messages=False
-            )
+            try:
+                bot.restrict_chat_member(
+                    chat_id=message.chat.id,
+                    user_id=message.from_user.id,
+                    until_date=int(time.time()) + 86400, 
+                    can_send_messages=False
+                )
+            except telebot.apihelper.ApiTelegramException as e:
+                bot.send_message(admin_grops, f'{str(e)}\nВероятно у бота недостаточно прав')
+                logger.error(f'{str(e)}\nВероятно у бота недостаточно прав')
             data_base(message.chat.id, message.from_user.id, ps_reputation_upt=3)
             bot.send_message(
                 message.chat.id, 
                 f"Пользователью @{message.from_user.username} выдан мут на 1 день."
             )
-        
+
+        text = str(message.text if message.content_type == "text" else message.content_type)[:120]
         # Формируем сообщение для админов
         admin_msg = (
             f'Обнаружен спам от пользователя >> @{message.from_user.username}\n'
-            f'Сообщение: {message.text if message.content_type == "text" else message.content_type}'
+            f'Сообщение: {text}'
             f'|https://t.me/c/{the_message}/{message.message_id}'
         )
         
@@ -1410,11 +1429,7 @@ def nacase(message, delete_message=None):
         
         logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username}, id: {message.from_user.id} message:https://t.me/c/{the_message}/{message.message_id}')
         
-    except telebot.apihelper.ApiTelegramException as e:
-        bot.send_message(admin_grops, f'{str(e)}\nВероятно у бота недостаточно прав')
-        logger.error(f'{str(e)}\nВероятно у бота недостаточно прав')
     except Exception as e:
-        bot.send_message(admin_grops, f"при обработке спама случилась ошибка: {e}")
         logger.error(f"Неожиданная ошибка: {str(e)}\n{traceback.format_exc()}")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('delete_spam_'))
@@ -2350,15 +2365,21 @@ def message_handler(message):
     
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:
-        teg=''
         id_help_hat=str(message.chat.id).replace("-100", "")
         if time.time()-message.date<=86400: 
-            for i in range(len(admin_list)):
-                if i >0: teg+=f",{admin_list[i]}"
-                else: teg+=f"{admin_list[i]}"
+            teg=''
             mess_text=''
-            if len(message.text)>100:
-                mess_text=message.text[:100]+"..."
+
+            if admin_list:
+                for i in range(len(admin_list)):
+                    if i >0:
+                        teg+=f",{admin_list[i]}"
+                    else:
+                        teg+=f"{admin_list[i]}"
+
+            
+            if len(message.text)>150:
+                mess_text=message.text[:150]+"..." #сокрощяем если текст сильно длинный
             else:mess_text=message.text
             bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он:{mess_text}\n | https://t.me/c/{id_help_hat}/{message.message_id}")
     elif commad.startswith("!я"):   
@@ -2543,7 +2564,7 @@ def main():
                 except requests.exceptions.ConnectionError as e:
                     logger.error(f"Error Connection ({e})\n{traceback.format_exc()}")
             except Exception as e:
-                logger.error(f"Ошибка: {e}\n-----------------------------\n{traceback.format_exc()}")
+                logger.error(f"Ошибка: {e} \n-----------------------------\n{traceback.format_exc()}")
                 time.sleep(3)
     except Exception as e:
         bot.send_message(admin_grops,f'ошибка при старте:\n{e}\n-----------------------\n{traceback.format_exc()}')
