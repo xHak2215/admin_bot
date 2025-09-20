@@ -273,25 +273,18 @@ def send_log(message):
 #очищение логов /null_log
 @bot.message_handler(commands=['null_log','clear_log'])
 def null_log(message):
-    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781:
-        try:
-        #проверка на админа
-            if str(message.chat.id)==str(admin_grops) or message.from_user.id ==5194033781:
-                if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator']:
-                    bot.send_message(admin_grops, f"логи очищены очистил : @{message.from_user.username}")
-                    file = open(log_file_name, "w")
-                #    Изменяем содержимое файла
-                    file.write("log null")
-                    # Закрываем файл
-                    file.close()
-                    logger.info(f"логи очищены, очистил:  @{message.from_user.username}")
-                else:
-                    bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
-            else:
-                bot.reply_to(message,'команда доступна только из группы администрации')
-        except Exception as e:
-            bot.send_message(admin_grops,f"error logs file>> {e} ")
-            logger.error(f"clear log  error >> {e}")
+    if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id == 5194033781:
+        if str(message.chat.id)==str(admin_grops) or message.from_user.id == 5194033781:
+                file = open(log_file_name, "w")
+                # Изменяем содержимое файла
+                file.write("log null\n")
+                # Закрываем файл
+                file.close()
+                bot.send_message(admin_grops, f"логи очищены очистил : @{message.from_user.username}")
+                logger.info(f"логи очищены, очистил:  @{message.from_user.username}")
+        else:
+            bot.reply_to(message,'команда доступна только из группы администрации')
+
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
@@ -1007,11 +1000,16 @@ def scan_hex_in_text(text:list)->bool:
         if i not in ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']:
             return False
     return True
+class Bufer():
+    def __init__(self):
+        self.out_buffer=''
+        self.sdfg=''
+
 
 @bot.message_handler(commands=['t','translate','перевод'])  
 def translitor(message):
     if message.reply_to_message:
-        if message.reply_to_message.text==None:
+        if not message.reply_to_message.text:
             bot.reply_to(message,"я могу переводить только текст!")
             return
         bins=str(message.reply_to_message.text).replace(' ','').lower()
@@ -1024,36 +1022,47 @@ def translitor(message):
             return
         elif len(message.text.split(' ')) > 1:
             if str(message.text.split(' ')[1].replace(' ','')) == 'translit' or str(message.text.split(' ')[1]).replace(' ','') == 'транслит':
-                bot.reply_to(message,''.join(asets.dictt.translit_eng.get(c, c) for c in message.reply_to_message.text))
+                bot.reply_to(message, ''.join(asets.dictt.translit_eng.get(c, c) for c in message.reply_to_message.text))
                 return
-        translator = Translator()
-        conf = translator.detect(message.reply_to_message.text)
-        kont=f'Язык: {conf.lang}'
-        result = translator.translate(message.reply_to_message.text, src=conf.lang, dest='ru')
-        
-        bot.reply_to(message,kont+'\n'+str(result.text))
+            
+        buf=Bufer()
+        async def translit():
+            async with Translator() as translator:
+                conf = await translator.detect(message.reply_to_message.text)
+                buf.sdfg =f'Язык: {conf.lang}'
+                buf.out_buffer = await translator.translate(message.reply_to_message.text, src=conf.lang, dest='ru')
+        asyncio.run(translit())
+        bot.reply_to(message, f"{buf.sdfg}\n{buf.out_buffer.text}")
     else:
         if ':' in message.text:
-            try:
-                text=str(message.text).replace('/t','').replace('/translate','').split(':')
-                if text[1].lower()=="bin":
-                    hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
-                    binary_str = ''.join([
-                    format(int(hex_str[i:i+2], 16), '08b') 
-                    for i in range(0, len(hex_str), 2)])
-                    bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
-                    return
-                elif text[1].lower()=="hex":
-                    bot.reply_to(message, '202e'+(text[0].encode("utf-8").hex().replace("'",'')))
-                    return
-                elif text[1].lower()=="translit" or text[1].lower()=="транслит":
-                    bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
-                translator = Translator()
-                conf = translator.detect(str(message.text))
-                result = translator.translate(text[0], src=conf.lang, dest=text[1].replace(' ',''))
-                bot.reply_to(message,result.text)
-            except ValueError:
-                bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
+            text=str(message.text).replace('/t','').replace('/translate','').split(':')
+            if text[1].lower()=="bin":
+                hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
+                binary_str = ''.join([
+                format(int(hex_str[i:i+2], 16), '08b')for i in range(0, len(hex_str), 2)])
+                bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
+                return
+            
+            elif text[1].lower()=="hex":
+                bot.reply_to(message, '202e'+(text[0].encode("utf-8").hex().replace("'",'')))
+                return
+            
+            elif text[1].lower()=="translit" or text[1].lower()=="транслит":
+                bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
+
+            buf=Bufer()
+
+            async def translit():
+                async with Translator() as translator:
+                    try:
+                        conf =  await translator.detect(str(message.text))
+                        buf.out_buffer = await translator.translate(text[0], src=conf.lang, dest=text[1].replace(' ',''))
+                    except ValueError:
+                        bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
+            asyncio.run(translit())
+            bot.reply_to(message, buf.out_buffer.text)
+        else:
+            bot.reply_to(message, "нет арументов или они ошибочны")
         
 vosk_model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
 vosk.SetLogLevel(-1) # отключение логов
@@ -1134,13 +1143,13 @@ def download(message):
         bot.reply_to(message,
             'потдерживает скачивание голосовых сообщений,стикеров и аудио дорожек видео(звук из видео)\n'
             'придел веса файла 20 мб\n'
-            "возможные форматы: <a href='https://github.com/xHak2215/admin_trlrgram_bot#format'>см. дакументацию</a>\n"
+            "возможные форматы: <a href='https://github.com/xHak2215/admin_bot#format'>см. дакументацию</a>\n"
             'инструкция и примеры использования:\n'
             'скачивание стикеров: <code>/download(или же /dow) png(любой доступный формат) </code> дополнительный отрибут:<code>resize:</code> - изменяет размер изоброжения  по умолчанию 512 на 512 пример:<code>/download png resize:600,600</code>\n'
             'скачивание голосовых сообщений: <code>/download mp3 </code>\n'
             'скачивание аудио дорожек: <code>/download mp3 </code>\n'
             'скачивание фото: <code>/download png </code>'
-        ,parse_mode='HTML',disable_web_page_preview=True) 
+        ,parse_mode='HTML',disable_web_page_preview=True)
         return
     
     if message.reply_to_message:
@@ -2392,12 +2401,18 @@ def message_handler(message):
         anti_spam_forward(message)
     else:
         anti_spam(message,ar)
-        if AUTO_TRANSLETE['Activate']:
-            translator = Translator()
-            conf = translator.detect(str(message.text))
-            if conf.lang != AUTO_TRANSLETE['laung']:
-                result = translator.translate(str(message.text), src=conf.lang, dest=AUTO_TRANSLETE['laung'])
-                bot.reply_to(message,result.text)
+        if AUTO_TRANSLETE['Activate'] and message.text:
+            async def translit():
+                async with Translator() as translator:
+
+                    detect =  await translator.detect(message.text)
+                    if detect.lang != AUTO_TRANSLETE['laung']:
+
+                        ttext = await translator.translate(message.text, src=detect.lang, dest=AUTO_TRANSLETE['laung'])
+                        bot.reply_to(message, f"({detect.lang})перевод:{ttext.text}")
+                    
+            asyncio.run(translit())
+
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler(message):
