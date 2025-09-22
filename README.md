@@ -338,15 +338,15 @@ Main commands:
 
 /info - user information. Arguments: `-all` - full list of information (requires admin rights).<br>
 
-/я - your reputation and message count.<br>
+/me - your reputation and message count.<br>
 
-/бан - ban (block) a user with reason preserved, example: `/бан for @username reason:reason`.<br>
+/ban - ban (block) a user with reason preserved, example: `/бан for @username reason:reason`.<br>
 
-/мут - mute (temporary restriction from sending messages) a user with reason and time, example: `/мут for @username time: 1 hours reason:reason`.<br>
+/myte - mute (temporary restriction from sending messages) a user with reason and time, example: `/мут for @username time: 1 hours reason:reason`.<br>
 
 /admin_command - administrator commands.<br>
 
-/настройки - shows settings (configuration file `settings.json`). Has parameter `-r` which reloads settings if they were changed without restarting the bot, example: `/настройки -r`.<br>
+/config - shows settings (configuration file `settings.json`). Has parameter `-r` which reloads settings if they were changed without restarting the bot, example: `/настройки -r`.<br>
 
 /t - translate a message to Russian or another language (also supports conversion to bin (binary), hex (hexadecimal) and transliteration encodings). Example: `/t any text:en`.<br>
 
