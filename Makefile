@@ -11,7 +11,7 @@ install:
 
 run:
 	@echo "Running app..."
-	@$(PYTHON) aea_bot2.py
+	@$(PYTHON) start.py
 
 clean:
 	@echo "Cleaning virtual environment..."
