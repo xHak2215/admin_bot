@@ -249,7 +249,7 @@ console_control - разрешения удалённого запуска ко�
 auto_translete - авто перевод сообщений в чате с иностранного на указанный в `laung` по умолчанию `"laung":"ru"` параметр активации `Activate` по умолчанию `"Activate":false`.
 
 
-###настройка user bot 
+### настройка user bot 
 
 user bot нужен для расширения функционала бота и обхода ограничений обычных телеграм бота 
 
@@ -308,155 +308,158 @@ user bot нужен для расширения функционала бота 
 
 ---
 
-## Information
+## Information 
 
-### Administrator Bot with Spam Report Notifications
+<h3>Admin bot with spam, report and question notifications</h3>
+<h3>Description</h3>
+<h4>
+This is an administration assistant bot with useful features for users and admins. Main functionality:
 
-### Description
-
-This is an assistant bot for administrators with quite useful functionality for both users and admins. Core features:
-
-· Anti-spam
-· Notes for questions directed to administration
-· Reputation system and message counting
+- anti-spam  
+- marking questions for administration  
+- reputation system and message counting  
+- welcoming users and saving join date  
 
 ---
 
+<a id="doc_commad"></a>
+
 Main commands:
 
-/help - Help.
+/help - help.<br>
 
-/report - To report a violation. To leave a comment, add a space after the command and write your comment.
+/report — to notify about a violation (sent to the admin group). To leave a comment, put a space after the command and type it.<br>
 
-/monitor - For tracking PC/hosting system metrics.
+/monitor — to monitor system metrics of the PC/hosting.<br>
 
-/warn - Decrease reputation by 1.
+/warn - decrease reputation by 1.<br>
 
-/reput - Increase reputation by 1.
+/reput - increase reputation by 1.<br>
 
-/info - User information. Arguments: -all - full information list.
+/info - user information. Arguments: `-all` - full list of information (requires admin rights).<br>
 
-/me - Check your own reputation.
+/я - your reputation and message count.<br>
 
-/ban - Ban (block) a user, saving the reason.
+/бан - ban (block) a user with reason preserved, example: `/бан for @username reason:reason`.<br>
 
-/mute - Mute (temporarily restrict from sending messages) a user, specifying the reason and duration.
+/мут - mute (temporary restriction from sending messages) a user with reason and time, example: `/мут for @username time: 1 hours reason:reason`.<br>
 
-/admin_command - Administrator commands.
+/admin_command - administrator commands.<br>
 
-/settings - Displays settings (configuration file settings.json). Has a -r parameter which reloads the settings if they were changed without needing to restart the bot. Example: /settings -r.
+/настройки - shows settings (configuration file `settings.json`). Has parameter `-r` which reloads settings if they were changed without restarting the bot, example: `/настройки -r`.<br>
 
-/t - Translate a message to Russian or another language (additionally supports encoding to bin, hex, and translit). Example: /t any text:en.
+/t - translate a message to Russian or another language (also supports conversion to bin (binary), hex (hexadecimal) and transliteration encodings). Example: `/t any text:en`.<br>
 
-/download - Download stickers and voice messages. When downloading symbols, specify the file extension. Example: /download png.
+/download - download stickers and voice messages. When downloading symbols, specify the extension, e.g.: `/download png`.<br>
 
-/test - Extensive bot system testing. Argument: -all: outputs additional information about the connection with the Telegram API.
+/test - extensive bot system testing. Argument: `-all` outputs additional info about connection to Telegram API and user bot.<br>
 
-/ping - Check response latency for a URL. Arguments:
+/ping - check response latency to a URL. Arguments:
+- `/ping <url>` to test; default is https://ya.ru  
+- number of repeats `/ping <url>,<count>`  
+- calculation mode True — compute average statistical latency across all attempts. By default (if not specified) shows latency for each attempt: `/ping <url>,<count>,<mode>`.<br>
 
-· /ping <url> for testing (default is https://ya.ru).
-· Number of latency measurement attempts: /ping <url>,<number of requests>.
-· Calculation mode: True - calculate average statistical latency from all attempts. Default (if value is not specified) shows latency for each attempt: /ping <url>,<number of requests>,<mode>.
+/message_info - outputs information about a message (useful for media).<br>
 
-/message_info - Displays information about a message, useful for media.
+/log - send log file.<br>
 
-/log - Send the log file.
+/data_base - outputs the database to search for a specific user; append their ID after the command separated by a space, example: `/data_base 5194033781`.<br>
 
-/data_base - Outputs the database. To search for a specific user in the database, add their ID to the command separated by a space. Example: `/data_base 5194033781`
+/serh - search articles on Wikipedia, example: `serh :<prompt>`. Article language depends on `settings.json` parameter `auto_translete`:`laung`. Arguments: `-ping` - check latency to wikipedia.org. <br>
 
-/search - Search for articles on Wikipedia. Example: `search :<prompt>`. Article language depends on the auto_translate:lang parameter in settings.json. Arguments: -ping - check latency of the wikipedia.org site.
+/blaklist — adds a sticker to the blacklist (stickers in the blacklist are automatically removed if deletion is allowed in settings). Argument: `-info` - shows number of stickers in the blacklist.<br>
 
-/blacklist - Add a sticker to the blacklist (stickers on the blacklist are automatically deleted if deletion is enabled in the settings). Argument: `-info` - shows the number of stickers on the blacklist.
+/unblaklist — removes a sticker from the blacklist.<br>
 
-/unblacklist - Remove a sticker from the blacklist.
+/creat - allows creating scripts; a simple "command programming language", in beta with limited functionality. (Disabled in groups and public chats due to spam — available only in private chats.)
+<a id="creat_program_info"></a>
+<details><summary>Syntax and arguments</summary><p>
 
-/creat - Allows creating scripts. It is a simple "command programming language", is in beta testing, and has questionable functionality. (Due to spam using this command, it has been disabled in group chats and is only available in private messages). <a id="creat_program_info"></a>
+## Syntax:
 
-<details><summary>Syntax and Arguments</summary><p>
+### General command syntax:
 
-Syntax:
-
-General command syntax:
-
-```sencoscript
+  ```script
   /creat
   # create a variable
   var a=a
   # send variables
-  send "a equals: {a}"
-```
+  send "a equals:{a}"
+  ```
+  No leading indentation!
 
-No indentation at the beginning!
+Comments start with `#`.
 
-Comments are marked with the symbol: #
+To insert a variable wrap its name with curly braces `{}`.
 
-To insert a variable, wrap its name in curly braces `{}`
+### Commands:
 
-Commands:
+- send - send messages to chat (HTML formatting supported), example: `send "hello world"`  
+- var - create variables, example: `var a=1`
 
-· send - Send messages to the chat (HTML formatting is supported). Example: send "hello world"
-· var - Create variables. Example: var a=1
-  · Details:
-    ```sencoscript
+  - Details:
+
+    ```script
     # create a variable
     var a=1
-    # send variables
-    send "a equals: {a}"
+    # send variable
+    send "a equals:{a}"
     ```
-    Output: a equals: 1
-· value - Send all variables in dictionary format.
-· calc - Execute logical operations. Example: calc a=1>0. Available operators: +, -, *, /, **, %, ==, !=, <, <=, >, >=
-  · Details:
-  ```sencoscript
+    Output: `a equals:1`
+- value - send all variables as a dictionary  
+- calc - perform logical/math operations, example `calc a=1>0`. Available operators: +, -, *, /, **, %, ==, !=, <, <=, >, >=
+
+  - Details:
+   ```script
    var a=5
    var b=10
-  
+
    calc out={a}<{b}
    
    send "{out}"
-  ```
-· .end - End the program.
-· random - Generate a random number within a specified range. Example: random a=1-5
-· timeout - Execution delay. Example: timeout 5
-· if - Execute a command if a condition is true. Example: if 1>0:send "True". To run multiple commands, separate them with &.
-· len - Count the number of characters in a string/variable. Example: len a=abc
-· list - Alternative list (indexing starts from 0). Example: list a=1,2,3[1]. You can also assign data by list element ID. Example: list a=1,2,3[1]=0
-· for - Executes commands a specified number of times, counting from 0, and places the counter value in a variable. To run multiple commands, separate them with ;. Example: for i in 5:send "num:{i}"
-· replace - Replace a character or several characters in a string. Example: replace a=text:old text/character,new character
+   ```
+- .end - terminate the program  
+- random - generate a random number in given range, example:`random a=1-5`  
+- timeout - execution delay, example:`timeout 5`  
+- if - execute command if condition true, example: `if 1>0:send "True"`. For multiple commands separate them with `&`.  
+- len - counts characters in a string/variable, example:`len a=abv`  
+- list - alternative indexed list starting at 0, example:`list a=1,2,3[1]`. You can assign by index: `list a=1,2,3[1]=0`  
+- for - run commands a number of times counting from 0; the counter is placed in a variable. For multiple commands separate with `;`, example:`for i in 5:send "num:{i}"`  
+- replace - replace character(s) in a string, example:`replace a=text:old,new`
 
-Variable constants:
+### Variable constants:
 
-· $reply_to - The text of the message that was replied to with the /creat command. If there was no reply, the variable will contain $none.
-· $pi - Mathematical constant 'π' (pi) up to 10 decimal places.
-· $username - The username of the user whose message was replied to with the /creat command. If there was no reply, the variable will contain $none.
+- `$reply_to` - text of the message replied to when running `/creat`; if none, value is `$none`  
+- `$pi` - π to 10 decimal places  
+- `$username` - username of the user whose message was replied to when running `/creat`; if none, value is `$none`
 
-Example simple programs:
+### Example simple programs:
 
-Hello World
+> hello world
 
-```sencoscript
+```senscript
 /creat
 
 send "hello world"
 ```
 
-Roulette game
+> roulette game
 
-```sencoscript
+```senscript
 /creat
 
 random rand=1-3
 if {rand}==1:send "you won"
-if {rand}==2:send "you lost, try again next time"
-if {rand}==3:send "you lost alas",;send "try again next time"
+if {rand}==2:send "you lost, try next time"
+if {rand}==3:send "you lost unfortunately",;send "try next time"
 ```
 
-Russian Roulette game
+> Russian roulette
 
-```sencoscript
+```
 /creat 
 
-program Russian Roulette
+program Russian roulette
 
 for i in 6:random r=0-{i};if {r}==1:send"you lost"&.end;if {i} == 5:send"you won"
 
@@ -464,14 +467,27 @@ for i in 6:random r=0-{i};if {r}==1:send"you lost"&.end;if {i} == 5:send"you won
 
 </p></details>
 
+/team - command for creating teams/clans.
+Usage:
+- `/team создать <team_name>` - name must be max 70 characters and contain no spaces (spaces are removed automatically);  
+- `/team пригласить в <team_name>` - reply to the message of the person you want to invite;  
+- `/team инфо <team_name>` - team info: creation time, members, team creator;  
+- `/team сбор <team_name>` - mention all team members;  
+- `/team покинуть <team_name>` - removes you from the team if you are not its creator;
 
-It features logging of messages and other events.
+(command is in development)
 
-Installation:
+</h4>
 
-To run the bot, insert your token into the TOKEN file without any spaces or other characters!
+The bot logs messages and other events.
 
-The application requires <a href="https://www.python.org/">Python 3.12</a> or higher.
+---
+
+### Installation:
+
+<h3>To run the bot, paste your token into the TOKEN file without spaces or any other characters!</h3>
+
+The application requires Python 3.12 or higher.
 
 ```sh
 git clone https://github.com/xHak2215/admin_telegram_bot
@@ -483,10 +499,7 @@ pip install -r requirements.txt
 python aea_bot.py
 
 ```
-
-Installation using make:
-
-Download and install dependencies
+Install using `make`:
 
 ```sh
 git clone https://github.com/xHak2215/admin_telegram_bot
@@ -503,36 +516,62 @@ Run:
 make run
 ```
 
-Configuration:
+### Configuration:
 
 ```json
 {
-    "bambam": false,
-    "delete_message": true,
-    "admin_groups": "-1001234567890",
-    "spam_limit": 10,
-    "spam_timer": 4,
-    "ban_and_mute_command": true,
-    "console_control": true,
-    "auto_translate": {"lang": "ru", "Activate": false}
+    "bambam":false,
+    "delet_messadge":true,
+    "admin_grops":"-1001234567890",
+    "spam_limit":10,
+    "spam_timer":4,
+    "ban_and_myte_command":true,
+    "console_control":true,
+    "auto_translete":{"laung":"ru","Activate":false}
+
 }
 ```
 
-true - enabled, false - disabled. bambam- Automatic mutes/bans.
+bambam - automatic mutes/bans.<br>
 
-delete_message - Automatic message deletion (specifically, a message will be deleted after 5 reports).
+delet_messadge - automatic deletion of messages (e.g., a message will be deleted after 5 reports).<br>
 
-admin_groups - Administration group (enter its ID).
+admin_grops - admin group ID (fill it with the group ID).<br>
 
-spam_limit - Number of messages from one user considered spam (within the time period specified in spam_timer).
+spam_limit - number of messages from one user considered spam within the time window spam_timer.<br>
 
-spam_timer - Functionality described above.
+spam_timer - as described above.<br>
 
-ban_and_mute_command - Enables the /ban and /mute commands for bans and mutes respectively.
+ban_and_myte_command - enables /бан and /мут commands for bans and mutes respectively.<br>
 
-console_control - Allows remote execution of terminal commands using the /console command. Syntax: `/console <terminal command>`. Works only in the administration group by the group administrator. (⚠️This command can execute malicious commands as well;be very careful with enabling this).
+console_control - allows remote execution of terminal commands via `/console`. Syntax `/console <terminal command>` works only in the admin group by a group admin.  
+(⚠️ This command can execute harmful commands as well — be careful enabling it).<br>
 
-auto_translate - Auto-translate foreign language messages in the chat to the language specified in lang (default "lang":"ru"). Activation parameter Activate (default "Activate":false).
+auto_translete - auto-translate messages in chat from foreign languages to the language set in `laung`. Default `"laung":"ru"`. Activation parameter `Activate` default is `false`.
+
+### User bot setup
+
+A user bot is needed to extend functionality and bypass limitations of a regular Telegram bot.
+
+Config file:
+
+```json
+{
+    "API_ID":"00000000", 
+    "API_HASH":"75fg6c01487e616410d8e79e7b2263c7d",
+    "PHONE_NUMBER":"+11111111111",
+    "passworld":"000000"
+
+}
+```
+
+`API_ID` - API ID, obtainable at https://my.telegram.org/ in the developer section.
+
+`API_HASH` - obtained together with `API_ID`.
+
+`PHONE_NUMBER` - phone number of the account.
+
+`passworld` - cloud password for the account; if none, set a new one.
 
 --- 
 
