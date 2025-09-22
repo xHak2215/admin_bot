@@ -265,7 +265,7 @@ user bot нужен для расширения функционала бота 
 }
 ```
 
-`API_ID` - api ID это ID можно получить на <a href="https://my.telegram.org/auth?to=deactivate">этом</a> сайте в разделе developer.
+`API_ID` - этот api ID можно получить на <a href="https://my.telegram.org/auth?to=deactivate">этом</a> сайте в разделе developer.
 
 `API_HASH` - можно получить там же где и `API_ID`.
 
