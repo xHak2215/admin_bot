@@ -416,13 +416,16 @@ def monitor_test_command(message):
             response=requests.get(user_bot_api_server, timeout=20)
             if response.status_code==200:
                 user_bot_test=user_bot_test+'|-подключение: удачное \n'
-            else:logger.debug(f"status code:{response.status_code}")
-        except requests.exceptions.ReadTimeout or requests.exceptions.ConnectionError:
-            user_bot_test=user_bot_test+'|-подключение: не удачное\n'
+            else:
+                logger.debug(f"status code:{response.status_code}")
+                user_bot_test=user_bot_test+'|-подключение:не удачное не верный статус код \n'
+        except requests.exceptions as e:
+            user_bot_test=user_bot_test+f"|-подключение: не удачное ({e})\n"
+
         if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'user_bot_config.json')):
             user_bot_test=user_bot_test+'∟config: ok\n'
         else:
-            user_bot_test=user_bot_test+'∟config: error no congig\n'
+            user_bot_test=user_bot_test+'∟config: error no config\n'
 
         api_data=get_telegram_api()
         test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info: {str(api_data["respone"])}\n\n{user_bot_test}"
@@ -460,7 +463,7 @@ def pravilo(message):
             
 
 # Хранение данных о репортах
-report_data =  {}
+report_data = {}
 report_user = []
 # Обработка ответа на сообщение с /report
 @bot.message_handler(commands=['report','репорт','fufufu'])
@@ -583,7 +586,7 @@ def configfile(message):
             f.close()
         except:pass
         bot.reply_to(message,f"error logs file>> {e} ")
-        logger.error(f"config error >> {e}")
+        logger.error(f"config error >> {e}\n{traceback.format_exc()}")
 
 @bot.message_handler(commands=['data_base'])
 def send_data_base(message):
@@ -772,7 +775,7 @@ def handle_goida(message):
         elif rand==1:bot.reply_to(message,'ГООООООЛ')
         elif rand==2:bot.reply_to(message,'да будет же гойда')
         elif rand==3:bot.reply_to(message,'держи гойду')
-        elif rand==4:bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://soski.tv/images/thumbnails/76828318.jpg').content),reply_to_message_id=message.message_id)
+        elif rand==4:bot.send_photo(message.chat.id,io.BytesIO(requests.get('https://github.com/xHak2215/arhive-host-file/raw/refs/heads/main/goida-%D0%B3%D0%BE%D0%B9%D0%B4%D0%B0.mp4').content),reply_to_message_id=message.message_id)
         
 @bot.message_handler(commands=['bambambam'])
 def handle_warn(message):
@@ -828,7 +831,7 @@ def user_name_to_info(message):
     except Exception as e:
         bot.reply_to(message,str(e))
     
-
+'''
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -933,6 +936,8 @@ def handle_mute_command(message):
                 return
 
             user_names=str(commad.split('for',1)[1].split('time:')[0]).replace('\n','').replace(' ','')
+            if 'reason'in user_names:
+                user_names=user_names.split('reason')[0]
             if ',' in user_names:
                 user_name_list=user_names.split(',')
             else:
@@ -950,8 +955,8 @@ def handle_mute_command(message):
                 else:
                     try:
                         bot.restrict_chat_member(message.chat.id, int(data['id']), until_date=(message.date + timer*deleu))
-                        logger.info(f"myte for {user_names} id:{data['id']} time:{timer}{deleua} reason:{reason}")
-                        bot.send_message(admin_grops,f'myte for {data['id']}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
+                        logger.info(f"mute for {user_names} id:{data['id']} time:{timer}{deleua} reason:{reason}")
+                        bot.send_message(admin_grops,f'mute for {data['id']}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
                     except telebot.apihelper.ApiTelegramException as e:
                         bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
                         logger.error(f"{e}\n{traceback.format_exc()}")
@@ -959,8 +964,8 @@ def handle_mute_command(message):
                 if message.reply_to_message:
                     try:
                         bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=(message.date + timer*deleu))
-                        logger.info(f"myte for {message.reply_to_message.from_user.username} id:{message.reply_to_message.from_user.id} time:{timer}{deleua} reason:{reason}")
-                        bot.send_message(admin_grops,f'myte for {message.reply_to_message.from_user.username}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
+                        logger.info(f"mute for {message.reply_to_message.from_user.username} id:{message.reply_to_message.from_user.id} time:{timer}{deleua} reason:{reason}")
+                        bot.send_message(admin_grops,f'mute for {message.reply_to_message.from_user.username}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}')
                     except telebot.apihelper.ApiTelegramException as e:
                         bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
                         logger.error(f"{e}\n{traceback.format_exc()}")
@@ -968,6 +973,7 @@ def handle_mute_command(message):
 
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
+'''
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_command(message):
