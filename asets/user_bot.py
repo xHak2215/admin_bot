@@ -9,6 +9,7 @@ from fastapi import FastAPI
 import telethon
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
+from telethon.tl.types import Channel, Chat, User
 
 # Загрузка конфигурации
 try:
@@ -59,13 +60,13 @@ async def init():
         save_session(data.client.session)
 
 # Получение информации о пользователе
-async def get_user_id(username: str) -> dict:
+async def get_user_id(usernames: str) -> dict:
     try:
-        if not username:
+        if not usernames:
             logger.info("❌ Username не может быть пустым")
             return {"id":None, "username": None, "name": None, "error": "no username"}
 
-        username = username.replace('@', '').replace(' ', '')
+        usernames = usernames.replace('@', '').replace(' ', '')
         client = data.client
 
         try:
@@ -75,7 +76,7 @@ async def get_user_id(username: str) -> dict:
             logger.info(f"❌ Ошибка подключения: {str(e)}")
             return {"id":None, "username": None, "name": None, "error": "error connect"}
         try:
-            user = await client.get_entity(username)
+            user = await client.get_entity(usernames)
         except telethon.errors.rpcerrorlist.UsernameInvalidError:return {"username": None, "name": None, "error": "error incorrect username"}
         logger.info(f"👤 Username: @{user.username}, 🆔 ID: {user.id}, 📛 Имя: {user.first_name}")
         return {"id":user.id,"username": user.username, "name": user.first_name, "error": None}
@@ -111,21 +112,56 @@ async def get_file_data(file_id):
             'data': None,
             'error':'error the not document'
         }
+    
+
+async def get_members_advanced(chat_id:int)->dict:
+    client = data.client
+
+    try:
+        entity = await client.get_entity(chat_id)
+    except ValueError:
+        return {'error':'the not chat', 'user_list':None}
+        
+    # Проверяем тип entity
+    if not isinstance(entity, (Channel, Chat)):
+        return {'error':'the not chat', 'user_list':None}
+    
+    user_list=[]
+    async for user in client.iter_participants(entity):
+        print(user)
+        # Определяем тип участника
+        user_type = ""
+        if user.bot: user_type ="bot"
+        elif user.admin_rights: user_type ="admin" 
+        elif user.creator: user_type = "creator"
+        else: user_type = "user"
+
+        user_list.append({'type': user_type, 
+                          'id': user.id, 
+                          'user_name': user.username, 
+                          'first_name': user.first_name, 
+                          'last_name': user.last_name,
+                          'phone_number': user.phone
+                          })
+    
+    return {'error':None, 'user_list':user_list}
 
 # Обработчик FastAPI
 @app.on_event("startup")
 async def startup_event():
     await init()
 
-@app.get("/get_user")
-async def spam_detect(user_name: str):
-    return await get_user_id(user_name)
-
 @app.get("/")
 def ping():
     return 200
 
-# Тестирование функции
+@app.get("/get_user")
+async def get_user(user_name: str):
+    return await get_user_id(user_name)
+
+@app.get("/get_user_chat")
+async def get_chat(chat_id:int):
+    return await get_members_advanced(chat_id)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8800)  # Запуск FastAPI
