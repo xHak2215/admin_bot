@@ -831,7 +831,6 @@ def user_name_to_info(message):
     except Exception as e:
         bot.reply_to(message,str(e))
     
-'''
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -973,7 +972,6 @@ def handle_mute_command(message):
 
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
-'''
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_command(message):
