@@ -99,7 +99,7 @@ except:
     logger.debug('error settings import ')
     umsettings()
     
-help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создовать клавны/команды; <code>/team -h</code> для инсктукции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создовать кланы/команды; <code>/team -h</code> для инсктукции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
 admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очишение текущего лог файла'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
@@ -419,7 +419,7 @@ def monitor_test_command(message):
             else:
                 logger.debug(f"status code:{response.status_code}")
                 user_bot_test=user_bot_test+'|-подключение:не удачное не верный статус код \n'
-        except requests.exceptions as e:
+        except Exception as e:
             user_bot_test=user_bot_test+f"|-подключение: не удачное ({e})\n"
 
         if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'user_bot_config.json')):
@@ -815,7 +815,7 @@ async def get_user_id(username: str) -> dict|None:
     except requests.exceptions.ConnectionError:
         return None
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"{user_bot_api_server}/get_user?user_name={username}",timeout=30) as response:
+        async with session.get(f"{user_bot_api_server}/get_user?user_name={username}") as response:
             response.raise_for_status()
             data = await response.json()
             return data
@@ -831,6 +831,7 @@ def user_name_to_info(message):
     except Exception as e:
         bot.reply_to(message,str(e))
     
+'''
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -972,6 +973,7 @@ def handle_mute_command(message):
 
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
+'''
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_command(message):
