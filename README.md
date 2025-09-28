@@ -221,12 +221,13 @@ make run
 {
     "bambam":false,
     "delet_messadge":true,
-    "admin_grops":"-1001234567890",
+    "admin_grops":"-1002284704738",
     "spam_limit":10,
     "spam_timer":4,
     "ban_and_myte_command":true,
     "console_control":true,
-    "auto_translete":{"laung":"ru","Activate":false}
+    "auto_translete":{"laung":"ru","Activate":false},
+    "admin_list":["username"]
 
 }
 ```
