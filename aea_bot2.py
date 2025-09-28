@@ -81,33 +81,36 @@ except FileNotFoundError:
         f.write('please write you token')
     sys.exit(1)
     
-def umsettings():
-    global BAMBAM,DELET_MESSADGE,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL,AUTO_TRANSLETE
-    BAMBAM=False
-    DELET_MESSADGE=True
-    admin_grops="-1002284704738"
-    SPAM_LIMIT = 10 # Максимальное количество сообщений
-    SPAM_TIMEFRAME = 4  # Время в секундах для отслеживания спама
-    BAN_AND_MYTE_COMMAND = True
-    CONSOLE_CONTROL = False
-    AUTO_TRANSLETE = {"laung":"ru","Activate":False}
+
+settings={'bambam': False, 'delet_messadge': False, 'admin_grops': '-1002284704738', 'spam_limit': 10, 'spam_timer': 4, 'ban_and_myte_command': True, 'console_control': True, 'auto_translete': {'laung': 'ru', 'Activate': False}, 'admin_list': ['HITHELL', 'mggxst']}
 
 try:
     with open("settings.json", "r") as json_settings:
-        settings= json.load(json_settings)
+        settings = json.load(json_settings)
 except:
-    logger.debug('error settings import ')
-    umsettings()
+    logger.debug('error settings import')
+    with open("settings.json", "w") as json_settings:
+        json.dump({'bambam': False, 'delet_messadge': True, 'admin_grops': '-1002284704738', 'spam_limit': 10, 'spam_timer': 4, 'ban_and_myte_command': True, 'console_control': True, 'auto_translete': {'laung': 'ru', 'Activate': False}, 'admin_list': ['HITHELL', 'mggxst']} ,json_settings)
+
+
+BAMBAM=bool(settings['bambam'])
+DELET_MESSADGE=bool(settings['delet_messadge'])
+admin_grops=str(settings['admin_grops'])
+SPAM_LIMIT=int(settings['spam_limit'])
+SPAM_TIMEFRAME=int(settings['spam_timer'])
+BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
+CONSOLE_CONTROL=bool(settings['console_control'])
+AUTO_TRANSLETE=dict(settings['auto_translete'])
+admin_list=list(settings['admin_list'])
+
     
-help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создовать кланы/команды; <code>/team -h</code> для инсктукции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
-admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очишение текущего лог файла'
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
+admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очищение текущего лог файла'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
 
 logse="nan"
 i=0
-admin_list=["@HITHELL","@mggxst"]
-
 log_file_name="cats_message.log"
 user_bot_api_server='http://localhost:8800'
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
@@ -169,18 +172,6 @@ with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
             json.dump({'stiker':[0]}, f)
 # Инициализация логирования
 logger.add(log_file_name, level="TRACE", encoding='utf-8', rotation="500 MB")
-try:
-    BAMBAM=bool(settings['bambam'])
-    DELET_MESSADGE=bool(settings['delet_messadge'])
-    admin_grops=str(settings['admin_grops'])
-    SPAM_LIMIT=int(settings['spam_limit'])
-    SPAM_TIMEFRAME=int(settings['spam_timer'])
-    BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
-    CONSOLE_CONTROL=bool(settings['console_control'])
-    AUTO_TRANSLETE=dict(settings['auto_translete'])
-except:
-    umsettings()
-    logger.debug('error settings init')
 
 bot = telebot.TeleBot(TOKEN ,num_threads=5)
 
@@ -518,9 +509,9 @@ def handle_report(message):
             if admin_list:
                 for i in range(len(admin_list)):
                     if i >0:
-                        teg+=f",{admin_list[i]}"
+                        teg+=f",@{admin_list[i]}"
                     else:
-                        teg+=f"{admin_list[i]}"
+                        teg+=f"@{admin_list[i]}"
             mer=bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
             if DELET_MESSADGE:
                 try:
@@ -553,18 +544,13 @@ def fetch_data_by_column_and_row(column_name, row_index):
     
 @bot.message_handler(commands=['config','настройки'])
 def configfile(message):
+    global settings
     try:
-        f=open(f'{os.getcwd()}/settings.json', 'r',encoding='utf-8', errors='replace')
-        out=f.read()
-        if out=='' or out==None:
-            out='none'
-        bot.reply_to(message,out)
-        f.close()
+        bot.reply_to(message, str(settings))
         if  '-r' in message.text :
-            global BAMBAM,DELET_MESSADGE,admin_grops,SPAM_LIMIT,SPAM_TIMEFRAME,BAN_AND_MYTE_COMMAND,CONSOLE_CONTROL,AUTO_TRANSLETE
             try:
                 with open("settings.json", "r") as json_settings:
-                    settings= json.load(json_settings)
+                    settings=json.load(json_settings)
                 try:
                     BAMBAM=bool(settings['BAMBAM'])
                     DELET_MESSADGE=bool(settings['delet_messadge'])
@@ -582,9 +568,6 @@ def configfile(message):
                 bot.reply_to(message,'не удалось прочитать файл настроек')
                 logger.debug('error settings reload ')
     except Exception as e:
-        try:
-            f.close()
-        except:pass
         bot.reply_to(message,f"error logs file>> {e} ")
         logger.error(f"config error >> {e}\n{traceback.format_exc()}")
 
@@ -2388,9 +2371,9 @@ def message_handler(message):
             if admin_list:
                 for i in range(len(admin_list)):
                     if i >0:
-                        teg+=f",{admin_list[i]}"
+                        teg+=f",@{admin_list[i]}"
                     else:
-                        teg+=f"{admin_list[i]}"
+                        teg+=f"@{admin_list[i]}"
 
             
             if len(message.text)>150:
