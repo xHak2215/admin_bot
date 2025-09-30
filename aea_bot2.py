@@ -512,6 +512,7 @@ def handle_report(message):
                         teg+=f",@{admin_list[i]}"
                     else:
                         teg+=f"@{admin_list[i]}"
+
             mer=bot.send_message(admin_grops,f"{teg} грубый нарушитель ! >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_report}/{message.reply_to_message.message_id}")
             if DELET_MESSADGE:
                 try:
@@ -544,29 +545,27 @@ def fetch_data_by_column_and_row(column_name, row_index):
     
 @bot.message_handler(commands=['config','настройки'])
 def configfile(message):
-    global settings
+    global settings, BAMBAM, DELET_MESSADGE, admin_grops, SPAM_LIMIT, SPAM_TIMEFRAME, BAN_AND_MYTE_COMMAND, CONSOLE_CONTROL, AUTO_TRANSLETE, admin_list
     try:
-        bot.reply_to(message, str(settings))
-        if  '-r' in message.text :
+        if  '-r' in message.text:
             try:
                 with open("settings.json", "r") as json_settings:
                     settings=json.load(json_settings)
-                try:
-                    BAMBAM=bool(settings['BAMBAM'])
-                    DELET_MESSADGE=bool(settings['delet_messadge'])
-                    admin_grops=str(settings['admin_grops'])
-                    SPAM_LIMIT=int(settings['spam_limit'])
-                    SPAM_TIMEFRAME=int(settings['spam_timer'])
-                    BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
-                    CONSOLE_CONTROL=bool(settings['console_control'])
-                    logger.info('настройки пере инициалезированы')
-                except:
-                    bot.reply_to(message,'не удалось использованы настройки по умолчанию ')
-                    umsettings()
-                    logger.debug('error settings init')
-            except:
-                bot.reply_to(message,'не удалось прочитать файл настроек')
-                logger.debug('error settings reload ')
+                BAMBAM=bool(settings['bambam'])
+                DELET_MESSADGE=bool(settings['delet_messadge'])
+                admin_grops=str(settings['admin_grops'])
+                SPAM_LIMIT=int(settings['spam_limit'])
+                SPAM_TIMEFRAME=int(settings['spam_timer'])
+                BAN_AND_MYTE_COMMAND=bool(settings['ban_and_myte_command'])
+                CONSOLE_CONTROL=bool(settings['console_control'])
+                AUTO_TRANSLETE=dict(settings['auto_translete'])
+                admin_list=list(settings['admin_list'])
+                logger.info('настройки пере инициалезированы')
+            except Exception as e:
+                bot.reply_to(message, f"не удалось обновить настройки\nошибка")
+                logger.debug('error settings init')
+                
+        bot.reply_to(message, str(settings))
     except Exception as e:
         bot.reply_to(message,f"error logs file>> {e} ")
         logger.error(f"config error >> {e}\n{traceback.format_exc()}")
