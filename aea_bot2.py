@@ -813,7 +813,7 @@ def user_name_to_info(message):
     except Exception as e:
         bot.reply_to(message,str(e))
     
-'''
+r'''
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -1072,7 +1072,7 @@ def audio_to_text(message):
                 timers=time.time()
 
                 file_info = bot.get_file(message.reply_to_message.voice.file_id)
-                if file_info:
+                if file_info is not None:
                     ogg_data = bot.download_file(file_info.file_path)
                 else:
                     logger.error(f"no data file_info ({file_info})")
@@ -1082,6 +1082,8 @@ def audio_to_text(message):
                         message_id=msg.message_id,
                         text=f"случилась ошибка :("
                         )
+                    else:
+                        bot.reply_to(message, f"случилась ошибка :(")
                     return
 
                 # Распознавание
@@ -1103,13 +1105,13 @@ def audio_to_text(message):
                     if rec.AcceptWaveform(data):
                         results.append(json.loads(rec.Result()))
                 final = json.loads(rec.FinalResult())
-                text = " ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")])
+                text = str(" ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")]))
                 try:
                     bot.edit_message_text(
                     chat_id=message.chat.id,
                     message_id=msg.message_id,
-                    text=f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}")
-                except:bot.reply_to(message,f"Распознанный текст:\n{text}\nвремя исполнения:{time.time()-timers:.2f}с.")
+                    text=f"текст:\n{text[:4050]}\n\nвремя исполнения:{time.time()-timers:.2f}")
+                except:bot.reply_to(message,f"текст:\n{text[:4050]}\n\nвремя исполнения:{time.time()-timers:.2f}с.")
                 
             except Exception as e:
                 logger.error(f"Ошибка распознавания: {str(e)}\n{traceback.format_exc()}")
@@ -1176,6 +1178,9 @@ def download(message):
                     img = Image.open(io.BytesIO(bot.download_file(file_info.file_path)))
                     if output_format in ('JPEG', 'JPG'):
                         img = img.convert('RGB')
+                else:
+                    bot.reply_to(message, "не потдерживаеться")
+                    return
         
                 # Сохраняем в байтовый поток
                 output_buffer = io.BytesIO()
@@ -1373,7 +1378,7 @@ def send_message_info(message):
 class DeleteData:
     def __init__(self):
         self.message_l = []
-        self.chat_id = None
+        self.chat_id = int
 
 # Глобальный экземпляр для хранения данных
 delete_data = DeleteData()
@@ -2267,8 +2272,8 @@ def anti_spam(message,auto_repytation=0):
             sr_d,slova=0,[]
             keys_to_delete=[]
             list_mess=[]
-            for i in range(len(user_text.keys())):
-                mess=list(user_text[list(user_text.keys())[i]])
+            for i in range(0, len(user_text.keys())-1):
+                #mess=list(user_text[list(user_text.keys())[i]])
                 for temp_list_mess in list(user_text[list(user_text.keys())[i]]):
                     list_mess.append(list(temp_list_mess.keys())[0])# достаю текст сообщения и добовляю list_mess
                 povtor_messade_shet=0
@@ -2281,7 +2286,8 @@ def anti_spam(message,auto_repytation=0):
                         povtor_messade_shet=povtor_messade_shet+povtor_messade_shet
                     if povtor_messade_shet>=SPAM_LIMIT:
                         keys_to_delete.append(user_id)
-                        nacase(message,[message.message_id])
+                        nacase(message, [message.message_id])
+                        break
                     s_level=0
                     list_povt_slov=[]
                     if list_mess[a]!=None:
@@ -2313,6 +2319,7 @@ def anti_spam(message,auto_repytation=0):
                         keys_to_delete.append(user_id)
                         nacase(message,[message.message_id])
                         user_messages.clear()
+                        break
             #print(list_povt_slov)# debug
             #print(list(user_text.keys())[i])
             #print(s_level)
@@ -2403,7 +2410,7 @@ def message_handler(message):
 
 
 @bot.message_handler(content_types=['video','photo','animation'])
-def message_handler(message):
+def message_handler_anim(message):
     ar=data_base(message.chat.id,message.from_user.id,soob_num=1)[1]# добовляем 1 сообщение
     if time.time() - message.date >= SPAM_TIMEFRAME or message.media_group_id != None:
         return
