@@ -2029,7 +2029,7 @@ def team(message):
     if ' ' not in message.text:
         bot.reply_to(message,"нет параметров! <code>/team -help</code> для справки",parse_mode='HTML')
         return 
-    if "-help" in message.text or "-h" in message.text:
+    if "-help" in message.text.lower() or "-h" in message.text.lower():
         bot.reply_to(message,
         """
 <code>/team создать имя_команды </code> - имя должно быть не более 70 символов и быть без пробелов все пробелы автамтически убераються;
@@ -2056,7 +2056,7 @@ def team(message):
             return
         if len(name)<71:
             bese.team_bese_init(message.chat.id, name,
-                        users=[{"username":message.from_user.username, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
+                        users=[{"username":message.from_user.username, "frist_name":message.from_user.first_name, "id":message.from_user.id, "in_time":message.date, "status":"creator" }],
                         team_info={"creat_time":message.date, "creator_id":message.from_user.id, "creator_user_name":message.from_user.username}
                         )
             bot.reply_to(message,f"команда '{name}' создана")
@@ -2076,8 +2076,14 @@ def team(message):
             messages+=f"создатель: {json.loads(data[4])['creator_user_name']}\n"
             messages+=f"учасники:\n"
             for uname in json.loads(data[3]):
-                messages+=f"{uname['username']}\n"
-            bot.reply_to(message, messages)
+                us=''
+                if uname["username"]:
+                    us=uname["username"]
+                else:
+                    us=f"<a href='tg://user?id={uname["id"]}'>{uname["frist_name"]}</a>"
+                messages+=f"{us}\n"
+
+            bot.reply_to(message, messages ,parse_mode='HTML')
 
         else:
             bot.reply_to(message,f"не коректный ответ от БД ({data})")
@@ -2091,11 +2097,16 @@ def team(message):
         data=bese.data_seah(message.chat.id, name)
         if data:
             for uname in json.loads(data[3]):
-                messages+=f"@{uname['username']}\n"
-            bot.reply_to(message, messages)
+                us=''
+                if uname["username"]:
+                    us="@"+uname["username"]
+                else:
+                    us=f"<a href='tg://user?id={uname["id"]}'>{uname["frist_name"]}</a>"
+                messages+=f"{us}\n"
+            bot.reply_to(message, messages ,parse_mode='HTML')
 
         else:
-            bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {name}</code>",parse_mode='HTML')
+            bot.reply_to(message,f"такой команды нет, создайте ее! <code>/team создать {name}</code>" ,parse_mode='HTML')
             return
     
     elif 'пригласить' in command: # /team пригласить в team_name 
@@ -2111,7 +2122,6 @@ def team(message):
                 team_data=bese.data_seah(message.chat.id, team_name)
                 if team_data:
                     for i in json.loads(team_data[3]):
-                        print(i)
                         if str(i['id'])==str(id):
                             bot.reply_to(message, "этот пользователь уже есть в команде ")
                             return
@@ -2193,7 +2203,7 @@ def handle_team_buttony(call):
     data=bese.data_seah(call.message.chat.id, team_name)
     if data:
         new_user=json.loads(data[3])
-        new_user.append({"username":call.from_user.username, "id":call.from_user.id, "in_time":time.time(), "status":"user"})
+        new_user.append({"username":call.from_user.username, "frist_name":call.from_user.first_name, "id":call.from_user.id, "in_time":time.time(), "status":"user"})
         bese.upades(team_name, call.message.chat.id, new_user, None)
         bot.answer_callback_query(call.id)
         bot.answer_callback_query(call.id, f"вы в команде {team_name} !")
@@ -2265,6 +2275,7 @@ def anti_spam(message,auto_repytation=0):
         user_messages.clear()
         #bot.delete_message(message.chat.id,message.message_id)
         return
+
     if len(list(user_text.keys()))>0 and user_text[list(user_text.keys())[0]] != None and  message.text:
         try:
             user_id=message.from_user.id
