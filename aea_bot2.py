@@ -1378,7 +1378,7 @@ def send_message_info(message):
 class DeleteData:
     def __init__(self):
         self.message_l = []
-        self.chat_id = int
+        self.chat_id = 0
 
 # Глобальный экземпляр для хранения данных
 delete_data = DeleteData()
