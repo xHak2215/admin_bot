@@ -813,7 +813,7 @@ def user_name_to_info(message):
     except Exception as e:
         bot.reply_to(message,str(e))
     
-r'''
+
 @bot.message_handler(commands=['ban','бан'])
 def handle_ban_command(message):
         commad=str(message.text).lower()
@@ -955,7 +955,7 @@ def handle_mute_command(message):
 
         else:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','ты думал сможешь взять и замутить наивный'][random.randint(0,5)])
-'''
+
 
 @bot.message_handler(commands=['cmd','console'])
 def handle_command(message):
@@ -1344,7 +1344,7 @@ def unblaklist(message):
     else:
         if message.date - time.time()<=60:
             bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет','нэт','Для этого нужно быть админом'][random.randint(0,5)])
-            
+
 @bot.message_handler(commands=['message_info'])
 def send_message_info(message):
     if message.reply_to_message:
@@ -1451,12 +1451,15 @@ def handle_spam_deletion(call):
             return
         # Удаление сообщений
         deleted_count = 0
+        i=0
         for msg_id in delete_data.message_l:
             try:
                 bot.delete_message(delete_data.chat_id, msg_id)
                 deleted_count += 1
             except telebot.apihelper.ApiTelegramException as e:
-                bot.send_message(admin_grops, f"случилась ошибка при попытке удаления сообщений\n{str(e)}\nвероятно у бота недостаточно прав")
+                if i<=2:
+                    bot.send_message(admin_grops, f"случилась ошибка при попытке удаления сообщений\n{str(e)}\nвероятно у бота недостаточно прав")
+                i=i+1
             except:continue
 
         # Ответ пользователю
@@ -1744,7 +1747,6 @@ def create_logic(message):
                         arg=arg.replace('{'+str(var)+'}',str(value[var]))
             send_bufer.append(arg)
 
-            
         elif command.startswith('var'):
             try:
                 data=command.split(' ',1)[1]
