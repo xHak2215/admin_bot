@@ -36,9 +36,9 @@
 
 /я - своя репутация и количество сообщений.<br>
 
-/бан - бан (блокировка) пользователя с сохранением причины, пример:`/бан for @username reason:причина`.<br>
+/бан - бан (блокировка) пользователя с сохранением причин.<br>
 
-/мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и времени пример:`/мут for @username time: 1 hours reason:причина мута`.
+/мут - мут (временный запрет на отправление сообщений) пользователя с указанием причины и времени
 
 /admin_command - команды администраторов.
 
@@ -172,6 +172,7 @@ for i in 6:random r=0-{i};if {r}==1:send"ты проиграл"&.end;if {i} == 5
 - `/team сбор <имя_команды>` - тегает всех учасиков команды';
 - `/team покинуть <имя_команды>` - удаляет вас из команды если вы не ее создатель;
 
+/gif_search - команда для поиска gif, пример:`/gif_search котик`
 
 
 </h4>
@@ -251,29 +252,6 @@ make run
 
 `admin_list` - список username (без символа *@*) админов, используется для вызова администрации при 5 и более репортах на одно сообщение 
 
-### настройка user bot 
-
-user bot нужен для расширения функционала бота и обхода ограничений обычных телеграм бота 
-
-файл конфигурации:
-
-```json
-{
-    "API_ID":"00000000", 
-    "API_HASH":"75fg6c01487e616410d8e79e7b2263c7d",
-    "PHONE_NUMBER":"+11111111111",
-    "passworld":"000000"
-
-}
-```
-
-`API_ID` - этот api ID можно получить на <a href="https://my.telegram.org/auth?to=deactivate">этом</a> сайте в разделе developer.
-
-`API_HASH` - можно получить там же где и `API_ID`.
-
-`PHONE_NUMBER` - это номер телефона на который зарегистрирован аккаунт.
-
-`passworld` - это облачный пароль аккаунта, если его нет то задайте новый.
 
 <a id="format"></a>
 
@@ -342,9 +320,9 @@ Main commands:
 
 /me - your reputation and message count.<br>
 
-/ban - ban (block) a user with reason preserved, example: `/бан for @username reason:reason`.<br>
+/ban - ban (block) a user with reason preserved
 
-/myte - mute (temporary restriction from sending messages) a user with reason and time, example: `/мут for @username time: 1 hours reason:reason`.<br>
+/myte - mute (temporary restriction from sending messages) a user with reason and time
 
 /admin_command - administrator commands.<br>
 
@@ -551,32 +529,7 @@ console_control - allows remote execution of terminal commands via `/console`. S
 
 auto_translete - auto-translate messages in chat from foreign languages to the language set in `laung`. Default `"laung":"ru"`. Activation parameter `Activate` default is `false`.
 
-### User bot setup
-
-A user bot is needed to extend functionality and bypass limitations of a regular Telegram bot.
-
-Config file:
-
-```json
-{
-    "API_ID":"00000000", 
-    "API_HASH":"75fg6c01487e616410d8e79e7b2263c7d",
-    "PHONE_NUMBER":"+11111111111",
-    "passworld":"000000"
-
-}
-```
-
-`API_ID` - API ID, obtainable at https://my.telegram.org/ in the developer section.
-
-`API_HASH` - obtained together with `API_ID`.
-
-`PHONE_NUMBER` - phone number of the account.
-
-`passworld` - cloud password for the account; if none, set a new one.
-
 --- 
-
 
 ### Supported Formats  
 #### Audio/Voice Messages:  
