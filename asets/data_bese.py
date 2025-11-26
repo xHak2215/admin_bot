@@ -215,7 +215,7 @@ class team_data_bese():
 
         :param2: team neme 
 
-        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456, 'in_time':13133.013, 'status':'user' }`
+        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', "frist_name":"frist name", 'id':123456, 'in_time':13133.013, 'status':'user' }`
 
         :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
 
