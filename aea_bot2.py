@@ -16,7 +16,6 @@ from dataclasses import dataclass
 import asyncio
 import tempfile
 import numpy as np
-import types
 
 
 import asets.ffmpeg_tool
@@ -101,17 +100,17 @@ CONSOLE_CONTROL=bool(settings['console_control'])
 AUTO_TRANSLETE=dict(settings['auto_translete'])
 admin_list=list(settings['admin_list'])
 
-    
+
 help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
-admin_command = '<code>/monitor</code> — выводит показатели сервера \n<code>/warn</code> — понижение репутации на 1 \n<code>/reput</code> — повышение репутации на 1 \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code> \n<code>/info</code> — узнать репутацию пользователя \n<code>/ban</code> — отправляет в бан пример: <code>/бан for @username reason:по рофлу</code> \n<code>/mute</code> — отправляет в мут <code>/мут for @username reason:причина time:1 h</code> \n h — часы (по умолчанию) , d — дни , m — минуты \n<code>/blaklist</code> — добавляет стикер в черный список \n<code>/unblaklist</code> — убирает стикер из черного списка \n<code>/log</code> - получить лог файл \n<code>/backup_log</code> - создание бек апа текущего лог файла \n<code>/null_log</code> - очищение текущего лог файла'
+admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n <code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code> /mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>';
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
 
 logse="nan"
 i=0
 log_file_name="cats_message.log"
-user_bot_api_server='http://localhost:8800'
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
+vosk_model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
 
 gc.enable()
 gc.set_debug(2)
@@ -381,24 +380,9 @@ def monitor_test_command(message):
     test=test+f"IP>{requests.get('https://api.ipify.org').content.decode('utf8')}\n"
 
     if '-all' in message.text.lower():
-        user_bot_test='user bot\n'
-        try:
-            response=requests.get(user_bot_api_server, timeout=20)
-            if response.status_code==200:
-                user_bot_test=user_bot_test+'|-подключение: удачное \n'
-            else:
-                logger.debug(f"status code:{response.status_code}")
-                user_bot_test=user_bot_test+'|-подключение:не удачное не верный статус код \n'
-        except Exception as e:
-            user_bot_test=user_bot_test+f"|-подключение: не удачное ({e})\n"
-
-        if os.path.exists(os.path.join(os.getcwd(), 'asets' , 'user_bot_config.json')):
-            user_bot_test=user_bot_test+'∟config: ok\n'
-        else:
-            user_bot_test=user_bot_test+'∟config: error no config\n'
-
         api_data=get_telegram_api()
-        test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info: {str(api_data["respone"])}\n\n{user_bot_test}"
+        test=test+f"\napi data\nping:{api_data["ping"]}\nstatus code:{api_data["status"]}\nbot info: {str(api_data["respone"])}\n"
+
     cpu_percent, ram_percent, disk_percent, response_time, ping1 = monitor_resources()
     bot.send_message(message.chat.id, f"CPU: {cpu_percent}%\nRAM: {ram_percent}%\nDisk: {disk_percent}%\nPing: {response_time}\n∟{ping1}\nфайл подкачки: {swap.percent}% ({swap.total / 1073741824:.2f} GB)\nadmin > {bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator']}\n\n{test}")
 
@@ -817,15 +801,15 @@ def handle_mute_command(message):
             bot.reply_to(message,"не правельный синтакисис команды")
         commad=message.text.split(' ',1)[1]
         if not BAN_AND_MYTE_COMMAND:
-            bot.reply_to(message,'отключено , для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
+            bot.reply_to(message,'отключено, для включения задайте парамитер (в settings.json) ban_and_myte_command как true')
             return
         if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator','administrator'] or message.from_user.id == 5194033781:
             if message.reply_to_message:
-                cont = commad.split("\n")[0].lower().replace(' ','')
-                reason = commad.split("\n")[1]
+                cont = commad.split("\n")[0].lower()
+                reason = commad.split("\n", 1)[1]
                 
                 deleua = cont.split(" ")[1]
-                timer = cont.split(" ")[0]
+                timer = int(cont.split(" ")[0])
 
                 if deleua=='h' or deleua=='hour' or deleua=='hours' or deleua=='час' or deleua=='часы':
                     deleu=3600
@@ -845,7 +829,7 @@ def handle_mute_command(message):
                 elif deleua=='s' or deleua=='second' or deleua=='секунды' or deleua=='секунда':
                     deleu=0
                 else:
-                    bot.reply_to(message,f"не корректное значение времени {deleua} использован аргумент по умолчанию (в часах)\nпример: /мут for @username time:1 h reason:причина  \nh - часы (по умолчанию) , d - дни , m - минуты ")
+                    bot.reply_to(message,f"не корректное значение времени {deleua} использован аргумент по умолчанию (в часах)\nпример: /мут time:1 h \nпричина  \nh - часы (по умолчанию), d - дни, m - минуты ")
                     return
                 
                 user = message.reply_to_message
@@ -957,7 +941,6 @@ def translitor(message):
         else:
             bot.reply_to(message, "нет арументов или они ошибочны")
         
-vosk_model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-small-ru-0.22")
 vosk.SetLogLevel(-1) # отключение логов
 rec = KaldiRecognizer(Model(vosk_model_path), 16000) # эксмпляр модели 
 
