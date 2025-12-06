@@ -102,7 +102,7 @@ admin_list=list(settings['admin_list'])
 
 
 help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
-admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n <code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code> /mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>';
+admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n <code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code> /mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
 
@@ -167,6 +167,7 @@ with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'r') as f:
     except json.decoder.JSONDecodeError: 
         with open(os.path.join(os.getcwd(), 'asets', "blacklist.json"), 'w') as f:
             json.dump({'stiker':[0]}, f)
+
 # Инициализация логирования
 logger.add(log_file_name, level="TRACE", encoding='utf-8', rotation="500 MB")
 
@@ -180,7 +181,7 @@ print('\33[0m')
 print('\n'+os.getcwd())
 
 if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'hello.gif')):
-    print('gif OK')
+    print('gif           \33[32mOK\33[0m')
 else:
     warn=warn+1
     print('\33[31error no hello.gif\33[0m')
@@ -188,14 +189,14 @@ if os.path.exists(os.path.join(os.getcwd(), 'asets' ,'blacklist.json')):pass
 else:
     warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'settings.json')):
-    print('settings.json OK\33[0m')
+    print('settings.json \33[32mOK\33[0m')
 else:
     warn=warn+1
     print('\33[31error no settings.json\33[0m')
 if os.path.exists(os.path.join(os.getcwd(), 'requirements.txt')) != True:
     warn=warn+1
 if os.path.exists(os.path.join(os.getcwd(), 'Users_base.db')):
-    print('data base ok')
+    print('data base     \33[32mOk\33[0m')
 else:
     warn=warn+1
     print("\33[31merror no bata base\33[0m")
@@ -235,6 +236,11 @@ def monitor_resources():
         shutka='\nпроцессор шя рванет 🤯'
     print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {popitka1} \n{shutka}")
     return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+shutka),round(popitka1,3)
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    if message.chat.type != 'private' and message.date - time.time() <= 60:
+        bot.reply_to(message, 'приветствую пользователь. ознакомитесь с командами бота с помощью команды /help\n<a href="https://github.com/xHak2215/admin_bot"a>Github бота</a>',parse_mode='HTML',disable_web_page_preview=True)
 
 # Команда /help
 @bot.message_handler(commands=['help','помощь','sos'])
@@ -322,6 +328,7 @@ def send_report_data(message):
     except Exception as e:
         bot.send_message(admin_grops,f"error >> {e} ")
         logger.error(f"error >> {e}")
+
 # очистка консоли /cler 
 @bot.message_handler(commands=['cls','clear'])
 def clear_console(message):
@@ -392,6 +399,7 @@ def time_server_command(message):
     now = datetime.now()
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
+    
 #команда /правило 
 @bot.message_handler(commands=['правило','правила','закон','rules'])
 def pravilo(message):
@@ -737,7 +745,7 @@ def handle_info(message):
 @bot.message_handler(commands=['гойда','goida'])
 def handle_goida(message):
     if time.time() - message.date <= 60:
-        rand=random.randint(0, 6)
+        rand=random.randint(0, 7)
         if rand==0:bot.reply_to(message, 'наш слон')
         elif rand==1:bot.reply_to(message, 'ГООООООЛ')
         elif rand==2:bot.reply_to(message, 'да будет же гойда')
@@ -745,6 +753,8 @@ def handle_goida(message):
         elif rand==4:bot.reply_to(message, 'ZOV гойда ZOV')
         elif rand==5:bot.send_video(message.chat.id,io.BytesIO(requests.get(r'https://github.com/xHak2215/arhive-host-file/raw/refs/heads/main/goida-%D0%B3%D0%BE%D0%B9%D0%B4%D0%B0.mp4').content),reply_to_message_id=message.message_id)
         elif rand==6:bot.send_video(message.chat.id,io.BytesIO(requests.get(r'https://github.com/xHak2215/arhive-host-file/raw/refs/heads/main/%D1%81%D1%83%D0%BF%D0%B5%D1%80_%D0%B3%D0%BE%D0%B9%D0%B4%D0%B0.mp4').content),reply_to_message_id=message.message_id)
+        elif rand==7:bot.send_video(message.chat.id,io.BytesIO(requests.get(r'https://github.com/xHak2215/arhive-host-file/blob/main/%D0%BE%D1%85%D0%BB%D0%BE%D0%B1%D1%8B%D1%81%D1%82%D0%B8%D0%BD-%D0%B3%D0%BE%D0%B9%D0%B4%D0%B0-%D0%B3%D0%BE%D0%B9%D0%B4%D0%B0-%D0%BA%D1%80%D0%B8%D1%87%D0%B8%D1%82.gif?raw=true').content),reply_to_message_id=message.message_id)
+
         
 @bot.message_handler(commands=['bambambam'])
 def bambam(message):
@@ -2162,7 +2172,7 @@ tekst_m = []
 delete_message = []
 
 # Функция для обработки сообщений
-def anti_spam(message,auto_repytation=0):
+def anti_spam(message, auto_repytation=0):
     global user_messages
     global user_text
     global message_text
