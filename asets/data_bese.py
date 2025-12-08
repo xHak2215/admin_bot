@@ -361,7 +361,7 @@ class team_data_bese():
             connection.close()
             return False
         
-def tu_base(user_id:int, chat_id:int, data:dict|None ):
+def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
     connection = sqlite3.connect(data_bese_path, timeout=10000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
@@ -425,6 +425,13 @@ def tu_base(user_id:int, chat_id:int, data:dict|None ):
             cursor.execute(f"UPDATE alt_data SET {data_bese_keys}  WHERE user_id = ? AND chat_id = ?", tuple(data_bese_updata_data))
             connection.commit()
             cursor.close()
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    if len(relust)>0:
+        return relust
         
 
 #UPDATE Users SET reputation = ?, auto_reputation = ?, num_message = ?, day_message = ? WHERE warn_user_id = ? AND chat_id = ? [5, 0, 5, 5, 5194033781, 5194033781]
