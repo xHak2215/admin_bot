@@ -21,7 +21,7 @@ import numpy as np
 import asets.ffmpeg_tool
 import asets.dictt
 from asets.wiki_api_lib import wiki
-from asets.data_bese import data_base, team_data_bese
+from asets.data_bese import data_base, team_data_bese, tu_base
 
 try:
     import vosk
@@ -35,8 +35,10 @@ try:
     from loguru import logger
     import sqlite3
     from PIL import Image, ImageDraw, ImageFont
-    from googletrans import Translator
+    import deep_translator
+    from deep_translator import GoogleTranslator
     from moviepy import ImageSequenceClip
+    import ahocorasick
 except ImportError:
     print('\33[31m error no libs start auto install (не найдены нужные библиотеки запускаю авто установку)')
     print('full error message>>\n'+traceback.format_exc())
@@ -887,17 +889,11 @@ def scan_hex_in_text(text:str)->bool:
             return False
     return True
 
-@dataclass
-class Bufer:
-    out_buffer=''
-    sdfg=''
-
-
 @bot.message_handler(commands=['t','translate','перевод'])  
 def translitor(message):
     if message.reply_to_message:
         if not message.reply_to_message.text:
-            bot.reply_to(message,"я могу переводить только текст!")
+            bot.reply_to(message,["я могу переводить только текст!", "это не текст, я такое не переведу"][random.randint(0,1)])
             return
         bins=str(message.reply_to_message.text).replace(' ','').lower()
         if set(bins) == {'0', '1'} :
@@ -912,17 +908,11 @@ def translitor(message):
                 bot.reply_to(message, ''.join(str(asets.dictt.translit_eng.get(c, c) for c in message.reply_to_message.text)))
                 return
             
-        buf=Bufer()
-        async def translit():
-            async with Translator() as translator:
-                conf = await translator.detect(message.reply_to_message.text)
-                buf.sdfg =f'Язык: {conf.lang}'
-                buf.out_buffer = await translator.translate(message.reply_to_message.text, src=conf.lang, dest='ru')
-        asyncio.run(translit())
-        bot.reply_to(message, f"{buf.sdfg}\n{buf.out_buffer.text}")
+        translated = GoogleTranslator(source='auto', target='ru').translate(message.reply_to_message.text)
+        bot.reply_to(message, f"перевод:\n{translated}")
     else:
         if ':' in message.text:
-            text=str(message.text).replace('/t','').replace('/translate','').split(':')
+            text=str(message.text).replace('/t','').replace('/translate','').replace('перевод', '').split(':')
             if text[1].lower()=="bin":
                 hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
                 binary_str = ''.join([
@@ -937,17 +927,13 @@ def translitor(message):
             elif text[1].lower()=="translit" or text[1].lower()=="транслит":
                 bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
 
-            buf=Bufer()
+            else:
+                try:
+                    translated = GoogleTranslator(source='auto', target=text[1].replace(' ','')).translate(text[0])
+                    bot.reply_to(message, f"перевод:\n{translated}")
+                except deep_translator.exceptions.LanguageNotSupportedException:
+                    bot.reply_to(message,r"похоже язык не определен (примечание язык нужно указывать в сокращённой форме)",parse_mode='HTML',disable_web_page_preview=True)
 
-            async def translit():
-                async with Translator() as translator:
-                    try:
-                        conf =  await translator.detect(str(message.text))
-                        buf.out_buffer = await translator.translate(text[0], src=conf.lang, dest=text[1].replace(' ',''))
-                    except ValueError:
-                        bot.reply_to(message,"похоже язык не определен (примечание язык нужно указывать в сокращённой по стандарту <a href='https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2>языковых кодов</a>  форме так: en - английский)",parse_mode='HTML',disable_web_page_preview=True)
-            asyncio.run(translit())
-            bot.reply_to(message, buf.out_buffer.text)
         else:
             bot.reply_to(message, "нет арументов или они ошибочны")
         
@@ -2285,7 +2271,7 @@ def anti_spam(message, auto_repytation=0):
 
 text={}
 warn=0
-def anti_spam_forward(message,text=text,warn=warn):
+def anti_spam_forward(message, text=text, warn=warn):
     text[message.from_user.id] = str(message.text).lower().replace(' ','')
     counts = Counter(text.values())
     warn = sum(v-1 for v in counts.values())  # Считаем все дубликаты
@@ -2317,7 +2303,7 @@ def message_handler(message):
 
             if admin_list:
                 for i in range(len(admin_list)):
-                    if i >0:
+                    if i > 0:
                         teg+=f",@{admin_list[i]}"
                     else:
                         teg+=f"@{admin_list[i]}"
@@ -2326,28 +2312,35 @@ def message_handler(message):
                 mess_text=message.text[:150]+"..." #сокрощяем если текст сильно длинный
             else:mess_text=message.text
             bot.send_message(admin_grops,  f"{teg} есть вопрос от @{message.from_user.username} \nвот он:{mess_text}\n | https://t.me/c/{id_help_hat}/{message.message_id}")
-    elif commad.startswith("!я"):   
-        if time.time()-message.date <=65:
-            send_statbstic(message)
         
     if time.time() - message.date >= SPAM_TIMEFRAME:
         return
+    
     elif message.forward_from:
         anti_spam_forward(message)
     else:
         anti_spam(message,ar)
         if AUTO_TRANSLETE['Activate'] and message.text:
-            async def translit():
-                async with Translator() as translator:
+            translated = GoogleTranslator(source='auto', target=AUTO_TRANSLETE['laung']).translate(message.text)
+            bot.reply_to(message, f"перевод:\n{translated}")
 
-                    detect =  await translator.detect(message.text)
-                    if detect.lang != AUTO_TRANSLETE['laung']:
+    with open(os.path.join(os.getcwd(), "asets", "mats.json"), 'r') as f:
+        swears_list=json.load(f)["swears"] 
+    text=str(message.text).replace(' ','').lower()
 
-                        ttext = await translator.translate(message.text, src=detect.lang, dest=AUTO_TRANSLETE['laung'])
-                        bot.reply_to(message, f"({detect.lang})перевод:{ttext.text}")
-                    
-            asyncio.run(translit())
+    A = ahocorasick.Automaton()
+    for i, k in enumerate(swears_list):
+        A.add_word(k, (i, k))
+    A.make_automaton()
 
+    found = any(True for _ in A.iter(text))
+    if found:
+        swears=tu_base(message.from_user.id, message.chat.id, None)
+        if swears:
+            if swears[0][3]:
+                tu_base(message.from_user.id, message.chat.id, {"swears":swears[0][3]+1})
+            else:
+                tu_base(message.from_user.id, message.chat.id, {"swears":1})
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler_anim(message):
