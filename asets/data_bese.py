@@ -361,7 +361,7 @@ class team_data_bese():
             connection.close()
             return False
         
-def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
+def tu_base(user_id:int, chat_id:int, name:str, data:dict|None)->None|list:
     connection = sqlite3.connect(data_bese_path, timeout=10000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
@@ -375,6 +375,7 @@ def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
         id INTEGER PRIMARY KEY,
         chat_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
         swears INTEGER
         
     )
@@ -387,12 +388,11 @@ def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
     data_bese_updata_data=[]
 
     if len(relust)==0:
-        num_values=2
+        num_values=3
 
-        if data_bese_keys != '':
-            data_bese_keys=', '+data_bese_keys
         data_bese_updata_data.append(user_id)
         data_bese_updata_data.append(chat_id)
+        data_bese_updata_data.append(name)
         if data is not None:
             k=list(data.keys())
             num_values+=len(k)
@@ -406,7 +406,8 @@ def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
             else:
                 values+='?, '
 
-        cursor.execute(f'INSERT INTO alt_data (chat_id, user_id{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        cursor.execute(f'INSERT INTO alt_data (chat_id, user_id, name{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        print(f'INSERT INTO alt_data (chat_id, user_id, name{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
         connection.commit()
         cursor.close()
 
@@ -432,10 +433,27 @@ def tu_base(user_id:int, chat_id:int, data:dict|None)->None|list:
 
     if len(relust)>0:
         return relust
-        
 
-#UPDATE Users SET reputation = ?, auto_reputation = ?, num_message = ?, day_message = ? WHERE warn_user_id = ? AND chat_id = ? [5, 0, 5, 5, 5194033781, 5194033781]
+def tu_base_balance()->list:
+    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    cursor.execute("SELECT * FROM alt_data")
+    relust=cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return relust
+
+
+
 def tests():
-    tu_base(123, 123, {"swears":2})
+    print(tu_base(123, 123,"T_Kotik" ,{"swears":2}))
+    print(tu_base_balance())
 
-#ests()
+#tests()
