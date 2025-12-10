@@ -182,6 +182,101 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     finally:
         # Закрываем соединение
         connection.close()
+
+
+def n_data_base(user_id:int, chat_id:int, name:str, data:dict|None)->None|list:
+    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    # Создаем таблицу (если она еще не существует)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY,
+            chat_id INTEGER NOT NULL,
+            reputation INTEGER,
+            warn_user_id INTEGER NOT NULL,
+            warn_time INTEGER,
+            num_message INTEGER,
+            day_message INTEGER,
+            auto_reputation INTEGER,
+            auto_reputation_data TEXT, 
+            vhod_data INTEGER,
+            temp REAL
+        )
+        ''')
+
+    cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (chat_id, user_id))
+    relust=cursor.fetchall()
+
+    data_bese_keys=''
+    data_bese_updata_data=[]
+
+    if len(relust)==0:
+        num_values=3
+
+        data_bese_updata_data.append(user_id)
+        data_bese_updata_data.append(chat_id)
+        data_bese_updata_data.append(name)
+        if data is not None:
+            k=list(data.keys())
+            num_values+=len(k)
+            for key in range(0, len(k)):
+                data_bese_keys+=", "+k[key]
+                data_bese_updata_data.append(data[k[key]])
+        values=''
+        for i in range(1, num_values+1):
+            if i == num_values:
+                values+='?'
+            else:
+                values+='?, '
+
+        cursor.execute(f'INSERT INTO Users (chat_id, warn_user_id{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        connection.commit()
+        cursor.close()
+
+    else:
+        if data is not None:
+            k=list(data.keys())
+            for key in range(0, len(k)):
+                if len(k)-1==key:
+                    data_bese_keys+=k[key]+" = ?"
+                else:
+                    data_bese_keys+=k[key]+" = ?, "
+                data_bese_updata_data.append(data[k[key]])
+            data_bese_updata_data.append(user_id)
+            data_bese_updata_data.append(chat_id)
+
+            cursor.execute(f"UPDATE Users SET {data_bese_keys}  WHERE user_id = ? AND chat_id = ?", tuple(data_bese_updata_data))
+            connection.commit()
+            cursor.close()
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    if len(relust)>0:
+        return relust
+
+def base_balance()->list:
+    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    cursor.execute("SELECT * FROM Users")
+    relust=cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return relust
+
         
 def set_day_message():#я не смог это реализовать я походу тупой 
     file_path = os.path.join(os.getcwd(), 'asets', 'set_day_message_time.json')
@@ -362,7 +457,7 @@ class team_data_bese():
             return False
         
 def tu_base(user_id:int, chat_id:int, name:str, data:dict|None)->None|list:
-    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    connection = sqlite3.connect(data_bese_path, timeout=1000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL")
@@ -435,7 +530,7 @@ def tu_base(user_id:int, chat_id:int, name:str, data:dict|None)->None|list:
         return relust
 
 def tu_base_balance()->list:
-    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    connection = sqlite3.connect(data_bese_path, timeout=1000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL")
