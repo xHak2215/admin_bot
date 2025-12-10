@@ -21,7 +21,7 @@ import numpy as np
 import asets.ffmpeg_tool
 import asets.dictt
 from asets.wiki_api_lib import wiki
-from asets.data_bese import data_base, team_data_bese, tu_base
+from asets.data_bese import data_base, team_data_bese, tu_base, tu_base_balance
 
 try:
     import vosk
@@ -403,9 +403,9 @@ def time_server_command(message):
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
     
 #команда /правило 
-@bot.message_handler(commands=['правило','правила','закон','rules'])
-def pravilo(message):
-    pass
+#@bot.message_handler(commands=['правило','правила','закон','rules'])
+#def rules(message):
+#    pass
     """
     if message.date - time.time()<=60:
         try:
@@ -2131,6 +2131,31 @@ def handle_team_buttonn(call):
     bot.answer_callback_query(call.id, "ну ладно не хочешь как хочешь")
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
+
+@bot.message_handler(commands=["swearing_top","матершитники","топ_матерящехся"])
+def swearing_top(message):
+    base=tu_base_balance()
+
+    num_list=[]
+    users_list={}
+
+    for user in base:
+        num_list.append(user[4])
+        users_list[user[4]]=user[3]
+    
+    relust_text=''
+    modif=''
+    top=sorted(num_list)
+    top_index=0
+    for i in top:
+        if top_index == 0:
+            modif=["главный матершиник", "главный любитель банных слов", ""][random.randint(0,2)] 
+        relust_text+=f"{top_index} {users_list[i]} {i} {modif}\n"
+        top_index+=1
+
+    bot.reply_to(message, relust_text)
+
+
 def log_messages(message):
     emoji=''
     if message.content_type=='sticker':
@@ -2333,14 +2358,22 @@ def message_handler(message):
         A.add_word(k, (i, k))
     A.make_automaton()
 
-    found = any(True for _ in A.iter(text))
-    if found:
-        swears=tu_base(message.from_user.id, message.chat.id, None)
+    cnt = Counter()
+    for end_idx, found in A.iter(text.lower()):
+        cnt[found] += 1
+    d=dict(cnt)
+    num_swears=0
+
+    for key in list(d.keys()):
+        num_swears+=d[key]
+
+    if num_swears>0:
+        swears=tu_base(message.from_user.id, message.chat.id, message.from_user.username, None)
         if swears:
-            if swears[0][3]:
-                tu_base(message.from_user.id, message.chat.id, {"swears":swears[0][3]+1})
+            if swears[0][4]:
+                tu_base(message.from_user.id, message.chat.id, message.from_user.username, {"swears":swears[0][4]+num_swears})
             else:
-                tu_base(message.from_user.id, message.chat.id, {"swears":1})
+                tu_base(message.from_user.id, message.chat.id, message.from_user.username, {"swears":1})
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler_anim(message):
