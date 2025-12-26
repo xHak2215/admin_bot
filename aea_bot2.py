@@ -103,7 +103,7 @@ AUTO_TRANSLETE=dict(settings['auto_translete'])
 admin_list=list(settings['admin_list'])
 
 
-help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\n<code>/swearing_top</code> - топ матершинеков чата\n\n<code>/gif_search</code> - посик gif по запросу, пример:<code>/gif_search котик</code>\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
 admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n <code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code> /mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>'
 
 #/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
@@ -770,7 +770,7 @@ def bambam(message):
                 bot.reply_to(message,["кто то похоже себя плохо вел",'ай ай ай','анука что они там тварят','что то случилось?'][random.randint(0,3)])
         else:
             if message.from_user.id =='5806296576':
-                bot.reply_to(message,['мага что такое','кто то опять беспредельничяет'][random.randint(0,1)])
+                bot.reply_to(message,['мага что такое?','кто то опять беспредельничяет'][random.randint(0,1)])
             else:    
                 bot.reply_to(message,['что то случилось мистер админ','bam bam бум бум','глдавное не спамь!','ану ка что тут такого'][random.randint(0,3)])
     else:
@@ -848,7 +848,7 @@ def handle_mute_command(message):
 
                 try:
                     bot.restrict_chat_member(message.chat.id, user.from_user.id, until_date=(message.date + timer*deleu))
-                    logger.info(f"mute for {user.usernames} id:{user.from_user.id} time:{timer}{deleua} reason:{reason}")
+                    logger.info(f"mute for {user.from_user.username} id:{user.from_user.id} time:{timer}{deleua} reason:{reason}")
                     bot.send_message(admin_grops,f"mute for {user.from_user.id}\ntime:{timer}{deleua} ({timer*deleu}s.) {reason}")
                 except telebot.apihelper.ApiTelegramException as e:
                     bot.reply_to(message,f'error>> {e}\nвероятно у бота недостаточно прав')
@@ -1258,7 +1258,7 @@ def send_message_info(message):
             out_message+=f'height(ширена): {message.reply_to_message.photo[-1].height}\n'
         bot.reply_to(message,out_message)
 
-@bot.message_handler(commands=['gif_search', 'поиск_gif', 'Поиск_gif'])
+@bot.message_handler(commands=['gif_search', 'поиск_gif', 'Поиск_gif', 'search_gif'])
 def gif_search(message):
     if len(message.text.split(' '))<=1:
         bot.reply_to(message, "не хватает аргумента, пример:<code>/gif_search котик</code>",parse_mode='HTML')
@@ -1336,8 +1336,13 @@ def nacase(message, delete_message=None):
             bot.send_message(admin_grops, admin_msg, reply_markup=markup)
         else:
             bot.send_message(admin_grops, admin_msg)
+
+        if message.from_user.username:
+            us=f" @{message.from_user.username},"
+        else:
+            us=''
         
-        logger.info(f'Обнаружен спам от пользователя >> @{message.from_user.username}, id: {message.from_user.id} message:https://t.me/c/{the_message}/{message.message_id}')
+        logger.info(f'Обнаружен спам от пользователя >>{us} id: {message.from_user.id} message:https://t.me/c/{the_message}/{message.message_id}')
         
     except Exception as e:
         logger.error(f"Неожиданная ошибка: {str(e)}\n{traceback.format_exc()}")
@@ -2132,7 +2137,7 @@ def handle_team_buttonn(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
-@bot.message_handler(commands=["swearing_top","матершитники","топ_матерящехся"])
+@bot.message_handler(commands=['swearing_top','матершитники','топ_матерящехся','матерщинники'])
 def swearing_top(message):
     base=tu_base_balance()
 
@@ -2149,7 +2154,7 @@ def swearing_top(message):
     top_index=0
     for i in top:
         if top_index == 0:
-            modif=["главный матершиник", "главный любитель банных слов", ""][random.randint(0,2)] 
+            modif=["главный матершиник", "главный любитель бранных слов", ""][random.randint(0,2)] 
         relust_text+=f"{top_index} {users_list[i]} {i} {modif}\n"
         top_index+=1
 
@@ -2367,13 +2372,18 @@ def message_handler(message):
     for key in list(d.keys()):
         num_swears+=d[key]
 
+    if message.from_user.username:
+        user_n=message.from_user.username
+    else:
+        user_n=message.from_user.first_name
+
     if num_swears>0:
-        swears=tu_base(message.from_user.id, message.chat.id, message.from_user.username, None)
+        swears=tu_base(message.from_user.id, message.chat.id, user_n, None)
         if swears:
             if swears[0][4]:
-                tu_base(message.from_user.id, message.chat.id, message.from_user.username, {"swears":swears[0][4]+num_swears})
+                tu_base(message.from_user.id, message.chat.id, user_n, {"swears":swears[0][4]+num_swears})
             else:
-                tu_base(message.from_user.id, message.chat.id, message.from_user.username, {"swears":1})
+                tu_base(message.from_user.id, message.chat.id, user_n, {"swears":1})
 
 @bot.message_handler(content_types=['video','photo','animation'])
 def message_handler_anim(message):
