@@ -461,7 +461,7 @@ def handle_report(message):
             return
             
         report = report_data[chat_id]
-        #добавляем id нарушителя в тетрадь смерти Сталина (report)
+        #добавляем id нарушителя в тетрадь смерти Сталина report
         report['responses'].add(ban_ded) 
 
         user_data = data_base(chat_id, ban_ded)
@@ -920,11 +920,11 @@ def translitor(message):
                     translated = GoogleTranslator(source='auto', target=text[1].replace(' ','')).translate(text[0])
                     bot.reply_to(message, f"перевод:\n{translated}")
                 except deep_translator.exceptions.LanguageNotSupportedException:
-                    bot.reply_to(message,r"похоже язык не определен (примечание язык нужно указывать в сокращённой форме)",parse_mode='HTML',disable_web_page_preview=True)
-
+                    bot.reply_to(message, "похоже язык не определен (примечание язык нужно указывать в сокращённой форме)",parse_mode='HTML',disable_web_page_preview=True)
         else:
             bot.reply_to(message, "нет арументов или они ошибочны")
         
+
 vosk.SetLogLevel(-1) # отключение логов
 rec = KaldiRecognizer(Model(vosk_model_path), 16000) # эксмпляр модели 
 
@@ -1270,11 +1270,11 @@ def gif_search(message):
     else:
         bot.reply_to(message, f"случилась какая то ошибка =[\nмета данные:{data.json()['meta']}")
         return
-        
+
+@dataclass
 class DeleteData:
-    def __init__(self):
-        self.message_l = []
-        self.chat_id = 0
+    message_l = []
+    chat_id = 0
 
 # Глобальный экземпляр для хранения данных
 delete_data = DeleteData()
@@ -1296,7 +1296,10 @@ def nacase(message, delete_message=None):
             except telebot.apihelper.ApiTelegramException as e:
                 bot.send_message(admin_grops, f'{str(e)}\nВероятно у бота недостаточно прав')
                 logger.error(f'{str(e)}\nВероятно у бота недостаточно прав')
-            data_base(message.chat.id, message.from_user.id, ps_reputation_upt=3)
+
+            auto_reputation=data_base(message.chat.id, message.from_user.id)[7]
+            data_base(message.chat.id, message.from_user.id, {"auto_reputation":auto_reputation})
+
             bot.send_message(
                 message.chat.id, 
                 f"Пользователью @{message.from_user.username} выдан мут на 1 день."
@@ -1373,13 +1376,41 @@ def handle_spam_deletion(call):
 @bot.message_handler(commands=['ping','пинг'])
 def ping_command(message):
     if '-help' in message.text or '-h' in message.text:
-        bot.reply_to(message, 'аргументы: /ping <ссылка для тестирования по умолчанию https://ya.ru <количество повторов замера задержки>  <режим расчета>.\nрежимы расчета: 1 - вычисление средни статистической задержки из всех попыток. по умолчанию (не указывая значение) 2 - отображение задержки каждой попытки\nпример:<code>/ping example.com 5 1</code>',parse_mode='HTML',disable_web_page_preview=True)
+        bot.reply_to(message, 'аргументы: /ping (ссылка для тестирования по умолчанию https://ya.ru) (количество повторов измерения)  (режим расчета).\nрежимы расчета: 1 - вычисление средни статистической задержки из всех попыток. по умолчанию (не указывая значение) 2 - отображение задержки каждой попытки\nпример:<code>/ping example.com 5 1</code>',parse_mode='HTML',disable_web_page_preview=True)
         return
-    data=str(message.text).split(' ')
-    scode= ''
+    data=message.text.split(' ',1)
+    test_time=[]
 
     if len(data)>1:
-        command=data[1]
+        command=data[1].split(' ')
+
+        if "http://" in command[0].replace(' ','') or "https://" in command[0].replace(' ',''):
+            url=command[0].replace(' ','')
+        else:
+            url=f"https://{command[0].replace(' ','')}"
+
+        for _ in range(int(command[1].replace(' ',''))):
+            try:
+                timer=time.monotonic()
+                response=requests.get(url, timeout=20)
+                test_time.append(time.monotonic() - timer)
+            except requests.exceptions.ReadTimeout:
+                bot.reply_to(message,'превышена задержка (20s) возможно сайт недоступен')
+                return
+            
+        if command[2].replace(' ','') == '1':
+            num=0
+            for i in test_time: num=+i
+            ping = round(num / len(test_time), 4)
+
+            bot.reply_to(message, f"ping: {ping}")
+
+        if command[2].replace(' ','') == '2':
+            ping=''
+            for i in range(len(test_time)): ping+=f"{i} ping: {round(test_time[i], 3)}\n"
+
+            bot.reply_to(message, ping)
+
     else:
         url='https://ya.ru'
         start_time = time.time()
@@ -1393,44 +1424,9 @@ def ping_command(message):
         else:
             scode=f'\nerror conect\nstatus code {response.status_code}'
         p_time=time.time() - start_time
-        bot.reply_to(message,'ping:'+str(p_time)+str(scode))
+        bot.reply_to(message, f"ping:{p_time} {scode}")
         return
-    parm=command.split(',')
-    regim=False
-    if len(parm) >= 2:
-        povt = int(parm[1])
-    else:
-        povt = 1
-    if len(parm) >= 3:
-        regim=parm[2].replace(' ','').lower()
-    if regim==1:
-        p_time=0
-    elif regim==2:
-        p_time=[]
-    for i in range(povt):
-        start_time = time.time()
-        if 'https://' not in parm[0]:
-            url='https://'+parm[0]
-        else:
-            url=parm[0]
-        try:
-            response=requests.get(url, timeout=20)
-        except requests.exceptions.ReadTimeout:
-            bot.reply_to(message,'превышена задержка (20s) возможно сайт недоступен')
-            return
-        if response.status_code!=200:
-            scode=f'\nerror conect\nstatus code {response.status_code}'
-        if regim==1:
-            p_time+=time.time() - start_time 
-        elif regim==2:
-            p_time.append(time.time() - start_time)
-    if regim==1:
-        bot.reply_to(message,f'ping:{round(p_time/povt,4)}s{scode}')
-    elif regim==2:
-        out=''
-        for i in range((len(p_time))):
-            out+=f'[{i}] ping: {round(p_time[i],5)}s\n' 
-        bot.reply_to(message,out+scode)
+
 
 @dataclass
 class SearhData:
@@ -2128,12 +2124,15 @@ def handle_team_buttonn(call):
 def swearing_top(message):
     base=tu_base_balance()
 
+    if len(base)<=0:
+        bot.reply_to(message, "тут пока некого нет...")
+
     num_list=[]
     users_list={}
 
     for user in base:
         num_list.append(user[4])
-        users_list[user[4]]=user[3]
+        users_list[user[4]] = user[3]
     
     relust_text=''
     modif=''
@@ -2142,6 +2141,8 @@ def swearing_top(message):
     for i in top:
         if top_index == 0:
             modif=["главный матершиник", "главный любитель бранных слов", ""][random.randint(0,2)] 
+        if users_list[i] is None:
+            users_list[i] = 0
         relust_text+=f"{top_index} {users_list[i]} {i} {modif}\n"
         top_index+=1
 
@@ -2302,17 +2303,15 @@ def anti_spam_forward(message, text=text, warn=warn):
 def message_handler(message):
     log_messages(message)
     data=data_base(message.chat.id, message.from_user.id)
-    print(data[5]+1)
     data_base(message.chat.id, message.from_user.id, {"num_message":data[5]+1})# добовляем 1 сообщение
 
-    if message.sticker:
-        if message.sticker.file_id in bklist.blist:
-            if bool(DELET_MESSADGE):
-                try:
-                    bot.delete_message(message.chat.id, message.message_id)
-                    bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
-                except telebot.apihelper.ApiTelegramException as e:
-                    bot.send_message(admin_grops,f'error>>{e}\nвероятно у бота недостаточно прав')
+    if message.sticker and message.sticker.file_id in bklist.blist:
+        if bool(DELET_MESSADGE):
+            try:
+                bot.delete_message(message.chat.id, message.message_id)
+                bot.send_message(admin_grops,f'запрещеный стикер от @{message.from_user.username} удален')
+            except telebot.apihelper.ApiTelegramException as e:
+                bot.send_message(admin_grops,f'error>>{e}\nвероятно у бота недостаточно прав')
     
     commad=str(message.text).lower()
     if "[help]" in commad or "[Help]" in commad:
