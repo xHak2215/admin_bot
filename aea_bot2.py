@@ -888,9 +888,17 @@ def translitor(message):
             bytes_list = [int(bins[i:i+8], 2) for i in range(0, len(bins), 8)]
             bot.reply_to(message,bytes(bytes_list).decode('utf-8', errors='replace'))
             return
+        
+        if set(bins) == {'п', 'х'}:
+            bins=bins.replace('п','1').replace('х','0')
+            bytes_list = [int(bins[i:i+8], 2) for i in range(0, len(bins), 8)]
+            bot.reply_to(message, bytes(bytes_list).decode('utf-8', errors='replace'))
+            return
+        
         elif bins[0:4] == '202e' or scan_hex_in_text(bins):
             bot.reply_to(message, bytes.fromhex(bins).decode('utf-8', errors='replace'))
             return
+        
         elif len(message.text.split(' ')) > 1:
             if str(message.text.split(' ')[1].replace(' ','')) == 'translit' or str(message.text.split(' ')[1]).replace(' ','') == 'транслит':
                 bot.reply_to(message, ''.join(str(asets.dictt.translit_eng.get(c, c) for c in message.reply_to_message.text)))
@@ -900,24 +908,33 @@ def translitor(message):
         bot.reply_to(message, f"перевод:\n{translated}")
     else:
         if ':' in message.text:
-            text=str(message.text).replace('/t','').replace('/translate','').replace('перевод', '').split(':')
-            if text[1].lower()=="bin":
-                hex_str = binascii.hexlify(text[0].encode('utf-8')).decode()
+            laung=message.text.split(' ',1)[1].rsplit(':', 1)[1]
+            text=message.text.split(' ',1)[1].rsplit(':', 1)[0]
+
+            if laung.lower()=="bin":
+                hex_str = binascii.hexlify(text.encode('utf-8')).decode()
                 binary_str = ''.join([
                 format(int(hex_str[i:i+2], 16), '08b')for i in range(0, len(hex_str), 2)])
                 bot.reply_to(message, ' '.join([binary_str[i:i+8] for i in range(0, len(binary_str), 8)]))
                 return
             
-            elif text[1].lower()=="hex":
-                bot.reply_to(message, '202e'+(text[0].encode("utf-8").hex().replace("'",'')))
+            elif laung.lower() == "hex":
+                bot.reply_to(message, '202e'+(text.encode("utf-8").hex().replace("'",'')))
                 return
             
-            elif text[1].lower()=="translit" or text[1].lower()=="транслит":
-                bot.reply_to(message,str(''.join(asets.dictt.translit_ru.get(c, c) for c in text[0])))
-
+            elif laung.lower() == "translit" or laung.lower() == "транслит":
+                bot.reply_to(message, str(''.join(asets.dictt.translit_ru.get(c, c) for c in text)))
+                return
+            
+            elif laung.lower() == "kt_launge":
+                bin=''.join(format(byte, '08b') for byte in text.encode("utf-8"))
+                result=bin.replace('1','п').replace('0','х')
+                bot.reply_to(message, result)
+                return
+            
             else:
                 try:
-                    translated = GoogleTranslator(source='auto', target=text[1].replace(' ','')).translate(text[0])
+                    translated = GoogleTranslator(source='auto', target=laung.replace(' ','')).translate(text)
                     bot.reply_to(message, f"перевод:\n{translated}")
                 except deep_translator.exceptions.LanguageNotSupportedException:
                     bot.reply_to(message, "похоже язык не определен (примечание язык нужно указывать в сокращённой форме)",parse_mode='HTML',disable_web_page_preview=True)
