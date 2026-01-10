@@ -13,7 +13,6 @@ import io
 import binascii
 import gc
 from dataclasses import dataclass
-import asyncio
 import tempfile
 import numpy as np
 
@@ -103,12 +102,11 @@ AUTO_TRANSLETE=dict(settings['auto_translete'])
 admin_list=list(settings['admin_list'])
 
 
-help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translite</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> - поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> - позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\n<code>/swearing_top</code> - топ матершинеков чата\n\n<code>/gif_search</code> - посик gif по запросу, пример:<code>/gif_search котик</code>\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
-admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n <code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code> /mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>'
+help_user = '<code>/report</code> — забань дебила в чате\n\n<code>/я</code> — узнать свою репутацию и количество сообщений\n\n<code>/info</code> — узнать информацию о пользователе\n\n<code>/translate</code> (сокращено <code>/t</code>) — перевод сообщения на русский перевод своего сообщения на другой язык:<code>/t любой текст:eg</code> поддерживаться bin и hex кодировки\n\n<code>/download</code> (сокращено <code>/dow</code>) — скачивание стикеров,ГС и аудио дорожек видео при скачивании можно изменить формат пример: <code>/download png</code> для дополнительный инструкций введите <code>/download -help</code>\n\n<code>/to_text</code> — перевод ГС в текст\n\n<code>/serh</code> — поиск статей на википедии пример:<code>/serh запрос</code>\n\n<code>/team</code> — позволяет создавать кланы/команды; <code>/team -h</code> для инструкции по использованию (бета)\n\n<code>/swearing_top</code> — топ матершинеков чата\n\n<code>/gif_search</code> — посик gif по запросу, пример:<code>/gif_search котик</code>\n\nЕсли есть вопросы задайте его добавив в сообщение <code>[help]</code> и наши хелперы по возможности помогут вам \n\n<code>/admin_command</code> — команды администраторов\n<a href="https://github.com/xHak2215/admin_bot#doc_commad" a>расширенная документация команд</a>' 
+admin_command = '<code>/monitor</code> — выводит показатели сервера; \n<code>/warn</code> — понижение репутации на 1; \n<code>/reput</code> — повышение репутации на 1; \n<code>/data_base</code> — выводит базу данных, возможен поиск конкретного пользователя пример: <code>/data_base 5194033781</code>; \n<code>/info</code> — узнать репутацию пользователя;\n<code>/blaklist</code> — добавляет стикер в черный список; \n<code>/unblaklist</code> — убирает стикер из черного списка; \n<code>/log</code> - получить лог файл; \n<code>/backup_log</code> - создание бекапа текущего лог файла; \n<code>/null_log</code> - очищение текущего лог файла; \n<code>/mute</code> - мут пользователя, пример: <code>/мут 1 h \n *причина*</code>\nh - обозначает часы, так же можно указать d - дни и m - минуты; \n<code>/ban</code>  - бан пользователя, пример:<code>/бан\n*причина*</code>'
 
-#/creat - позволяет создавать скрипты является простым "командным языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
+#/creat - позволяет создавать скрипты является простым "скриптовым языком программирования" (бета) подробнее:<a href="https://github.com/xHak2215/admin_bot#creat_program_info">см. дакументацию</a>\n\n
 
-logse="nan"
 i=0
 log_file_name="cats_message.log"
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
@@ -211,19 +209,18 @@ date = datetime.now().strftime("%H:%M")
 logger.info("бот запущен")
     
 # Функция для мониторинга ресурсов
-def monitor_resources():
+def monitor_resources(popitki=5):
     response_time,response_time,cpu_percent,ram_percent,disk_percent=0,0,0,0,0
-    popitki=5
     popitka1=0
-    #пинг в среднем 5 (можно изменять в popitki )попыток
+    scode=''
+
     for i in range(popitki):
         start_time = time.time()
         response=requests.get('https://core.telegram.org/')
-        if response.status_code==200:
-            scode= ''
-            pass
-        else:
+
+        if response.status_code!=200:
             scode=f" status code {response.status_code}"
+
         if i == 1:
             popitka1= time.time() - start_time
         response_time+= time.time() - start_time
@@ -233,9 +230,12 @@ def monitor_resources():
             disk_percent +=float(psutil.disk_usage('C:/').percent)
         else:
             disk_percent +=float(psutil.disk_usage('/').percent)
-    shutka=' '
+            
     if round(cpu_percent/popitki)==100:
         shutka='\nпроцессор шя рванет 🤯'
+    else:
+        shutka=' '
+
     print(f"CPU: {round(cpu_percent/popitki)}%,\nRAM: {round(ram_percent/popitki)}%,\nDisk: {round(disk_percent/popitki)}%,\nPing: {popitka1} \n{shutka}")
     return round(cpu_percent/popitki,1), round(ram_percent/popitki,1), round(disk_percent/popitki,1), str(str(round(response_time/popitki,3))+'s'+scode+shutka),round(popitka1,3)
 
@@ -337,8 +337,11 @@ def clear_console(message):
     #проверка на админа
     if bot.get_chat_member(message.chat.id, message.from_user.id).status in ['creator', 'administrator'] or message.from_user.id ==5194033781: 
             bot.send_message(admin_grops,f"экран очищен, очистил : @{message.from_user.username}")
-            os.system('clear')
-            logger.info(f"экран очищен очистил:  @{message.from_user.username}")
+            if os.name == 'nt':
+                os.system('cls')
+            else:
+                os.system('clear')
+            logger.info(f"экран очищен, очистил:  @{message.from_user.username}")
     else:
         bot.reply_to(message,['ты не администратор!','только админы вершат правосудие','ты не админ','не а тебе нельзя','нет'][random.randint(0,4)])
 
@@ -402,9 +405,9 @@ def time_server_command(message):
     current_time = now.strftime("%H:%M")
     bot.send_message(message.chat.id, f"Серверное время: {current_time}")    
     
-#команда /правило 
+#команда /правила
 """
-@bot.message_handler(commands=['правило','правила','закон','rules'])
+@bot.message_handler(commands=['правило','правила','конституция','rules'])
 def send_rules(message):
     if message.date - time.time()<=60:
         try:
@@ -422,7 +425,7 @@ def send_rules(message):
                 time.sleep(1)
         finally:
             bot.delete_message(message.chat.id, msg.message_id)
-    """   
+"""   
             
 
 # Хранение данных о репортах
@@ -599,7 +602,6 @@ def send_data_base(message):
     else:
         bot.reply_to(message,['ты не администратор!','тебе такое смотреть не дам','ты не админ','не а тебе нельзя','нет','нэт'][random.randint(0,5)])
 
-
 def status(rec):
     emjges=['❤️','👍','😍','😊'][random.randint(0, 3)]
     if rec >= 1000:
@@ -637,13 +639,15 @@ def handle_warn(message):
             warn_message_text = message.reply_to_message.text
             message_to_warp=str(chat_id).replace("-100", "")
             
-            reputation=data_base(message.chat.id,warn_message)[3]-1
-            data_base(message.chat.id,warn_message,{"reputation":reputation})
+            data=data_base(message.chat.id, warn_message)
+            reputation=data[3]
 
-            bot.reply_to(message,f'репутация снижена \nтекущяя репутация пользевателя:{reputation}')
-            bot.send_message(admin_grops,f"репутация снижена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
-            logger.debug(f"репутация снижена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
-            logger.info(f"Пользователь @{message.from_user.username} понизил репутацию @{message.reply_to_message.from_user.username} ") 
+            data_base(message.chat.id, warn_message, {"reputation": reputation-1})
+            data_base(message.chat.id, warn_message, {"auto_reputation": data[7]-3})
+
+            bot.reply_to(message,f'репутация снижена \nтекущяя репутация пользевателя:{reputation-1}')
+            bot.send_message(admin_grops, f"репутация пользователя tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} снижена | сообщение>> https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | {warn_message_text if message.content_type == 'text' else message.content_type}")
+            logger.info(f"репутация снижена (администратором @{message.from_user.username} id:{message.from_user.id}) >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
         
             # Проверяем, достаточно ли маленькая репутация для мута
             if BAMBAM and reputation <= 0:
@@ -680,11 +684,11 @@ def handle_reput(message):
 
             data=data_base(message.chat.id, user)#партия довольна вами +1 репутации
             data_base(message.chat.id, user, {"reputation": data[3]+1})
+            data_base(message.chat.id, user, {"auto_reputation": data[7]+3})
 
-            bot.reply_to(message,f'репутация повышена \nтекущяя репутация пользевателя:{data[3]}')
-            bot.send_message(admin_grops,f"репутация повышена >> tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
-            logger.debug(f"репутация повышена >>  @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
-            logger.info(f"Пользователь @{message.from_user.username} повысил репутацию ") 
+            bot.reply_to(message,f'репутация повышена \nтекущяя репутация пользевателя:{data[3]+1}')
+            bot.send_message(admin_grops, f"репутация пользователя tg://user?id={message.reply_to_message.from_user.id}, @{message.reply_to_message.from_user.username} повышена | сообщение>> https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} | {warn_message_text if message.content_type == 'text' else message.content_type}")
+            logger.info(f"репутация повышена (администратором @{message.from_user.username} id: {message.from_user.id}) >> @{message.reply_to_message.from_user.username} | https://t.me/c/{message_to_warp}/{message.reply_to_message.message_id} сообщение>> {warn_message_text if message.content_type == 'text' else message.content_type}")
         else: 
             bot.reply_to(message, "Пожалуйста, ответьте командой на сообщение, чтобы повысить репутацию")  
     else:
@@ -976,8 +980,8 @@ def audio_to_text(message):
 
                 # Распознавание
                 results = []
-                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data,'wav') # конвертирую в wav
-                if not data_r is bytes:
+                data_r=asets.ffmpeg_tool.audio_conwert(ogg_data, 'wav') # конвертирую в wav
+                if len(str(data_r))<200: # не знаю по чему нормальная проверка по типу isinstance(data_r, bytes) не стработала
                     logger.error(data_r)
                     bot.edit_message_text(
                     chat_id=message.chat.id,
@@ -986,6 +990,7 @@ def audio_to_text(message):
                     )
                     return
                 wav_buffer = io.BytesIO(data_r)
+
                 while True:
                     data = wav_buffer.read(4000)
                     if not data:
@@ -994,6 +999,7 @@ def audio_to_text(message):
                         results.append(json.loads(rec.Result()))
                 final = json.loads(rec.FinalResult())
                 text = str(" ".join([res.get("text", "") for res in results if "text" in res] + [final.get("text", "")]))
+
                 try:
                     bot.edit_message_text(
                     chat_id=message.chat.id,
@@ -2142,7 +2148,7 @@ def swearing_top(message):
     base=tu_base_balance()
 
     if len(base)<=0:
-        bot.reply_to(message, "тут пока некого нет...")
+        bot.reply_to(message, ["тут пока некого нет...", "пока никто не матерился, все умнички!", "матершинеков нет!"][random.randint(0,2)])
 
     num_list=[]
     users_list={}
