@@ -14,11 +14,10 @@ from fastapi.responses import JSONResponse
 import requests
 
 
-
 class MessageClassifier:
     def __init__(self):
         self.model_path = {
-            'oskorb': "cointegrated/rubert-tiny",
+            "oskorb": "cointegrated/rubert-tiny",
             "spam": "RUSpam/spam_deberta_v4"
         }
         self.tokenizer_oskorb = DistilBertTokenizer.from_pretrained(self.model_path['oskorb'])
@@ -74,7 +73,7 @@ def spam_detect(message:str):
         relust=None
         timer=None
 
-    return  {"detect":relust, "error":error, "timer":timer}
+    return {"detect":relust, "error":error, "timer":timer}
 
 @app.get("/affront_detect")
 def affront_detect(message:str):
@@ -88,7 +87,7 @@ def affront_detect(message:str):
         detect,item=None,None
         timer=None
 
-    return  {"detect": detect, "coficent":item, "error":error, "timer":timer}
+    return {"detect": detect, "coficent":item, "error":error, "timer":timer}
 
 def test(spam_message='test spam message',affront='test affront message',timeouto=30):
     response = requests.get("172.0.0.1:8000/spam", params={'message': spam_message},timeout=timeouto)
@@ -105,4 +104,4 @@ def test(spam_message='test spam message',affront='test affront message',timeout
 # Запуск сервера
 if __name__ == '__main__':
     import uvicorn 
-    uvicorn.run(app, host="172.0.0.2", port="8000")
+    uvicorn.run(app, host="172.0.0.2", port=8000)
