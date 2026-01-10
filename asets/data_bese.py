@@ -6,9 +6,11 @@ import traceback
 import os
 import json
 
-def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None):
+data_bese_path='Users_base.db'
+
+def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,day_message_num=None ,reputation_time=None, swears=None):
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db', timeout=5000)
+    connection = sqlite3.connect(data_bese_path, timeout=5000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL")
@@ -37,6 +39,10 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
     if reputation_time is not None:
         updates.append("auto_reputation_data = ?")
         params.append(reputation_time)
+    
+    if swears is not None:
+        updates.append("swears")
+        params.append(swears)
         
     # Проверяем, были ли добавлены параметры
     if not updates:
@@ -57,7 +63,8 @@ def update_user(id, chat, reputation=None, ps_reputation=None, soob_num=None ,da
         return None
     finally:
         connection.close()
-        
+
+"""
 def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, time_v=0) -> list: # data_base(message.chat.id,message.from_user.id,0,0,0) (вызов без изменения базы ) выход: [resperens,ps_reputation_new,int(soob_num),time.time()] (репутация,2 репутация_ps,каличество сообщений,время входа) 
     '''
     data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, time_v=0)
@@ -75,6 +82,8 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     :param5: прибавление к авто/псевдо репутации
     
     :param6: дата входа задаеться при входе
+
+    :param7: количество матюков для топа матершинеков
     
     ## return
     
@@ -88,7 +97,8 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     
     - 3-time_v — дата входа если нет то возворощяет 0
     
-    - 3-reputation_time — дана изменения авто репутации содержит `dict` словарь
+    - 4-reputation_time — дана изменения авто репутации содержит `dict` словарь
+
     '''
 
     if ps_reputation_upt == 0:
@@ -98,7 +108,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     
     resperens = 5
     # Создаем подключение к базе данных
-    connection = sqlite3.connect('Users_base.db',timeout=10000)
+    connection = sqlite3.connect(data_bese_path,timeout=10000)
     cursor = connection.cursor()
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL")
@@ -112,11 +122,11 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
             chat_id INTEGER NOT NULL,
             reputation INTEGER NOT NULL,
             warn_user_id INTEGER NOT NULL,
-            warn_time INTEGER ,
+            warn_time INTEGER,
             num_message INTEGER NOT NULL,
             day_message INTEGER NOT NULL,
             auto_reputation INTEGER NOT NULL,
-            auto_reputation_data TEXT , 
+            auto_reputation_data TEXT, 
             vhod_data INTEGER NOT NULL,
             temp REAL
         )
@@ -148,7 +158,7 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
                 ps_reputation_new=ps_reputation+ps_reputation_upt
                 new_reputation = current_reputation - nfkaz
                 # Обновляем репутацию пользователя
-                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num ,result[6]+soob_num ,reputation_time)# Передаем id,chat и данные пользователя для обновления
+                update_user(warn_user_id, chat, new_reputation, ps_reputation_new, text+soob_num, result[6]+soob_num, reputation_time)# Передаем id,chat и данные пользователя для обновления
                 connection.commit()
                 connection.close()
                 return [new_reputation,ps_reputation_new,int(text+soob_num),vhod_data,reputation_time]# ,day_message
@@ -173,6 +183,158 @@ def data_base(chat_id, warn_user_id, nfkaz=0, soob_num=0, ps_reputation_upt=0, t
     finally:
         # Закрываем соединение
         connection.close()
+"""
+
+def data_base(chat_id:int, user_id:int, data:dict|None=None)->list:
+    '''## главная база данных
+
+    args:
+        `chat_id`(int): ID чата
+
+        `user_id`(int): ID пользователя
+
+        `data`(dict): данные для обновления, ключи:
+    
+        - `reputation`: количество отнимаемой репутации
+    
+        - `num_message`: количество сообщений
+    
+        - `auto_reputation`: прибавление к авто/псевдо репутации
+    
+        - `vhod_data`: дата входа (задаеться при входе)
+
+        - `swears`: количество матюков для топа матершинеков
+
+    ---
+
+    ### return(list):
+    
+    - `0` -id — индекс в таблице
+    
+    - `1` -chat_id — id чата
+    
+    - `2` -warn_user_id — id пользователя
+    
+    - `3` -reputation — репутация
+    
+    - `4` -warn_time — не реализовано (связано с репутацией и возможной функцией ее поднятния со временем)
+
+    - `5` -num_message — количество сообщений
+
+    - `6` -day_message — не реализовано(счетчик сообщений в день)
+
+    - `7` -auto_reputation — авто или же псевдо репутация
+
+    - `8` -auto_reputation_data — не реализовано (возможна мехоника как с warn_time но больше данных)
+
+    - `9` -vhod_data — дата входа
+
+    - `10` -swears — количество матов
+
+    - `11` -temp — не реализовано и созданно на будущее
+    '''
+
+    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    # Создаем таблицу (если она еще не существует)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY,
+            chat_id INTEGER NOT NULL,
+            warn_user_id INTEGER NOT NULL,
+            reputation INTEGER,
+            warn_time INTEGER,
+            num_message INTEGER,
+            day_message INTEGER,
+            auto_reputation INTEGER,
+            auto_reputation_data TEXT, 
+            vhod_data INTEGER,
+            swears INTEGER,
+            temp REAL
+        )
+        ''')
+
+    cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (chat_id, user_id))
+    relust=cursor.fetchall()
+
+    data_bese_keys=''
+    data_bese_updata_data=[]
+
+    if len(relust)==0:
+        num_values=7
+
+        data_bese_updata_data.append(user_id)# chat_id
+        data_bese_updata_data.append(chat_id)# warn_user_id
+        data_bese_updata_data.append(5)# reputation
+        data_bese_updata_data.append(0)# num_message
+        data_bese_updata_data.append(0)# auto_reputation
+        data_bese_updata_data.append(0)# swears
+        data_bese_updata_data.append(0)# vhod_data
+        
+
+        if data is not None:
+            k=list(data.keys())
+            num_values+=len(k)
+            for key in range(0, len(k)):
+                data_bese_keys+=", "+k[key]
+                data_bese_updata_data.append(data[k[key]])
+        values=''
+        for i in range(1, num_values+1):
+            if i == num_values:
+                values+='?'
+            else:
+                values+='?, '
+
+        cursor.execute(f'INSERT INTO Users (chat_id, warn_user_id, reputation, num_message, auto_reputation, swears, vhod_data{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        cursor.execute('SELECT * FROM Users WHERE warn_user_id = ? AND chat_id = ?', (chat_id, user_id))
+        relust=cursor.fetchall()
+
+        connection.commit()
+        cursor.close()
+
+    else:
+        if data is not None:
+            k=list(data.keys())
+            for key in range(0, len(k)):
+                if len(k)-1==key:
+                    data_bese_keys+=k[key]+" = ?"
+                else:
+                    data_bese_keys+=k[key]+" = ?, "
+                data_bese_updata_data.append(data[k[key]])
+            data_bese_updata_data.append(user_id)
+            data_bese_updata_data.append(chat_id)
+
+            cursor.execute(f"UPDATE Users SET {data_bese_keys}  WHERE warn_user_id = ? AND chat_id = ?", tuple(data_bese_updata_data))
+            connection.commit()
+            cursor.close()
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return list(relust[0])
+
+def base_balance()->list:
+    connection = sqlite3.connect(data_bese_path, timeout=10000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    cursor.execute("SELECT * FROM Users")
+    relust=cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return relust
+
         
 def set_day_message():#я не смог это реализовать я походу тупой 
     file_path = os.path.join(os.getcwd(), 'asets', 'set_day_message_time.json')
@@ -190,7 +352,7 @@ def set_day_message():#я не смог это реализовать я пох�
     # Если таймер не установлен или прошло больше суток
     if timer == 0 or time.time() - timer >= 1*86400:
         # Обновляем базу данных
-        connection = sqlite3.connect('Users_base.db', timeout=10)
+        connection = sqlite3.connect(data_bese_path, timeout=10)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute('UPDATE Users SET day_message = 0')
@@ -206,23 +368,21 @@ def set_day_message():#я не смог это реализовать я пох�
     return False
 
 class team_data_bese():
-    def __init__(self):
-        pass
-
+    def __init__(self):pass
     def team_bese_init(self,chat_id: int, team_name: str, users: list, team_info: dict) -> list:
         '''
         :param1: chat id
 
         :param2: team neme 
 
-        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', 'id'123456, 'in_time':13133.013, 'status':'user' }`
+        :param3: users - список поьзователей где каждый элимент списка имеет словарь и информацией о пользователе `{'username':'@username', "frist_name":"frist name", 'id':123456, 'in_time':13133.013, 'status':'user' }`
 
         :param4: team info информация о команде в формате словоря `{'creat_time':465456.2116, 'creator_id':12335444, 'creator_user_name':'username'}`
 
         :return: список с порамитрами 
 
         '''
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        connection = sqlite3.connect(data_bese_path,timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL")
@@ -248,7 +408,7 @@ class team_data_bese():
         return [chat_id, team_name, json.dumps(users), json.dumps(team_info)]
 
     def upades(self, team_name, chat_id, users, team_info):
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        connection = sqlite3.connect(data_bese_path,timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL")
@@ -296,7 +456,7 @@ class team_data_bese():
         '''
         получение списка с данными определенной колонки
         '''
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        connection = sqlite3.connect(data_bese_path,timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL")
@@ -313,7 +473,7 @@ class team_data_bese():
         '''
         получение данных определенной команды
         '''
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        connection = sqlite3.connect(data_bese_path,timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL")
@@ -330,11 +490,11 @@ class team_data_bese():
                 data_list.append(a)
         return data_list
     
-    def delete_team(self,team_name:str ,chat_id:int)->bool:
+    def delete_team(self,team_name:str, chat_id:int)->bool:
         """
         удаляет строку с командой
         """
-        connection = sqlite3.connect('Users_base.db',timeout=10000)
+        connection = sqlite3.connect(data_bese_path,timeout=10000)
         cursor = connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL")
@@ -351,3 +511,117 @@ class team_data_bese():
             cursor.close()
             connection.close()
             return False
+        
+def tu_base(user_id:int, chat_id:int, name:str, data:dict|None)->None|list:
+    connection = sqlite3.connect(data_bese_path, timeout=1000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    # Создаем таблицу (если она еще не существует)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS alt_data (
+        id INTEGER PRIMARY KEY,
+        chat_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        swears INTEGER
+        
+    )
+    ''')
+
+    cursor.execute('SELECT * FROM alt_data WHERE user_id = ? AND chat_id = ?', (chat_id, user_id))
+    relust=cursor.fetchall()
+
+    data_bese_keys=''
+    data_bese_updata_data=[]
+
+    if len(relust)==0:
+        num_values=3
+
+        data_bese_updata_data.append(user_id)
+        data_bese_updata_data.append(chat_id)
+        data_bese_updata_data.append(name)
+        if data is not None:
+            k=list(data.keys())
+            num_values+=len(k)
+            for key in range(0, len(k)):
+                data_bese_keys+=", "+k[key]
+                data_bese_updata_data.append(data[k[key]])
+        values=''
+        for i in range(1, num_values+1):
+            if i == num_values:
+                values+='?'
+            else:
+                values+='?, '
+
+        cursor.execute(f'INSERT INTO alt_data (chat_id, user_id, name{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        print(f'INSERT INTO alt_data (chat_id, user_id, name{data_bese_keys}) VALUES ({values})', data_bese_updata_data)
+        connection.commit()
+        cursor.close()
+
+    else:
+        if data is not None:
+            k=list(data.keys())
+            for key in range(0, len(k)):
+                if len(k)-1==key:
+                    data_bese_keys+=k[key]+" = ?"
+                else:
+                    data_bese_keys+=k[key]+" = ?, "
+                data_bese_updata_data.append(data[k[key]])
+            data_bese_updata_data.append(user_id)
+            data_bese_updata_data.append(chat_id)
+
+            cursor.execute(f"UPDATE alt_data SET {data_bese_keys}  WHERE user_id = ? AND chat_id = ?", tuple(data_bese_updata_data))
+            connection.commit()
+            cursor.close()
+    
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    if len(relust)>0:
+        return relust
+
+def tu_base_balance()->list:
+    connection = sqlite3.connect(data_bese_path, timeout=1000)
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout = 1000")
+    cursor.execute("PRAGMA cache_size = -50000")  # Кеш 50MB
+
+    cursor.execute("SELECT * FROM alt_data")
+    relust=cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return relust
+
+def fetch_data_by_column_and_row(column_name, row_index):
+    # Создаем подключение к базе данных
+    connection = sqlite3.connect('Users_base.db')
+    cursor = connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    try:
+        # Выполняем запрос для получения данных из указанного столбца по индексу строки
+        query = f"SELECT {column_name} FROM Users LIMIT 1 OFFSET ?"
+        cursor.execute(query, (row_index,))  # Передаем индекс как кортеж
+        result = cursor.fetchone()  # Получаем первую строку результата
+        if result:
+            return result[0]  # Возвращаем значение или None, если не найдено
+        else:
+            return None
+    except sqlite3.Error as e:
+        logger.error(f'get data base error >> {e}')
+        return f"get data base error >> {e}"
+
+def tests():
+    print(tu_base(123, 123, "KTkotiktapok" ,{"swears":2}))
+    print(tu_base_balance())
+    print(data_base(5194033781, 5194033781))
+
+#tests()
