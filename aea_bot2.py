@@ -427,6 +427,7 @@ def send_rules(message):
             bot.delete_message(message.chat.id, msg.message_id)
 """   
             
+bot_data_for_api = get_telegram_api()
 
 # Хранение данных о репортах
 report_data = {}
@@ -464,6 +465,13 @@ def handle_report(message):
             return
             
         report = report_data[chat_id]
+
+        if bot_data_for_api['status'] == 200:
+            print(bot_data_for_api['respone'])
+            if bot_data_for_api['respone']['ok'] and bot_data_for_api['respone']['result']['id'] == ban_ded:
+                bot.reply_to(message, ["нет", "зачем репортиш меня?", "не-а", "я не отправлю этот репорт", "не буду"][random.randint(0, 4)])
+                return
+            
         #добавляем id нарушителя в тетрадь смерти Сталина report
         report['responses'].add(ban_ded) 
 
