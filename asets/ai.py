@@ -1,17 +1,13 @@
 """its an API for using AI (Not used)"""
 import os
 import time
-
 import dictt
+import string
 
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import logging
-import string
-from googletrans import Translator
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-import requests
 
 
 class MessageClassifier:
@@ -32,8 +28,6 @@ class MessageClassifier:
 
         потдерживает лиш русский
         """
-        if message in list(string.ascii_lowercase):
-            message = ''.join(dictt.translit_ru.get(c, c) for c in message)
         inputs = self.tokenizer_oskorb(message, return_tensors="pt", truncation=True, padding=True)
         outputs = self.model_oskorb(**inputs)
         predictions = torch.argmax(outputs.logits, dim=1)
@@ -58,9 +52,13 @@ class MessageClassifier:
             predicted_class = torch.argmax(logits, dim=1).item()
         return predicted_class == 1
 
-ai_analis=MessageClassifier()
+ai_analis = MessageClassifier()
 app = FastAPI()
  
+@app.get("/")
+def status():
+    return 200
+
 @app.get("/spam")
 def spam_detect(message:str):
     error=None
@@ -89,19 +87,8 @@ def affront_detect(message:str):
 
     return {"detect": detect, "coficent":item, "error":error, "timer":timer}
 
-def test(spam_message='test spam message',affront='test affront message',timeouto=30):
-    response = requests.get("172.0.0.1:8000/spam", params={'message': spam_message},timeout=timeouto)
-    response.raise_for_status()
-    relust_spam = response.json()
-
-    response = requests.get("172.0.0.1:8000/affront_detect", params={'message': affront},timeout=timeouto)
-    response.raise_for_status()
-    relust_affront = response.json()
-
-    logging.debug(relust_spam)
-    logging.debug(relust_affront)
 
 # Запуск сервера
 if __name__ == '__main__':
     import uvicorn 
-    uvicorn.run(app, host="172.0.0.2", port=8000)
+    uvicorn.run(app, host="127.0.0.2", port=8080)
