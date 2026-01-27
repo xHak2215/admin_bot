@@ -3,7 +3,7 @@ import platform
 
 if platform.platform().startswith('win'):
     os.system("start cmd python aea_bot2.py")
+    os.system("start cmd python asets/ai.py")
 else:
     os.system("gnome-terminal -- virtual/bin/python aea_bot2.py")
-
-
+    os.system("gnome-terminal -- virtual/bin/python asets/ai.py")
