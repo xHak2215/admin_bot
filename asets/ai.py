@@ -1,8 +1,6 @@
 """its an API for using AI (Not used)"""
 import os
 import time
-import dictt
-import string
 
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, AutoTokenizer, AutoModelForSequenceClassification
 import torch
@@ -54,7 +52,7 @@ class MessageClassifier:
 
 ai_analis = MessageClassifier()
 app = FastAPI()
- 
+
 @app.get("/")
 def status():
     return 200
@@ -68,8 +66,7 @@ def spam_detect(message:str):
         timer=time.time()-timer
     except Exception as e:
         error=e
-        relust=None
-        timer=None
+        relust, timer = None, None
 
     return {"detect":relust, "error":error, "timer":timer}
 
@@ -82,8 +79,7 @@ def affront_detect(message:str):
         timer=time.time()-timer
     except Exception as e:
         error=e
-        detect,item=None,None
-        timer=None
+        timer, detect, item = None, None, None
 
     return {"detect": detect, "coficent":item, "error":error, "timer":timer}
 
