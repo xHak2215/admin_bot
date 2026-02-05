@@ -184,8 +184,7 @@ for i in 6:random r=0-{i};if {r}==1:send"ты проиграл"&.end;if {i} == 5
 ---
 
 ### установка:
-
-<h3>для запуска бота вставите свой токен в файл TOKEN без пробелов или каких либо других символов!</h3>
+**для запуска бота вставите свой токен в файл TOKEN без пробелов или каких либо других символов!**
 
 для работы приложения необходим <a href="https://www.python.org/"> python 3.12v</a> или выше  
 
@@ -196,12 +195,13 @@ cd admin_telegram_bot
 
 pip install -r requirements.txt
 
-python aea_bot.py
+python start.py
 
 ```
-установки используя `make`:
 
-загрузка и установка зависимостей 
+установка используя `make`:
+
+загрузка и установка зависимостей:
 
 ```sh
 git clone https://github.com/xHak2215/admin_telegram_bot
@@ -212,7 +212,7 @@ make install
 
 ```
 
-запуск :
+запуск:
 
 ```sh
 make run
@@ -282,7 +282,7 @@ make run
 - .PPM	Portable Pixmap	RGB
 - .ICO	Иконки Windows	RGBA
 
-бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3
+<!--бот сделан для группы <a href="https://t.me/+P5wR2FyxnSQzMjIy">AEA+</a> :3-->
 
 <a id="en"></a>
 
