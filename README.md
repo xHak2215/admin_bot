@@ -172,9 +172,9 @@ for i in 6:random r=0-{i};if {r}==1:send"ты проиграл"&.end;if {i} == 5
 - `/team сбор <имя_команды>` - тегает всех учасиков команды';
 - `/team покинуть <имя_команды>` - удаляет вас из команды если вы не ее создатель;
 
-/gif_search - команда для поиска gif, пример:`/gif_search котик`
+/gif_search - команда для поиска GIF, пример:`/gif_search котик`
 
-/swearing_top - показывает топ матершинеков чата. отсчет водеться с 0
+/swearing_top - показывает топ матершинеков чата. отсчет ведется с 0
 
 
 </h4>
@@ -286,7 +286,7 @@ make run
 
 <a id="en"></a>
 
-<h3 align="center">English</h3>
+<h3 align="center">English DOC</h3>
 
 ---
 
@@ -457,7 +457,9 @@ Usage:
 - `/team сбор <team_name>` - mention all team members;  
 - `/team покинуть <team_name>` - removes you from the team if you are not its creator;
 
-(command is in development)
+/gif_search - команда для поиска GIF, пример:`/gif_search котик`
+
+/swearing_top - показывает топ матершинеков чата. отсчет ведется с 0
 
 </h4>
 
@@ -478,7 +480,7 @@ cd admin_telegram_bot
 
 pip install -r requirements.txt
 
-python aea_bot.py
+python start.py
 
 ```
 Install using `make`:
