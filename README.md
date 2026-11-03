@@ -222,6 +222,7 @@ make run
 
 ```json
 {
+{
     "bambam":false,
     "delet_messadge":true,
     "admin_grops":"-1002284704738",
@@ -230,8 +231,12 @@ make run
     "ban_and_myte_command":true,
     "console_control":true,
     "auto_translete":{"laung":"ru","Activate":false},
-    "admin_list":["username"]
-
+    "admin_list":["HITHELL"],
+    "proxy": {
+        "http":"http://127.0.0.1:10809",
+        "https": "http://127.0.0.1:10809"
+        } 
+}
 }
 ```
 
@@ -254,6 +259,7 @@ make run
 
 `admin_list` - список username (без символа *@*) админов, используется для вызова администрации при 5 и более репортах на одно сообщение 
 
+`proxy` - словарь с прокси `http` - для передоваемых по http данных и `https` для https соотвецтвенно
 
 <a id="format"></a>
 
