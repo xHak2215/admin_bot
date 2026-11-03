@@ -195,6 +195,8 @@ cd admin_telegram_bot
 
 pip install -r requirements.txt
 
+cp settings.json.example settings.json
+
 python start.py
 
 ```
@@ -222,7 +224,6 @@ make run
 
 ```json
 {
-{
     "bambam":false,
     "delet_messadge":true,
     "admin_grops":"-1002284704738",
@@ -235,9 +236,10 @@ make run
     "proxy": {
         "http":"http://127.0.0.1:10809",
         "https": "http://127.0.0.1:10809"
-        } 
+        },
+    "vosk_model": "vosk-model-small-ru-0.22" 
 }
-}
+
 ```
 
 `bambam` - автоматичиские муты/баны.<br>
@@ -260,6 +262,8 @@ make run
 `admin_list` - список username (без символа *@*) админов, используется для вызова администрации при 5 и более репортах на одно сообщение 
 
 `proxy` - словарь с прокси `http` - для передоваемых по http данных и `https` для https соотвецтвенно
+
+`vosk_model` - модель для распознавания речи (лежыт в деректории asets) 
 
 <a id="format"></a>
 

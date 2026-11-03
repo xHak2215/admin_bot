@@ -1,6 +1,7 @@
 cats_message.log
 TOKEN
 Users_base.db
+settings.json
 /virtual
 /venv
 /asets/vosk-model-ru-0.42

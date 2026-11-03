@@ -81,6 +81,7 @@ CONSOLE_CONTROL=bool(settings['console_control'])
 AUTO_TRANSLETE=dict(settings['auto_translete'])
 admin_list=list(settings['admin_list'])
 PROXY=dict(settings['proxy'])
+VOSK_MODEL=settings["vosk_model"]
  
 apihelper.proxy = PROXY
 
@@ -92,7 +93,7 @@ admin_command = '<code>/monitor</code> — выводит показатели �
 i=0
 log_file_name="cats_message.log"
 random.seed(round(time.time())+int(round(psutil.virtual_memory().percent)))#создание уникального сида
-vosk_model_path = os.path.join(os.getcwd(), 'asets', "vosk-model-ru-0.42")
+vosk_model_path = os.path.join(os.getcwd(), 'asets', VOSK_MODEL)
 
 llama_api_ai = llama_api()   
 ai_api = api_config()

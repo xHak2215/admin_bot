@@ -7,6 +7,7 @@ install:
 	@python3 -m venv $(VENV)
 	@echo "Installing requirements..."
 	@$(PIP) install -r requirements.txt
+	@cp settings.json.example settings.json
 	@echo "Done"
 
 run:

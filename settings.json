@@ -11,6 +11,6 @@
     "proxy": {
         "http":"http://127.0.0.1:10809",
         "https": "http://127.0.0.1:10809"
-        } 
-
+        },
+    "vosk_model": "vosk-model-ru-0.42" 
 }
