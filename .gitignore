@@ -1,0 +1,12 @@
+cats_message.log
+TOKEN
+Users_base.db
+/virtual
+/venv
+/asets/vosk-model-ru-0.42
+
+*.vscode
+*.log
+*.db
+
+
